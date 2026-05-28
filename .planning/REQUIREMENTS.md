@@ -82,6 +82,12 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **OPS-02**: App is publicly deployed on a free-tier host (e.g., Hugging Face Spaces) and accessible via URL
 - [ ] **OPS-03**: Repo is portfolio-presentable — README, methodology writeup, model card, failure gallery, eval dashboards committed
 
+### Methodology Transparency (CEO-approved cherry-picks)
+
+- [ ] **METHOD-01**: "Show your work" methodology pane — expandable on any answer to reveal retrieval query, retrieved chunks with scores, prompt used, sources cited, and faithfulness/citation eval scores for that specific claim (pulled forward to Phase 3 per CEO review)
+- [ ] **LAND-01**: Recruiter landing page at `/methodology` deep-linkable URL — renders model card + methodology writeup + failure gallery link + per-IPO eval dashboard summary (Phase 6, with stub link from Phase 1 home page)
+- [ ] **FAILGAL-01**: Live browseable failure gallery at `/failures` page — renders ≥10 documented failures across RAG / extraction / forecast surfaces with category, query, expected vs actual, and post-mortem note (Phase 6; replaces the markdown-only file in `eval/`)
+
 ## v2 Requirements
 
 Deferred to future release. Tracked but not in current roadmap.
@@ -134,58 +140,61 @@ Explicitly excluded. Documented to prevent scope creep.
 
 ## Traceability
 
-Which phases cover which requirements. Updated during roadmap creation.
+Which phases cover which requirements. Updated by roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INGEST-01 | TBD | Pending |
-| INGEST-02 | TBD | Pending |
-| INGEST-03 | TBD | Pending |
-| SNAP-01 | TBD | Pending |
-| SNAP-02 | TBD | Pending |
-| SNAP-03 | TBD | Pending |
-| SNAP-04 | TBD | Pending |
-| SNAP-05 | TBD | Pending |
-| SNAP-06 | TBD | Pending |
-| SNAP-07 | TBD | Pending |
-| RAG-01 | TBD | Pending |
-| RAG-02 | TBD | Pending |
-| RAG-03 | TBD | Pending |
-| EXTRACT-01 | TBD | Pending |
-| EXTRACT-02 | TBD | Pending |
-| EXTRACT-03 | TBD | Pending |
-| PEER-01 | TBD | Pending |
-| PEER-02 | TBD | Pending |
-| FCAST-01 | TBD | Pending |
-| FCAST-02 | TBD | Pending |
-| FCAST-03 | TBD | Pending |
-| FCAST-04 | TBD | Pending |
-| FCAST-05 | TBD | Pending |
-| GMP-01 | TBD | Pending |
-| GMP-02 | TBD | Pending |
-| GMP-03 | TBD | Pending |
-| EVAL-01 | TBD | Pending |
-| EVAL-02 | TBD | Pending |
-| EVAL-03 | TBD | Pending |
-| EVAL-04 | TBD | Pending |
-| EVAL-05 | TBD | Pending |
-| TRUST-01 | TBD | Pending |
-| TRUST-02 | TBD | Pending |
-| TRUST-03 | TBD | Pending |
-| TRUST-04 | TBD | Pending |
-| UI-01 | TBD | Pending |
-| UI-02 | TBD | Pending |
-| UI-03 | TBD | Pending |
-| UI-04 | TBD | Pending |
-| OPS-01 | TBD | Pending |
-| OPS-02 | TBD | Pending |
-| OPS-03 | TBD | Pending |
+| INGEST-01 | Phase 1 | Pending |
+| INGEST-02 | Phase 1 | Pending |
+| INGEST-03 | Phase 1 | Pending |
+| SNAP-01 | Phase 2 | Pending |
+| SNAP-02 | Phase 2 | Pending |
+| SNAP-03 | Phase 2 | Pending |
+| SNAP-04 | Phase 2 | Pending |
+| SNAP-05 | Phase 2 | Pending |
+| SNAP-06 | Phase 2 | Pending |
+| SNAP-07 | Phase 2 | Pending |
+| RAG-01 | Phase 1 | Pending |
+| RAG-02 | Phase 1 | Pending |
+| RAG-03 | Phase 1 | Pending |
+| EXTRACT-01 | Phase 3 | Pending |
+| EXTRACT-02 | Phase 3 | Pending |
+| EXTRACT-03 | Phase 3 | Pending |
+| PEER-01 | Phase 4 | Pending |
+| PEER-02 | Phase 4 | Pending |
+| FCAST-01 | Phase 5 | Pending |
+| FCAST-02 | Phase 5 | Pending |
+| FCAST-03 | Phase 5 | Pending |
+| FCAST-04 | Phase 5 | Pending |
+| FCAST-05 | Phase 5 | Pending |
+| GMP-01 | Phase 4 | Pending |
+| GMP-02 | Phase 4 | Pending |
+| GMP-03 | Phase 5 | Pending |
+| EVAL-01 | Phase 6 | Pending |
+| EVAL-02 | Phase 6 | Pending |
+| EVAL-03 | Phase 3 | Pending |
+| EVAL-04 | Phase 6 | Pending |
+| EVAL-05 | Phase 6 | Pending |
+| TRUST-01 | Phase 1 | Pending |
+| TRUST-02 | Phase 1 | Pending |
+| TRUST-03 | Phase 1 | Pending |
+| TRUST-04 | Phase 1 | Pending |
+| UI-01 | Phase 1 | Pending |
+| UI-02 | Phase 1 | Pending |
+| UI-03 | Phase 5 | Pending |
+| UI-04 | Phase 4 | Pending |
+| OPS-01 | Phase 2 | Pending |
+| OPS-02 | Phase 1 | Pending |
+| OPS-03 | Phase 6 | Pending |
+| METHOD-01 | Phase 3 | Pending |
+| LAND-01 | Phase 6 | Pending |
+| FAILGAL-01 | Phase 6 | Pending |
 
 **Coverage:**
-- v1 requirements: 42 total
-- Mapped to phases: 0 (assigned by roadmap)
-- Unmapped: 42 — to be resolved by roadmap
+- v1 requirements: 45 total
+- Mapped to phases: 45 (100%)
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-05-28*
-*Last updated: 2026-05-28 after initial definition*
+*Last updated: 2026-05-28 after CEO review (METHOD-01, LAND-01, FAILGAL-01 added; Traceability extended)*
