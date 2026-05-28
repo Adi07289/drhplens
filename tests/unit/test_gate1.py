@@ -1,22 +1,56 @@
 """
-Stub: agent/nodes/gate1_check.py — pre-LLM retrieval-score gate (D-05 Gate 1).
+Unit tests for agent/nodes/gate1_check.py — pre-LLM retrieval-score gate.
 
-Validates that:
-- When max reranker score < threshold τ, gate1_check returns gate1_passed=False
-- The graph then routes to refuse_with_reformulation (never reaches LLM generate node)
-- When max reranker score >= threshold τ, gate1_passed=True and graph continues to decompose
-
-Wave 3 owns this implementation (RAG-03; D-05 Gate 1).
+These tests are imported from test_retrieve.py but also stand alone here for
+the Wave 0 xfail stub flip. The test_below_threshold_routes_to_refusal test
+is the canonical Wave 0 stub.
 """
 from __future__ import annotations
 
 import pytest
 
-pytest.importorskip("agent.nodes.gate1_check", reason="agent/nodes/gate1_check.py ships in Wave 3")
+from agent.policies import GATE1_THRESHOLD
 
 
-@pytest.mark.xfail(reason="Wave 3 owns this — implements agent/nodes/gate1_check.py", strict=False)
-def test_below_threshold_routes_to_refusal() -> None:
-    """gate1_check node with max_reranker_score below τ must set gate1_passed=False
-    so the graph routes to refuse_with_reformulation and never calls the LLM."""
-    assert False, "Wave 3 must implement: build mock GraphState with low score, assert gate1_passed=False"
+def _base_state(question: str = "What is the issue size?") -> dict:
+    return {
+        "question": question,
+        "retrieved_chunks": [],
+        "reranked_top_k": [],
+        "gate1_passed": False,
+        "gate1_max_score": 0.0,
+        "sub_questions": [question],
+        "grounded_answer": None,
+        "scrub_passed": False,
+        "regenerate_attempts": 0,
+        "all_claims_grounded": False,
+        "cite_check_failures": [],
+        "refusal": None,
+    }
+
+
+def test_below_threshold_routes_to_refusal():
+    """Wave 0 xfail flip: gate1_check with max_reranker_score below τ sets gate1_passed=False."""
+    from agent.nodes import gate1_check
+
+    state = {
+        **_base_state(),
+        "reranked_top_k": [{"chunk_id": "c1", "rerank_score": -1.0}],
+    }
+    result = gate1_check.run(state)
+    assert result["gate1_passed"] is False
+    assert result["gate1_max_score"] == pytest.approx(-1.0)
+
+
+def test_gate1_threshold_value_is_zero():
+    """Confirm GATE1_THRESHOLD is 0.0 per RESEARCH Open Question 1."""
+    assert GATE1_THRESHOLD == 0.0
+
+
+def test_gate1_empty_reranked_fails():
+    """gate1_check with no reranked chunks sets gate1_passed=False (no positive score)."""
+    from agent.nodes import gate1_check
+
+    state = {**_base_state(), "reranked_top_k": []}
+    result = gate1_check.run(state)
+    assert result["gate1_passed"] is False
