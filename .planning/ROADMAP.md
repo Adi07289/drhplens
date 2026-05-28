@@ -3,7 +3,7 @@
 **Created:** 2026-05-28
 **Mode:** MVP (vertical-slice progression)
 **Granularity:** standard
-**Coverage:** 42/42 v1 requirements mapped
+**Coverage:** 45/45 v1 requirements mapped (incl. CEO-approved cherry-picks METHOD-01, LAND-01, FAILGAL-01)
 **Core Value:** Cut a 400-page Indian IPO prospectus into an honest, cited answer that fuses what the document actually says with how comparable IPOs have actually behaved.
 
 ## Phases
