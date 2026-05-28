@@ -1,0 +1,13 @@
+{"qid": "swiggy-001", "category": "factual", "question": "TBD-WAVE5", "expected_answer_contains": [], "expected_sources": [], "is_refusal_expected": false}
+{"qid": "swiggy-002", "category": "factual", "question": "TBD-WAVE5", "expected_answer_contains": [], "expected_sources": [], "is_refusal_expected": false}
+{"qid": "swiggy-003", "category": "factual", "question": "TBD-WAVE5", "expected_answer_contains": [], "expected_sources": [], "is_refusal_expected": false}
+{"qid": "swiggy-004", "category": "factual", "question": "TBD-WAVE5", "expected_answer_contains": [], "expected_sources": [], "is_refusal_expected": false}
+{"qid": "swiggy-005", "category": "factual", "question": "TBD-WAVE5", "expected_answer_contains": [], "expected_sources": [], "is_refusal_expected": false}
+{"qid": "swiggy-006", "category": "numeric", "question": "TBD-WAVE5", "expected_answer_contains": [], "expected_sources": [], "is_refusal_expected": false}
+{"qid": "swiggy-007", "category": "numeric", "question": "TBD-WAVE5", "expected_answer_contains": [], "expected_sources": [], "is_refusal_expected": false}
+{"qid": "swiggy-008", "category": "numeric", "question": "TBD-WAVE5", "expected_answer_contains": [], "expected_sources": [], "is_refusal_expected": false}
+{"qid": "swiggy-009", "category": "risk-factor", "question": "TBD-WAVE5", "expected_answer_contains": [], "expected_sources": [], "is_refusal_expected": false}
+{"qid": "swiggy-010", "category": "risk-factor", "question": "TBD-WAVE5", "expected_answer_contains": [], "expected_sources": [], "is_refusal_expected": false}
+{"qid": "swiggy-011", "category": "risk-factor", "question": "TBD-WAVE5", "expected_answer_contains": [], "expected_sources": [], "is_refusal_expected": false}
+{"qid": "swiggy-012", "category": "refusal", "question": "TBD-WAVE5", "expected_answer_contains": [], "expected_sources": [], "is_refusal_expected": true}
+{"qid": "swiggy-013", "category": "refusal", "question": "TBD-WAVE5", "expected_answer_contains": [], "expected_sources": [], "is_refusal_expected": true}
