@@ -64,9 +64,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Trust (Compliance & Honesty Posture)
 
-- [ ] **TRUST-01**: Persistent disclaimer + first-use modal + per-answer footer frame the product as informational / educational, never as investment advice
-- [ ] **TRUST-02**: A banned-token scrubber prevents prescriptive language ("subscribe", "avoid", "buy", "sell", "target", "recommend") in any generated output
-- [ ] **TRUST-03**: AI usage and methodology disclosure complies with SEBI January-2025 Research Analyst guidelines (font size, prominence, content)
+- [x] **TRUST-01**: Persistent disclaimer + first-use modal + per-answer footer frame the product as informational / educational, never as investment advice
+- [x] **TRUST-02**: A banned-token scrubber prevents prescriptive language ("subscribe", "avoid", "buy", "sell", "target", "recommend") in any generated output
+- [x] **TRUST-03**: AI usage and methodology disclosure complies with SEBI January-2025 Research Analyst guidelines (font size, prominence, content)
 - [ ] **TRUST-04**: A non-LLM cite-check node validates every claim against the retrieved evidence set before any answer is shown to the user
 
 ### UI (Web Frontend)
@@ -175,9 +175,9 @@ Which phases cover which requirements. Updated by roadmap creation.
 | EVAL-03 | Phase 3 | Pending |
 | EVAL-04 | Phase 6 | Pending |
 | EVAL-05 | Phase 6 | Pending |
-| TRUST-01 | Phase 1 | Pending |
-| TRUST-02 | Phase 1 | Pending |
-| TRUST-03 | Phase 1 | Pending |
+| TRUST-01 | Phase 1 | Complete |
+| TRUST-02 | Phase 1 | Complete |
+| TRUST-03 | Phase 1 | Complete |
 | TRUST-04 | Phase 1 | Pending |
 | UI-01 | Phase 1 | Pending |
 | UI-02 | Phase 1 | Pending |

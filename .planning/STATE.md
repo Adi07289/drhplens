@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-last_updated: "2026-05-28T09:21:28.774Z"
+last_updated: "2026-05-28T09:48:22.187Z"
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 6
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -29,9 +29,9 @@ progress:
 ## Current Position
 
 **Phase:** 1 of 6 — Foundation + MVP-A
-**Plan:** Not yet planned (run `/gsd-plan-phase 1`)
-**Status:** Roadmap complete; awaiting first-phase planning.
-**Progress:** [██░░░░░░░░] 17%
+**Plan:** 02 of 06 complete (Wave 1: schemas + scrubber + disclaimer)
+**Status:** Wave 1 complete. Next: Wave 2 (01-03 ingestion pipeline).
+**Progress:** [███░░░░░░░] 25%
 
 ## Phase Map
 
@@ -72,6 +72,14 @@ progress:
 - Agent: bounded LangGraph state machine (not freeform ReAct); cite-check is a deterministic code node
 - Storage is the integration bus — batch pipelines write, on-demand tools read
 
+### Key Decisions (from Wave 1)
+
+- claim_id pattern `^c_[a-z0-9]{6,16}$` locked in SKELETON §B (changing it breaks Phase 3 METHOD-01)
+- Morphological stems (subscri, accumulat) used in BANNED_TOKEN_PATTERN because Python literal matching cannot handle e-dropping in subscribe→subscribing
+- ANCHOR_COPY D-07 byte-for-byte in compliance/disclaimer_text.py — single source of truth
+- Import-time scrubber assertion in ui/copy.py is the TRUST-03 anchor (fails fast on banned-token regressions in our own copy)
+- REFUSAL_BANNED_TOKEN_COPY reworded to avoid "recommendation" which the scrubber correctly blocked
+
 ### Cross-Cutting Invariants (from PITFALLS.md)
 
 - Compliance posture hardcoded from Phase 1 (disclaimer + banned-token scrubber + no-personalization)
@@ -106,11 +114,11 @@ None yet.
 
 ### What I Was Doing
 
-Initialized the project: PROJECT.md → REQUIREMENTS.md (42 v1 reqs across 11 categories) → four research dimension files (SUMMARY/STACK/FEATURES/ARCHITECTURE/PITFALLS) → ROADMAP.md (6 vertical-slice MVP phases, 100% requirement coverage).
+Wave 1 (Plan 01-02) complete: Pydantic v2 schemas (agent/schemas.py + agent/state.py), deterministic banned-token scrubber (compliance/banned_tokens.py + compliance/scrubber.py), and DisclaimerSurface abstraction (compliance/disclaimer_text.py + ui/copy.py + ui/disclaimer.py). All 4 Wave 0 xfail stubs now green; 108 unit tests passing.
 
 ### Where to Resume
 
-Run `/gsd-plan-phase 1` to decompose Phase 1 (Foundation + MVP-A) into executable plans. Phase 1's deliverable is a publicly-deployed, mobile-responsive web app where a user can ask plain-English questions about one hand-loaded DRHP and receive cited answers — with full compliance posture and citation infrastructure locked in.
+Execute Plan 01-03 (Wave 2): Docling DRHP ingestion pipeline — parse Swiggy prospectus, section-aware chunking, bge-m3 embedding, Qdrant upsert.
 
 ### Files of Record
 
@@ -129,3 +137,4 @@ Run `/gsd-plan-phase 1` to decompose Phase 1 (Foundation + MVP-A) into executabl
 | Phase | Plan | Duration | Notes |
 |-------|------|----------|-------|
 | Phase 01 P01 | 25min | 3 tasks | 48 files |
+| Phase 01 P02 | 45min | 3 tasks | 11 files; 108 unit tests passing |
