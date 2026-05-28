@@ -131,3 +131,59 @@ def render_disclaimer_gate(session_state: dict) -> "dict | None":
     dict or None.
     """
     return DisclaimerSurface().render_disclaimer_gate(session_state)
+
+
+# ---------------------------------------------------------------------------
+# Wave 4 additions — class-based rendering delegating to app/static/drhplens.css
+# per UI-SPEC FLAG-2. No inline <style> injection. Wave 1 DisclaimerSurface and
+# render_disclaimer_gate are preserved for backwards compatibility.
+# ---------------------------------------------------------------------------
+
+import html as _html  # noqa: E402
+
+
+def render_first_use_modal() -> dict:
+    """Return the first-use modal content as a plain dict.
+
+    Pure-data function (no Streamlit calls at module level). app.py wraps this
+    with @st.dialog. Returns dict with added 'css_class' key for Task 1 CSS.
+
+    Returns:
+        {
+            "heading":   str,  — MODAL_HEADING
+            "body":      str,  — ANCHOR_COPY + " " + MODAL_BODY_ADDENDUM
+            "cta_text":  str,  — MODAL_CTA
+            "css_class": str,  — "drhp-modal"
+        }
+    """
+    data = DisclaimerSurface().render_modal()
+    return {**data, "css_class": "drhp-modal"}
+
+
+def render_persistent_footer() -> str:
+    """Return the persistent slim footer as a class-based HTML string.
+
+    Delegates styling to .drhp-footer in app/static/drhplens.css (UI-SPEC FLAG-2).
+    No inline style= attribute. 12px is enforced via CSS class (TRUST-03 SEBI floor).
+
+    Returns HTML string for st.markdown(..., unsafe_allow_html=True).
+    """
+    return (
+        f'<div class="drhp-footer">'
+        f'{_html.escape(ANCHOR_COPY)}'
+        f' &middot; <a class="drhp-footer-link" href="/methodology">methodology</a>'
+        f'</div>'
+    )
+
+
+def render_per_answer_footer() -> str:
+    """Return the per-answer disclaimer as a class-based HTML string.
+
+    Delegates styling to .drhp-disclaimer-per-answer in app/static/drhplens.css.
+    No inline style= attribute (UI-SPEC FLAG-2).
+    """
+    return (
+        f'<div class="drhp-disclaimer-per-answer">'
+        f'{_html.escape(PER_ANSWER_FOOTER)}'
+        f'</div>'
+    )

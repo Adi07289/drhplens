@@ -141,6 +141,29 @@ def test_no_exclamation_marks_in_copy() -> None:
         assert "!" not in value, f"{name!r} contains an exclamation mark: {value!r}"
 
 
+def test_methodology_stub_body_passes_scrubber() -> None:
+    """METHODOLOGY_STUB_BODY regression guard after Wave 4 changes."""
+    from ui.copy import METHODOLOGY_STUB_BODY
+    from compliance.scrubber import scrub
+    result = scrub(METHODOLOGY_STUB_BODY)
+    assert result.passed, f"METHODOLOGY_STUB_BODY failed scrubber: {result.match!r}"
+
+
+def test_refusal_banner_module_strings_pass_scrubber() -> None:
+    """ui.refusal_banner heading constants must pass the banned-token scrubber (TRUST-02)."""
+    import ui.refusal_banner
+    from compliance.scrubber import scrub
+    constants = [
+        ui.refusal_banner.REFUSAL_HEADING_LOW_RETRIEVAL,
+        ui.refusal_banner.REFUSAL_HEADING_PARTIAL_GROUNDING,
+        ui.refusal_banner.REFUSAL_HEADING_BANNED_TOKEN,
+        ui.refusal_banner.REFUSAL_HEADING_INFRASTRUCTURE,
+    ]
+    for s in constants:
+        result = scrub(s)
+        assert result.passed, f"refusal_banner constant failed scrubber: {s!r} → {result.match!r}"
+
+
 def test_copy_import_time_assertion_fires_on_banned_copy() -> None:
     """Verify the import-time assertion mechanism fires on a synthetic banned string.
 
