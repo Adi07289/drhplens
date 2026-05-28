@@ -1,0 +1,48 @@
+# DRHPLens — runtime dependencies for HF Spaces deployment
+# Keep in sync with pyproject.toml [project.dependencies]
+# HF Spaces reads this file directly; do not add dev-only packages here.
+
+# Agent orchestration
+langgraph>=1.2,<2
+
+# RAG ingestion + query engines
+llama-index>=0.14,<0.15
+llama-index-vector-stores-qdrant
+llama-index-embeddings-huggingface
+llama-index-llms-google-genai
+llama-index-llms-groq
+
+# PDF parsing
+docling>=2.95,<3
+pdfplumber>=0.11
+pymupdf>=1.27
+
+# Vector store
+qdrant-client>=1.18,<2
+
+# Embeddings + reranker
+sentence-transformers>=3
+FlagEmbedding
+
+# Structured LLM outputs
+instructor>=1.15,<2
+
+# Schemas + validation
+pydantic>=2.7,<3
+
+# UI
+streamlit>=1.36
+
+# Observability
+langfuse
+
+# Utilities
+tenacity
+python-dotenv
+httpx>=0.27
+typer
+rich
+tiktoken
+
+# Cite-check fuzzy matching (rapidfuzz — Pattern 3 per 01-RESEARCH.md)
+rapidfuzz
