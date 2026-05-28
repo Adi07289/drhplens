@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from agent.policies import GATE1_THRESHOLD
 from agent.state import GraphState
+from app.observability.trace_decorators import attach_gate1_metadata_to_span
 
 
 def run(state: GraphState) -> GraphState:
@@ -35,6 +36,9 @@ def run(state: GraphState) -> GraphState:
         max_score = max(c.get("rerank_score", -1.0) for c in reranked)
 
     gate1_passed = max_score >= GATE1_THRESHOLD
+
+    # Attach Gate 1 metadata to Langfuse span (no-op when disabled).
+    attach_gate1_metadata_to_span(max_score, GATE1_THRESHOLD, gate1_passed)
 
     return {
         **state,

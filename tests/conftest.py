@@ -1,5 +1,5 @@
 """
-Shared pytest fixtures for DRHPLens test suite.
+Shared pytest fixtures + CLI options for DRHPLens test suite.
 
 Fixture names and signatures are LOCKED at Wave 0 (per 01-01-PLAN.md Task 3).
 Later waves fill in the bodies — do NOT rename these fixtures.
@@ -16,6 +16,22 @@ from __future__ import annotations
 import pathlib
 
 import pytest
+
+
+def pytest_addoption(parser: pytest.Parser) -> None:
+    """Register CLI options for DRHPLens test suite."""
+    parser.addoption(
+        "--run-langfuse",
+        action="store_true",
+        default=False,
+        help="Run live Langfuse integration tests (requires LANGFUSE_PUBLIC_KEY env var).",
+    )
+    parser.addoption(
+        "--run-eval",
+        action="store_true",
+        default=False,
+        help="Run the full eval suite against live Qdrant + Gemini (requires all env vars).",
+    )
 
 
 @pytest.fixture
@@ -75,7 +91,16 @@ def gold_set() -> list[dict]:
     Each entry is a JSON object with keys:
         qid, category, question, expected_answer_contains, expected_sources, is_refusal_expected
 
-    Wave 0 stub: skipped because gold_set.jsonl contains only schema-stub entries.
-    Wave 5 populates the gold set and removes the skip so eval tests run.
+    Wave 5 populated the gold set with 13 real Swiggy DRHP entries.
     """
-    pytest.skip(reason="Wave 5 populates tests/eval/gold_set.jsonl and fills this fixture")
+    import json
+
+    gold_path = pathlib.Path(__file__).parent / "eval" / "gold_set.jsonl"
+    if not gold_path.exists():
+        pytest.skip(reason="tests/eval/gold_set.jsonl not found")
+    entries = [
+        json.loads(line)
+        for line in gold_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    return entries

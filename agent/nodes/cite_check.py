@@ -22,6 +22,8 @@ from rapidfuzz import fuzz
 from agent.policies import CITE_CHECK_SPAN_TOLERANCE_CHARS, CITE_CHECK_TOKEN_RATIO
 from agent.schemas import GroundedAnswer, RefusalResponse
 from agent.state import GraphState
+from app.observability.cite_check_metric import score_cite_check
+from app.observability.trace_decorators import attach_claim_ids_to_span
 
 
 # ---------------------------------------------------------------------------
@@ -202,6 +204,22 @@ def run(state: GraphState) -> GraphState:
             retrieved_chunks[chunk_id] = chunk_text
 
     all_grounded, failures = cite_check(grounded_answer, retrieved_chunks)
+
+    # Attach claim_ids to cite_check span (idempotent — ensures span carries them
+    # even if generate's span lost context; Phase 3 METHOD-01 consumer contract).
+    attach_claim_ids_to_span([c.claim_id for c in grounded_answer.claims])
+
+    # Log faithfulness_via_cite_check custom score to Langfuse.
+    per_claim_results = [
+        {"claim_id": c.claim_id, "grounded": c.claim_id not in " ".join(failures)}
+        for c in grounded_answer.claims
+    ]
+    trace_id = state.get("langfuse_trace_id", "")
+    score_cite_check(
+        trace_id=trace_id,
+        all_grounded=all_grounded,
+        per_claim_results=per_claim_results,
+    )
 
     updated = {
         **state,

@@ -21,6 +21,8 @@ from __future__ import annotations
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, StateGraph
 
+from app.observability.trace_decorators import build_callbacks_for_run
+
 from agent.nodes import (
     cite_check,
     decompose,
@@ -169,5 +171,26 @@ GRAPH = build_graph(MemorySaver())
 """Module-level compiled graph singleton.
 
 Used by agent.demo (Walking Skeleton CLI) and Wave 4 Streamlit app.
-Both callers do: from agent.graph import GRAPH; result = GRAPH.invoke(...)
+Both callers should prefer invoke_with_tracing() so Langfuse callbacks attach.
+Direct GRAPH.invoke() continues to work for unit tests (callbacks optional).
 """
+
+
+def invoke_with_tracing(state: dict, question: str) -> dict:
+    """Invoke GRAPH with Langfuse tracing callbacks attached.
+
+    This is the preferred call site for app.py and agent.demo.
+    When LANGFUSE_PUBLIC_KEY is unset, build_callbacks_for_run() returns []
+    and the call is equivalent to GRAPH.invoke(state) — no performance overhead.
+
+    Args:
+        state: Initial GraphState dict (must include 'question' key).
+        question: The user question string (used to label the Langfuse trace).
+
+    Returns:
+        Final GraphState dict from GRAPH.invoke().
+    """
+    callbacks = build_callbacks_for_run(question)
+    if callbacks:
+        return GRAPH.invoke(state, config={"callbacks": callbacks})
+    return GRAPH.invoke(state)

@@ -25,6 +25,7 @@ from agent.policies import (
     RELAXED_SEARCH_LIMIT,
     RELAXED_SEARCH_TOP_SECTIONS,
 )
+from app.observability.trace_decorators import attach_refusal_reason_to_trace
 from agent.schemas import RefusalResponse
 from agent.state import GraphState
 from storage.vector import search_relaxed
@@ -133,5 +134,8 @@ def run(state: GraphState) -> GraphState:
         explanation=message,
         reformulation_suggestions=suggestions,
     )
+
+    # Attach failure-mode taxonomy to Langfuse trace (no-op when disabled).
+    attach_refusal_reason_to_trace(reason)
 
     return {**state, "refusal": refusal}

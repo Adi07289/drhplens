@@ -22,6 +22,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 
 from agent.schemas import GroundedAnswer, RefusalResponse
 from agent.state import GraphState
+from app.observability.trace_decorators import attach_claim_ids_to_span
 
 
 # ---------------------------------------------------------------------------
@@ -203,6 +204,7 @@ def run(state: GraphState) -> GraphState:
     """
     try:
         grounded_answer = _call_llm_with_retry(state)
+        attach_claim_ids_to_span([c.claim_id for c in grounded_answer.claims])
         return {**state, "grounded_answer": grounded_answer}
     except Exception:
         # Graceful failure: infrastructure error → refusal path (no crash)
