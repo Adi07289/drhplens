@@ -139,7 +139,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation + MVP-A | 0/0 | Not started | - |
+| 1. Foundation + MVP-A | 1/6 | In Progress|  |
 | 2. Multi-IPO Catalogue + DRHP Snapshot | 0/0 | Not started | - |
 | 3. Structured Signal Extraction | 0/0 | Not started | - |
 | 4. Historical IPO Dataset + Peer Comparator + GMP | 0/0 | Not started | - |

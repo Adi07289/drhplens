@@ -9,7 +9,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Ingestion (DRHP/RHP pipeline)
 
-- [ ] **INGEST-01**: System ingests DRHP/RHP PDFs from SEBI/BSE/NSE archives for the covered IPOs
+- [x] **INGEST-01**: System ingests DRHP/RHP PDFs from SEBI/BSE/NSE archives for the covered IPOs
 - [ ] **INGEST-02**: System parses 300–500 page DRHPs including financial tables, risk-factor lists, and promoter sections (table extraction quality is measured, not assumed)
 - [ ] **INGEST-03**: System indexes parsed content into a vector store with section-aware chunking suitable for long financial documents
 
@@ -144,7 +144,7 @@ Which phases cover which requirements. Updated by roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INGEST-01 | Phase 1 | Pending |
+| INGEST-01 | Phase 1 | Complete |
 | INGEST-02 | Phase 1 | Pending |
 | INGEST-03 | Phase 1 | Pending |
 | SNAP-01 | Phase 2 | Pending |
