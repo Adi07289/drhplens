@@ -26,14 +26,22 @@ from __future__ import annotations
 
 import functools
 
-from sentence_transformers import SentenceTransformer
+# Attempt to import SentenceTransformer at module level so that tests can
+# patch 'tools.embedder.SentenceTransformer' at the module boundary.
+# When sentence-transformers is not installed (e.g. CI without heavy deps),
+# a sentinel None is placed here; tests must patch it before calling
+# get_embedder(), which is exactly what the unit tests do.
+try:
+    from sentence_transformers import SentenceTransformer
+except ImportError:  # pragma: no cover — present only in CI without torch
+    SentenceTransformer = None  # type: ignore[assignment,misc]
 
 MODEL_NAME = "BAAI/bge-m3"
 EMBEDDING_DIM = 1024
 
 
 @functools.lru_cache(maxsize=1)
-def get_embedder() -> SentenceTransformer:
+def get_embedder():  # type: ignore[return]
     """Return the cached SentenceTransformer model singleton.
 
     @functools.lru_cache ensures the model is loaded at most once per process.
@@ -44,6 +52,11 @@ def get_embedder() -> SentenceTransformer:
     because the offline ingest pipeline runs in a conda/x86 environment; the
     Streamlit app on HF Spaces also runs on CPU.
     """
+    if SentenceTransformer is None:
+        raise RuntimeError(
+            "sentence-transformers is not installed. "
+            "Run: pip install sentence-transformers"
+        )
     return SentenceTransformer(MODEL_NAME, device="cpu")
 
 
