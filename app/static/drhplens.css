@@ -1,0 +1,314 @@
+/*
+ * DRHPLens Global CSS — single source of styling truth.
+ * UI-SPEC FLAG-2: No scattered CSS. Every component class lives here.
+ * Any code that needs custom styles MUST add a rule here and reference it via class;
+ * NEVER inject inline <style> tags from other modules.
+ */
+
+/* ── Custom properties ──────────────────────────────────────────────────── */
+:root {
+  --drhp-accent:             #1E40AF;
+  --drhp-accent-hover:       #1E3A8A;
+  --drhp-text-primary:       #0F172A;
+  --drhp-text-muted:         #475569;
+  --drhp-border-subtle:      #E2E8F0;
+  --drhp-surface-secondary:  #F4F5F7;
+  --drhp-refusal-bg:         #FEF3C7;
+  --drhp-refusal-border:     #D97706;
+  --drhp-refusal-text:       #78350F;
+  --drhp-space-xs:           4px;
+  --drhp-space-sm:           8px;
+  --drhp-space-md:           16px;
+  --drhp-space-lg:           24px;
+  --drhp-space-xl:           32px;
+  --drhp-space-2xl:          48px;
+  --drhp-space-3xl:          64px;
+}
+
+/* ── Suppress Streamlit default footer ──────────────────────────────────── */
+/* UI-SPEC Streamlit-Specific Constraints */
+[data-testid="stFooter"] { display: none; }
+
+/* ── Typography helpers ─────────────────────────────────────────────────── */
+.drhp-hero-display {
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #0F172A;
+  margin: 0 0 16px 0;
+}
+
+.drhp-hero-subheading {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: #0F172A;
+  margin: 0 0 32px 0;
+}
+
+.drhp-hero-collapsed {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: #0F172A;
+  margin: 0 0 16px 0;
+}
+
+/* ── Citation chip ──────────────────────────────────────────────────────── */
+/* UI-SPEC Visuals §Citation Chip Contract */
+.drhp-cite {
+  font-size: 0.7em;
+  vertical-align: super;
+  font-weight: 600;
+  color: #FFFFFF;
+  background: #1E40AF;
+  padding: 1px 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  line-height: 1.0;
+  white-space: nowrap;
+  position: relative;
+}
+
+/* 44×44px transparent tap target — Apple HIG / WCAG 2.5.5 AAA */
+/* UI-SPEC Spacing §Touch targets */
+.drhp-cite::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.drhp-cite:hover {
+  background: #1E3A8A;
+  text-decoration: underline;
+}
+
+/* UI-SPEC Accessibility §Focus indicators — never outline: none without replacement */
+.drhp-cite:focus-visible {
+  outline: 2px solid #1E40AF;
+  outline-offset: 2px;
+}
+
+.drhp-cite:active,
+.drhp-cite[aria-expanded="true"] {
+  background: #1E3A8A;
+}
+
+/* ── Refusal banner ─────────────────────────────────────────────────────── */
+/* No destructive red — refusal posture is honest, not punitive (UI-SPEC §Color) */
+.drhp-refusal {
+  background: #FEF3C7;
+  border-left: 4px solid #D97706;
+  color: #78350F;
+  padding: 24px 16px;
+  border-radius: 8px;
+  max-width: 720px;
+}
+
+.drhp-refusal-heading {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 0 0 16px 0;
+  color: #78350F;
+}
+
+.drhp-refusal-body {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: #78350F;
+  margin: 0 0 16px 0;
+}
+
+/* ── Reformulation suggestion chip ─────────────────────────────────────── */
+/* UI-SPEC Refusal Banner content layout 3 + Mobile touch-target compliance */
+.drhp-suggest {
+  background: #F4F5F7;
+  color: #0F172A;
+  border: 1px solid #E2E8F0;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.drhp-suggest-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 16px 0;
+}
+
+/* ── Persistent footer ──────────────────────────────────────────────────── */
+/* UI-SPEC Disclaimer Surfaces §2 */
+.drhp-footer {
+  position: sticky;
+  bottom: 0;
+  background: #FFFFFF;
+  border-top: 1px solid #E2E8F0;
+  padding: 8px 16px;
+  min-height: 56px;
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.5;
+  z-index: 50;
+}
+
+.drhp-footer-link {
+  color: #1E40AF;
+  text-decoration: underline;
+}
+
+/* ── Per-answer disclaimer ──────────────────────────────────────────────── */
+/* UI-SPEC Disclaimer Surfaces §3 — 12px >= SEBI 10pt floor */
+.drhp-disclaimer-per-answer {
+  font-size: 12px;
+  font-style: italic;
+  color: #475569;
+  border-top: 1px solid #E2E8F0;
+  padding-top: 8px;
+  margin-top: 16px;
+}
+
+/* ── DRHP metadata header ───────────────────────────────────────────────── */
+/* UI-SPEC Information Architecture §2 */
+.drhp-metadata-header {
+  background: #F4F5F7;
+  padding: 24px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.drhp-metadata-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.drhp-metadata-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0F172A;
+}
+
+/* ── Content container ──────────────────────────────────────────────────── */
+.drhp-content {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* ── Source snippet (expander) ──────────────────────────────────────────── */
+.drhp-snippet {
+  font-size: 14px;
+  font-style: italic;
+  color: #475569;
+  line-height: 1.6;
+  border-left: 3px solid #E2E8F0;
+  padding-left: 12px;
+  margin: 8px 0;
+}
+
+.drhp-snippet-metadata {
+  font-size: 12px;
+  color: #475569;
+  margin-top: 8px;
+}
+
+/* ── Chat input focus ring ──────────────────────────────────────────────── */
+/* UI-SPEC IA §4 chat input on-focus accent ring */
+[data-testid="stChatInput"] textarea:focus {
+  outline: 2px solid #1E40AF;
+  outline-offset: 2px;
+}
+
+/* ── Modal ──────────────────────────────────────────────────────────────── */
+.drhp-modal {
+  padding: var(--drhp-space-lg);
+}
+
+/* ── Empty state ────────────────────────────────────────────────────────── */
+.drhp-empty-heading {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #475569;
+  margin: 0 0 8px 0;
+}
+
+/* ── Mobile media queries ───────────────────────────────────────────────── */
+/* UI-SPEC Mobile Responsive Contract — all four breakpoints present */
+
+/* Mobile S — < 375px */
+@media (max-width: 374px) {
+  .drhp-metadata-header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+  }
+  .drhp-modal {
+    padding: var(--drhp-space-lg);
+  }
+  .drhp-hero-display {
+    font-size: 22px;
+  }
+  .drhp-footer {
+    min-height: 56px;
+  }
+}
+
+/* Mobile L — 375–639px */
+@media (min-width: 375px) and (max-width: 639px) {
+  .drhp-metadata-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 16px;
+  }
+  .drhp-footer {
+    min-height: 56px;
+  }
+}
+
+/* Tablet — 640–1023px */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .drhp-content {
+    padding: 0 32px;
+  }
+  .drhp-footer {
+    min-height: 48px;
+  }
+}
+
+/* Desktop — 1024px+ */
+/* Footer goes static at desktop per UI-SPEC §Disclaimer Surfaces §2 */
+@media (min-width: 1024px) {
+  .drhp-content {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+  .drhp-footer {
+    min-height: 48px;
+    position: relative;
+  }
+}
+
+/* ── Accessibility: prefers-reduced-motion ──────────────────────────────── */
+/* UI-SPEC Accessibility §Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
