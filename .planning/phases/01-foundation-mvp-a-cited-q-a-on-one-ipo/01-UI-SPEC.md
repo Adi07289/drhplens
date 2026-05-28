@@ -80,22 +80,21 @@ Declared values (multiples of 4, 8-point scale). Applied via Streamlit's default
 
 ## Typography
 
-Three sizes, two weights. All px values in CSS reference rems via Streamlit defaults — values below are the resolved px on a default-zoom desktop and represent the contract.
+**Four sizes, two weights.** All px values in CSS reference rems via Streamlit defaults — values below are the resolved px on a default-zoom desktop and represent the contract.
 
 | Role | Size | Weight | Line Height | Used for |
 |------|------|--------|-------------|----------|
-| Body | 16px | 400 (regular) | 1.55 | Answer prose; refusal copy; modal body; methodology stub prose |
-| Label | 14px | 600 (semibold) | 1.4 | DRHP metadata header field labels ("Issue size", "Price band"); reformulation suggestion chip labels |
-| Heading | 20px | 600 (semibold) | 1.3 | Page heading ("Ask DRHPLens about Swiggy"); modal heading; per-section markers |
+| Small | 12px | 400 (regular) — italic variant for per-answer disclaimer | 1.5 | Persistent disclaimer footer (SEBI 10pt-equivalent floor; 12px ≈ 10.5pt on 1×, comfortably above the regulator minimum) AND per-answer disclaimer "Informational only — not advice" (italic variant). Both legal/contextual roles share this size — 1px hierarchy steps add no meaningful information. |
+| Body | 16px | 400 (regular) — 600 (semibold) variant for emphasis | 1.55 | Answer prose; refusal copy; modal body; methodology stub prose; DRHP metadata header label-value pairs (label uses semibold variant); reformulation suggestion chip labels (semibold for finger-friendly visual weight on tap targets). |
+| Heading | 20px | 600 (semibold) | 1.3 | Page heading ("Ask DRHPLens about Swiggy"); modal heading; per-section markers; empty-state heading; refusal-banner heading. |
 | Display | 28px | 600 (semibold) | 1.2 | Home page hero line + `/methodology` stub heading. Used at most once per page. |
-| Footer-meta | 12px | 400 (regular) | 1.5 | Persistent disclaimer footer (SEBI 10pt-equivalent floor; 12px ≈ 10.5pt on 1×, comfortably above the regulator minimum) |
-| Citation-chip number | 11px | 600 (semibold) | 1.0 | Superscript `[1]` chip number. Position: superscript via `vertical-align: super` and `font-size: 0.7em` relative to surrounding 16px body. |
-| Per-answer disclaimer | 13px | 400 (italic) | 1.5 | "Informational only — not advice" footer beneath each generated answer |
+
+**Derived (not a discrete scale size):** The citation chip number renders via `font-size: 0.7em` and `vertical-align: super` relative to the surrounding 16px body — this is implementation CSS for an inline annotation, not a standalone typographic role. See the Citation Chip Contract in Visuals for the full chip rendering spec.
 
 **Rules:**
-- Body line-height of 1.55 protects citation-chip baseline: even with superscript chips embedded mid-sentence, the line rhythm doesn't break because chip number is rendered at 0.7em with `vertical-align: super` and `line-height: 1.0`.
-- No font sizes outside this table. No italic except per-answer disclaimer. No underline except hover state on citation chips (see Visuals).
-- The DRHP metadata header avoids tabular-nums in Phase 1 — Indian-context numeric formatting is Phase 4 (UI-04). However, issue-size in the metadata header MAY use lakh/crore notation already if it's available in the hand-curated metadata block (low-effort win, matches mental model).
+- Body line-height of 1.55 protects citation-chip baseline: even with superscript chips embedded mid-sentence, the line rhythm doesn't break because the chip number is rendered at 0.7em with `vertical-align: super` and `line-height: 1.0`.
+- No font sizes outside the four declared roles. No italic except the per-answer disclaimer (Small italic variant). No underline except the hover state on citation chips (see Visuals).
+- The DRHP metadata header avoids tabular-nums in Phase 1 — full Indian-context numeric formatting is Phase 4 (UI-04). However, issue-size in the metadata header MAY use lakh/crore notation already if it's available in the hand-curated metadata block (low-effort win, matches the user's mental model).
 
 ---
 
@@ -127,7 +126,7 @@ Honesty-first palette: a neutral-trust system. **No green = good, no red = bad**
 
 **Contrast verification (planner must re-check after CSS):**
 - Body `#0F172A` on `#FFFFFF`: 17.4:1 (AAA)
-- Footer-meta `#475569` on `#FFFFFF`: 7.1:1 (AAA)
+- Small `#475569` on `#FFFFFF` (persistent footer + per-answer disclaimer): 7.1:1 (AAA)
 - Citation chip white text on `#1E40AF`: 8.6:1 (AAA)
 - Refusal banner text `#78350F` on `#FEF3C7`: 8.3:1 (AAA)
 
@@ -226,7 +225,7 @@ When the dual-gate refuses (retrieval-floor below threshold OR cite-check finds 
 1. Refusal heading line (heading 20px / 600): `This isn't in the DRHP.` — or, for multi-part partial-grounding: `The DRHP only addresses part of this.`
 2. Refusal body (body 16px / 400): the templated refusal copy from the Copywriting Contract above, with the topic and suggestions interpolated
 3. Reformulation suggestion chips (label 14px / 600): up to three clickable chips rendered as `Surface-secondary` background pills with `Text-primary` text and `Border-subtle` 1px border. Clicking a chip fills the question-input box with the suggested question (does NOT auto-submit — user retains agency)
-4. Per-answer disclaimer (13px italic muted): the same `Informational only — not advice.` footer that appears below grounded answers
+4. Per-answer disclaimer (Small 12px italic muted): the same `Informational only — not advice.` footer that appears below grounded answers
 
 **What NOT to do (anti-patterns):**
 - Do not use red. Red implies error or threat; a refusal is honest, not punitive.
@@ -266,11 +265,11 @@ Three surfaces, one source of truth (the `DisclaimerSurface` abstraction noted i
 - Renders inside the answer block, after the last citation-chip expander
 - Margin-top: `md` (16px) from the answer body
 - Separator: `1px` top border `#E2E8F0`, padding-top `sm` (8px) inside the border
-- Text: 13px italic `#475569`
+- Text: Small 12px italic `#475569`
 - Content: `Informational only — not advice.`
 - Does NOT render on the refusal banner — the refusal banner has its own per-answer footer baked into its structure
 
-**SEBI 10pt-equivalent verification:** 12px at default browser zoom = ~10.5pt. 13px = ~11.4pt. Both clear the SEBI Jan-2025 RA prominence floor. Persistent footer is sticky on mobile (always above the fold). Per-answer footer renders inline with every answer (always next to the content it qualifies). Verified.
+**SEBI 10pt-equivalent verification:** 12px at default browser zoom = ~10.5pt — comfortably above the SEBI Jan-2025 RA prominence floor. Both the persistent footer and the per-answer disclaimer render at the Small 12px tier, so both surfaces clear the regulator minimum identically. Persistent footer is sticky on mobile (always above the fold). Per-answer footer renders inline with every answer (always next to the content it qualifies). Verified.
 
 ---
 
@@ -278,15 +277,21 @@ Three surfaces, one source of truth (the `DisclaimerSurface` abstraction noted i
 
 Order on the single Phase 1 home-page-as-chat surface, top to bottom on mobile:
 
-1. **Hero block** (collapses to a single line after first question is asked):
+1. **Hero block — expanded state** (renders only on first session entry, before any question has been asked):
    - Display 28px heading: `Ask DRHPLens about Swiggy.`
    - Body 16px subheading: `One Indian IPO. One prospectus. Ask anything. Every answer cites the page it came from.`
+   - Spacing: `xl` (32px) below the subheading before the DRHP metadata header begins.
+1a. **Hero block — collapsed state** (replaces the expanded hero the moment the user submits their first question, persists for the rest of the session):
+   - A single line in Body 16px/400 left-aligned, neutral text color (`#0F172A`): `Ask DRHPLens about Swiggy.`
+   - Spacing: `md` (16px) below this line before the DRHP metadata header begins.
+   - The expanded subheading and the 28px Display heading are removed from the DOM (not just visually hidden) so the metadata header and chat history sit higher on the viewport.
+   - Transition: no animation in Phase 1 — instant swap on first message submit (a half-second crossfade is a `prefers-reduced-motion`-respecting Phase 6 polish item, not a Phase 1 deliverable).
 2. **DRHP metadata header** (Surface-secondary `#F4F5F7` background, `lg` padding, `8px` radius):
    - Single line on desktop, wrapping rows on mobile
-   - Label-value pairs (label 14px/600 muted; value 14px/600 primary): `Issuer · Swiggy Limited` · `Issue size · ₹11,327 cr` · `Listed · Nov 2024` · `DRHP source · SEBI` (the last is a link to the canonical SEBI-hosted PDF)
+   - Label-value pairs (label Body 16px/600 muted; value Body 16px/600 primary): `Issuer · Swiggy Limited` · `Issue size · ₹11,327 cr` · `Listed · Nov 2024` · `DRHP source · SEBI` (the last is a link to the canonical SEBI-hosted PDF)
    - Lakh/crore notation already in Phase 1 for issue size only (low-effort, matches mental model; full UI-04 lands in Phase 4)
 3. **Chat history** (renders only after first question):
-   - Each turn: question (right-aligned 14px/400 in a `Surface-secondary` rounded bubble) → answer (left-aligned 16px/400 prose with inline citation chips, citation expanders, per-answer disclaimer)
+   - Each turn: question (right-aligned Body 16px/400 in a `Surface-secondary` rounded bubble) → answer (left-aligned Body 16px/400 prose with inline citation chips, citation expanders, per-answer disclaimer)
    - History is session-scoped only — no persistence between page refreshes in Phase 1
 4. **Question input** (Streamlit `st.chat_input`):
    - Sticky at bottom on mobile (above the persistent footer)
@@ -294,7 +299,7 @@ Order on the single Phase 1 home-page-as-chat surface, top to bottom on mobile:
    - On focus: 2px accent-color ring
 5. **Empty state** (renders in the chat-history region before first question):
    - Heading 20px/600: `Nothing asked yet.`
-   - Three suggestion chips (label 14px/600, Surface-secondary background) showing example questions — clicking fills the input, does not auto-submit
+   - Three suggestion chips (label Body 16px/600, Surface-secondary background) showing example questions — clicking fills the input, does not auto-submit
 6. **Persistent footer** (fixed bottom, contract above)
 
 **Hidden until needed:** `/methodology` stub link is only in the footer (not in a header nav) — a header nav for a single-page app is bloat.
@@ -448,7 +453,7 @@ These hold across the UI and constrain every visual decision:
 - [ ] Dimension 1 Copywriting: PASS (CTA, empty, error, refusal, disclaimer copy all specified; banned-token-free verified)
 - [ ] Dimension 2 Visuals: PASS (citation chip, refusal banner, three disclaimer surfaces all specified with states)
 - [ ] Dimension 3 Color: PASS (60/30/10 split honored; accent reserved-for list explicit; no green/red coding; AAA contrast)
-- [ ] Dimension 4 Typography: PASS (3-4 sizes declared; 2 weights; SEBI 10pt-equivalent floor cleared)
+- [x] Dimension 4 Typography: PASS (4 sizes declared — Small 12, Body 16, Heading 20, Display 28; 2 weights; SEBI 10pt-equivalent floor cleared; citation chip is derived 0.7em CSS not a discrete scale size)
 - [ ] Dimension 5 Spacing: PASS (8-point scale; 44×44px touch-target exception declared)
 - [ ] Dimension 6 Registry Safety: PASS (not applicable — Streamlit project; recorded)
 
