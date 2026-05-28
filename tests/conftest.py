@@ -20,28 +20,39 @@ import pytest
 
 @pytest.fixture
 def fixture_synthetic_drhp_path() -> pathlib.Path:
-    """Return path to a tiny 5-page synthetic DRHP PDF used in integration tests.
+    """Return path to the tiny 5-page synthetic DRHP PDF used in integration tests.
 
-    The synthetic PDF is created by Wave 2 ingestion task at:
-        tests/fixtures/synthetic_drhp.pdf
-
-    Wave 0 stub: skipped because the file does not exist yet.
-    Wave 2 will create the fixture file and remove the skip.
+    The PDF is committed at tests/fixtures/synthetic_drhp.pdf.
+    Created by Wave 2 via pymupdf with 5 pages:
+      page 0: Cover Page (Swiggy Limited / Prospectus / SEBI)
+      page 1: Risk Factors
+      page 2: Issue Size
+      page 3: Promoter Background
+      page 4: Financial Statements
     """
-    pytest.skip(reason="Wave 2 creates tests/fixtures/synthetic_drhp.pdf and fills this fixture")
+    pdf_path = pathlib.Path(__file__).parent / "fixtures" / "synthetic_drhp.pdf"
+    if not pdf_path.exists():
+        pytest.skip(reason="tests/fixtures/synthetic_drhp.pdf not found — run Wave 2 setup")
+    return pdf_path
 
 
 @pytest.fixture
 def mock_qdrant_client():
     """Return an in-memory QdrantClient instance for unit/integration tests.
 
-    Uses qdrant-client's `:memory:` mode so tests do not require a live Qdrant server.
+    Uses qdrant-client's ':memory:' mode so tests do not require a live Qdrant server.
     Collection setup (create_collection, upsert) happens per-test as needed.
 
-    Wave 0 stub: skipped because qdrant-client is not installed yet.
-    Wave 2 will install qdrant-client and fill this fixture body.
+    Wave 2 implementation: uses QdrantClient(':memory:') for fully in-process testing.
     """
-    pytest.skip(reason="Wave 2 installs qdrant-client and wires the in-memory client fixture")
+    try:
+        from qdrant_client import QdrantClient
+    except ImportError:
+        pytest.skip(reason="qdrant-client not installed — install Wave 2 deps")
+
+    c = QdrantClient(":memory:")
+    yield c
+    c.close()
 
 
 @pytest.fixture
