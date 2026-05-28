@@ -1,23 +1,59 @@
 """
-Stub: eval test — Phase 1 gold-set evaluation (RAG-01, RAG-02, RAG-03, TRUST-04).
+Eval test — Phase 1 gold-set evaluation baseline.
 
-Validates the full gold-set baseline:
-- 10-15 hand-curated Q/A/source-span entries from tests/eval/gold_set.jsonl
-- Faithfulness, context recall@k, citation accuracy metrics computed via RAGAS
-- Numeric faithfulness: every numeric value in expected_answer_contains appears in the answer
+Gated by --run-eval CLI flag (requires live Qdrant + Gemini + all env vars).
+Invokes scripts/run_eval.py main logic and asserts the report is produced.
 
-Wave 5 owns this implementation (requires --run-eval flag; calls Gemini API).
+Phase 1 MEASURES but does NOT release-gate:
+  - Citation accuracy release gate: Phase 3 EVAL-03
+  - RAGAS faithfulness release gate: Phase 6 EVAL-01
+
+Usage:
+    pytest tests/eval/test_phase1_eval.py --run-eval
 """
 from __future__ import annotations
 
+import os
+import sys
+from pathlib import Path
+
 import pytest
 
-pytest.importorskip("ragas", reason="ragas and full gold set ship in Wave 5")
+# ---------------------------------------------------------------------------
+# Gate: skip unless --run-eval is passed
+# ---------------------------------------------------------------------------
+
+_RUN_EVAL = os.environ.get("RUN_EVAL") or any("--run-eval" in arg for arg in sys.argv)
+
+pytestmark = pytest.mark.skipif(
+    not _RUN_EVAL,
+    reason="eval suite requires --run-eval flag and live env vars (GEMINI_API_KEY, QDRANT_URL, QDRANT_API_KEY)",
+)
 
 
-@pytest.mark.xfail(reason="Wave 5 owns this — populates gold_set.jsonl and runs RAGAS evals", strict=False)
 @pytest.mark.eval
-def test_gold_set_numeric_faithfulness_baseline(gold_set) -> None:
-    """All gold-set numeric questions must produce answers where every expected number
-    appears verbatim. Baseline measurement establishes the Phase 3 release threshold."""
-    assert False, "Wave 5 must implement: run agent on gold_set, compute numeric faithfulness, record baseline"
+def test_phase1_eval_baseline(tmp_path) -> None:
+    """Run the full eval suite and assert the markdown report is produced.
+
+    Phase 1 baseline measurement: records citation accuracy, RAGAS faithfulness,
+    recall@5, and refusal correctness against the 13-entry gold set.
+    No metric thresholds are enforced at Phase 1 — this is a measurement run.
+    """
+    PROJECT_ROOT = Path(__file__).parent.parent.parent
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+    from scripts.run_eval import run_eval
+
+    report_path = run_eval(
+        gold_set_path="tests/eval/gold_set.jsonl",
+        output_dir=str(tmp_path),
+    )
+
+    assert report_path.exists(), f"Eval report not written: {report_path}"
+    content = report_path.read_text(encoding="utf-8")
+    assert "## Summary" in content, "Report missing Summary section"
+    assert "## Per-Entry Results" in content, "Report missing Per-Entry Results section"
+    assert "## Gold Set Statistics" in content, "Report missing Gold Set Statistics section"
+    assert "swiggy-001" in content or "factual" in content, "Report missing gold set data"
+    print(f"\nEval report: {report_path}")
+    print(f"Report size: {len(content)} chars")

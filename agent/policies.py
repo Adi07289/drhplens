@@ -35,10 +35,12 @@ RERANK_TOP_K: int = 5
 # Gate 1 — pre-LLM retrieval score floor (D-05)
 # ---------------------------------------------------------------------------
 
-GATE1_THRESHOLD: float = 0.0
+GATE1_THRESHOLD: float = 0.0  # Calibrated value pending: run scripts/calibrate_gate1.py against tests/eval/gold_set.jsonl (n=13), then update this line with recommended value + inline comment per RESEARCH Open Question 1 procedure
 """
-Reranker score threshold. Open Question 1: starts at 0.0 so any positive
-reranker score passes Gate 1. Wave 5 calibrates against the gold eval set.
+Reranker score threshold. Wave 5 default: 0.0 (any positive reranker score passes).
+Run `python scripts/calibrate_gate1.py` to sweep -2.0..+2.0 and obtain the
+calibrated value. Update this constant with the recommended value + inline comment.
+Example: GATE1_THRESHOLD: float = -0.5  # Calibrated 2026-05-28 against gold_set.jsonl (n=13), correct=11/13
 """
 
 # ---------------------------------------------------------------------------

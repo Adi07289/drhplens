@@ -1,0 +1,25 @@
+# OPTIONAL — copy this file to .github/workflows/ping.yml to enable.
+# This is Option B; Option A (cron-job.org free account) is more punctual.
+# GitHub Actions schedule cron has documented 5-15 min scheduling skew;
+# cron-job.org fires within seconds of the scheduled time (per RESEARCH §Pitfall 6).
+#
+# Step to enable Option B:
+#   1. Copy this file to .github/workflows/ping.yml
+#   2. Replace <user> below with your HF username
+#   3. Commit + push
+#   4. Enable Actions: repo Settings → Actions → General → Allow all actions
+name: HF Spaces Cold-Start Pinger
+on:
+  schedule:
+    - cron: "*/8 * * * *"   # every 8 min — under HF Spaces 30-min sleep threshold (sleep_time: 1800)
+  workflow_dispatch:
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping HF Space
+        run: |
+          # Replace <user> with your HF username before enabling
+          URL="https://huggingface.co/spaces/<user>/drhplens"
+          echo "Pinging $URL ..."
+          curl -s -o /dev/null -w "%{http_code}\n" -m 30 "$URL" || true
