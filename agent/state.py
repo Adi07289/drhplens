@@ -11,10 +11,10 @@ The graph conditional edges (in agent/graph.py) branch on:
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, TypedDict
+from typing import TYPE_CHECKING, Any, TypedDict
 
-if TYPE_CHECKING:
-    from agent.schemas import GroundedAnswer, RefusalResponse
+# Import schemas for runtime annotation resolution (LangGraph inspects annotations at build time)
+from agent.schemas import GroundedAnswer, RefusalResponse
 
 
 class GraphState(TypedDict):
@@ -45,9 +45,9 @@ class GraphState(TypedDict):
     gate1_passed: bool
     gate1_max_score: float
     sub_questions: list[str]
-    grounded_answer: "GroundedAnswer | None"
+    grounded_answer: GroundedAnswer | None
     scrub_passed: bool
     regenerate_attempts: int
     all_claims_grounded: bool
     cite_check_failures: list[str]
-    refusal: "RefusalResponse | None"
+    refusal: RefusalResponse | None
