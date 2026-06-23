@@ -22,6 +22,8 @@ class GraphState(TypedDict):
 
     Field contracts (locked for Wave 3 consumption):
     - question: raw user question from st.chat_input
+    - drhp_id: which IPO this query targets; defaults to DRHP_ID_DEFAULT via
+      intake when absent (Phase 2 back-compat anchor for the Phase 1 baseline)
     - retrieved_chunks: raw Qdrant payload dicts from the retrieve node;
       converted to RetrievedChunkRef at cite-check time
     - reranked_top_k: subset of retrieved_chunks after bge-reranker-v2-m3
@@ -40,6 +42,7 @@ class GraphState(TypedDict):
     """
 
     question: str
+    drhp_id: str
     retrieved_chunks: list[dict]
     reranked_top_k: list[dict]
     gate1_passed: bool

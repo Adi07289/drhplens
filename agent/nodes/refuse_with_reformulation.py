@@ -101,7 +101,7 @@ def run(state: GraphState) -> GraphState:
             qv = embed_query(state["question"])
             hits = search_relaxed(
                 query_vector=qv,
-                drhp_id=DRHP_ID_DEFAULT,
+                drhp_id=state.get("drhp_id") or DRHP_ID_DEFAULT,
                 limit=RELAXED_SEARCH_LIMIT,
             )
             suggestions = _top_unique_sections(hits, RELAXED_SEARCH_TOP_SECTIONS)
