@@ -3,18 +3,18 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-06-23T18:33:57.208Z"
+last_updated: "2026-06-23T18:43:06.260Z"
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 11
-  completed_plans: 7
-  percent: 17
+  completed_plans: 8
+  percent: 73
 ---
 
 # STATE: DRHPLens
 
-**Last Updated:** 2026-05-28
+**Last Updated:** 2026-06-23
 
 ## Project Reference
 
@@ -24,21 +24,21 @@ progress:
 
 **Audience:** Indian retail investors (mobile-first); secondary audience is the DS-recruiter reviewing the portfolio piece.
 
-**Current Focus:** Phase 1 — Foundation + MVP-A (Cited Q&A on One IPO).
+**Current Focus:** Phase 2 — Multi-IPO Catalogue + DRHP Snapshot Surface (Wave 1 complete: drhp_id threading + catalogue allow-list + 8-IPO catalogue.json).
 
 ## Current Position
 
-**Phase:** 1 of 6 — Foundation + MVP-A
-**Plan:** 4 of 06 complete (Wave 1: schemas + scrubber + disclaimer)
-**Status:** Ready to execute
-**Progress:** [██████░░░░] 64%
+**Phase:** 2 of 6 — Multi-IPO Catalogue + DRHP Snapshot Surface
+**Plan:** 02-02 of 02-05 complete (Wave 1: drhp_id threading + catalogue loader/allow-list + 8-IPO catalogue)
+**Status:** Ready to execute Wave 2 (02-03 ingest generalization)
+**Progress:** [███████░░░] 73% (8/11 plans complete)
 
 ## Phase Map
 
 | Phase | Name | Status |
 |-------|------|--------|
-| 1 | Foundation + MVP-A (Cited Q&A on One IPO) | Not started |
-| 2 | Multi-IPO Catalogue + DRHP Snapshot Surface | Not started |
+| 1 | Foundation + MVP-A (Cited Q&A on One IPO) | Complete |
+| 2 | Multi-IPO Catalogue + DRHP Snapshot Surface | In progress (Wave 1 of plans 02-01..02-05 done) |
 | 3 | Structured Signal Extraction (Red-Flag Table) | Not started |
 | 4 | Historical IPO Dataset + Peer Comparator + GMP Display | Not started |
 | 5 | Calibrated Listing-Day Forecaster | Not started |
@@ -100,6 +100,12 @@ progress:
 - Begin EDA notebooks for forecaster feature set during Phase 4 (concurrent prep for Phase 5)
 - Schedule SEBI legal-review checkpoint before Phase 6 public launch
 
+### Key Decisions (from Phase 2 Wave 1 / 02-02)
+
+- drhp_id defaults via intake.run (`state.get('drhp_id') or DRHP_ID_DEFAULT`) to preserve every Phase 1 call shape
+- V5 allow-list guard (is_known_drhp_id) lives inside retrieve.run, before search() — co-located with the boundary it protects
+- catalogue.json holds catalogue-level metadata only; no fabricated financials; source_sha256 stays null until Wave 2 ingest pins it per IPO
+
 ### Open Blockers
 
 None yet.
@@ -114,11 +120,11 @@ None yet.
 
 ### What I Was Doing
 
-Wave 1 (Plan 01-02) complete: Pydantic v2 schemas (agent/schemas.py + agent/state.py), deterministic banned-token scrubber (compliance/banned_tokens.py + compliance/scrubber.py), and DisclaimerSurface abstraction (compliance/disclaimer_text.py + ui/copy.py + ui/disclaimer.py). All 4 Wave 0 xfail stubs now green; 108 unit tests passing.
+Phase 2 Plan 02-02 (Wave 1) complete: threaded drhp_id through GraphState -> intake -> retrieve -> refuse_with_reformulation with a back-compat-preserving default; shipped data/catalogue_loader.py (Pydantic CatalogueIPO model + load_catalogue() + is_known_drhp_id() V5 allow-list); filled data/catalogue.json with all 8 curated IPOs. 3 xfail stubs flipped to 11 real passing tests. 237 unit tests passing (226 baseline + 11 new), 6 xfail remaining (Wave 2/3 stubs), 1 pre-existing ignorable embedder failure (missing sentence-transformers).
 
 ### Where to Resume
 
-Execute Plan 01-03 (Wave 2): Docling DRHP ingestion pipeline — parse Swiggy prospectus, section-aware chunking, bge-m3 embedding, Qdrant upsert.
+Execute Plan 02-03 (Wave 2): ingest generalization — pipelines/ingest_swiggy.py -> pipelines/ingest.py(drhp_id, pdf_path) parameterized, looped over data/catalogue.json's 8 entries. Requires live Qdrant + bge-m3/torch for the actual multi-IPO ingest (deferred dependency from Phase 1's INGEST_LATER.md).
 
 ### Files of Record
 
