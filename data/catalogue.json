@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "ipos": [
+    {
+      "drhp_id": "swiggy_2024_11",
+      "issuer": "Swiggy Limited",
+      "sector": "Food delivery",
+      "listing_date": "2024-11",
+      "issue_size_cr": 11327,
+      "doc_type": "Prospectus",
+      "fresh_vs_ofs": null,
+      "_fresh_vs_ofs_note": "Dead field per plan-checker WARN — kept nullable for schema compat. The real source of truth is the per-IPO snapshot's ofs_fresh field (data/snapshots/<drhp_id>.json), computed by the Wave 3 snapshot pipeline from the use-of-proceeds GroundedAnswer, not this catalogue field.",
+      "lead_managers": [],
+      "source_url": "https://www.sebi.gov.in/sebi_data/attachdocs/nov-2024/1731315962150.pdf",
+      "source_sha256": null,
+      "front_matter_pages": 20,
+      "snapshot_path": "data/snapshots/swiggy_2024_11.json",
+      "status": "listed"
+    }
+  ]
+}
