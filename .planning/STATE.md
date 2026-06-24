@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-last_updated: "2026-06-24T07:48:09.273Z"
+last_updated: "2026-06-24T08:13:25.986Z"
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 11
-  completed_plans: 9
+  completed_plans: 10
   percent: 17
 ---
 
@@ -31,7 +31,7 @@ progress:
 **Phase:** 2 of 6 — Multi-IPO Catalogue + DRHP Snapshot Surface
 **Plan:** 02-02 of 02-05 complete (Wave 1: drhp_id threading + catalogue loader/allow-list + 8-IPO catalogue)
 **Status:** Phase complete — ready for verification
-**Progress:** [████████░░] 82%
+**Progress:** [█████████░] 91%
 
 ## Phase Map
 
@@ -144,3 +144,9 @@ Execute Plan 02-03 (Wave 2): ingest generalization — pipelines/ingest_swiggy.p
 |-------|------|----------|-------|
 | Phase 01 P01 | 25min | 3 tasks | 48 files |
 | Phase 01 P02 | 45min | 3 tasks | 11 files; 108 unit tests passing |
+| Phase 02 P04 | 50m | 2 tasks | 9 files |
+
+## Decisions
+
+- [Phase ?]: compute_ofs_fresh uses percent-to-keyword proximity matching for robust OFS/fresh parsing
+- [Phase ?]: swiggy_2024_11.json snapshot seeded by hand (CODE-NOW placeholder), numerically self-consistent, flagged for live regeneration via the runbook
