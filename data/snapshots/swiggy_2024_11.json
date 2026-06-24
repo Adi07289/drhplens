@@ -1,0 +1,310 @@
+{
+  "drhp_id": "swiggy_2024_11",
+  "computed_at": "2026-06-23T00:00:00Z",
+  "_source_note": "CODE-NOW seed (02-04-PLAN.md Task 1). Hand-authored placeholder built from Swiggy's publicly known prospectus facts to exercise the SnapshotRecord round-trip and seed Wave 4 UI work. This is NOT the output of a live GRAPH.invoke() pre-compute run. The live precompute-all run (data/INGEST_ALL_LATER.md) REGENERATES this file from the real agent + real Qdrant once ingestion is live, and the claim_ids/spans below will be replaced.",
+  "fields": {
+    "metadata": {
+      "answer_prose": "Swiggy Limited's IPO had a price band of {{c_meta001}} per equity share, with a lot size of {{c_meta002}} equity shares. The issue comprised a fresh issue and an offer for sale, for a total issue size of {{c_meta003}}. The issue opened and closed in November 2024 {{c_meta004}}.",
+      "claims": [
+        {
+          "claim_id": "c_meta001",
+          "text": "price band of ₹371 to ₹390 per equity share",
+          "source_chunk_id": "chunk_seed_meta_01",
+          "drhp_page": 1,
+          "section": "The Issue",
+          "verbatim_span": "Price Band: ₹371 to ₹390 per Equity Share",
+          "span_offsets": [0, 38],
+          "sources": [
+            {
+              "chunk_id": "chunk_seed_meta_01",
+              "page_start": 1,
+              "page_end": 1,
+              "printed_page_label": "1",
+              "section": "The Issue",
+              "score": 0.95,
+              "verbatim_span": "Price Band: ₹371 to ₹390 per Equity Share",
+              "span_offsets": [0, 38]
+            }
+          ]
+        },
+        {
+          "claim_id": "c_meta002",
+          "text": "lot size of 38 equity shares",
+          "source_chunk_id": "chunk_seed_meta_02",
+          "drhp_page": 1,
+          "section": "The Issue",
+          "verbatim_span": "Minimum Bid Lot: 38 Equity Shares",
+          "span_offsets": [0, 33],
+          "sources": [
+            {
+              "chunk_id": "chunk_seed_meta_02",
+              "page_start": 1,
+              "page_end": 1,
+              "printed_page_label": "1",
+              "section": "The Issue",
+              "score": 0.93,
+              "verbatim_span": "Minimum Bid Lot: 38 Equity Shares",
+              "span_offsets": [0, 33]
+            }
+          ]
+        },
+        {
+          "claim_id": "c_meta003",
+          "text": "total issue size of approximately ₹11,327 crore",
+          "source_chunk_id": "chunk_seed_meta_03",
+          "drhp_page": 1,
+          "section": "The Issue",
+          "verbatim_span": "Total Issue Size: up to ₹11,327.43 crore",
+          "span_offsets": [0, 40],
+          "sources": [
+            {
+              "chunk_id": "chunk_seed_meta_03",
+              "page_start": 1,
+              "page_end": 1,
+              "printed_page_label": "1",
+              "section": "The Issue",
+              "score": 0.94,
+              "verbatim_span": "Total Issue Size: up to ₹11,327.43 crore",
+              "span_offsets": [0, 40]
+            }
+          ]
+        },
+        {
+          "claim_id": "c_meta004",
+          "text": "bidding opened November 6, 2024 and closed November 8, 2024",
+          "source_chunk_id": "chunk_seed_meta_04",
+          "drhp_page": 1,
+          "section": "General Information",
+          "verbatim_span": "Bid/Offer Opening Date: November 6, 2024; Bid/Offer Closing Date: November 8, 2024",
+          "span_offsets": [0, 83],
+          "sources": [
+            {
+              "chunk_id": "chunk_seed_meta_04",
+              "page_start": 2,
+              "page_end": 2,
+              "printed_page_label": "2",
+              "section": "General Information",
+              "score": 0.9,
+              "verbatim_span": "Bid/Offer Opening Date: November 6, 2024; Bid/Offer Closing Date: November 8, 2024",
+              "span_offsets": [0, 83]
+            }
+          ]
+        }
+      ],
+      "sub_question_addressed": [],
+      "sub_question_unaddressed": []
+    },
+    "business": {
+      "answer_prose": "Swiggy operates an on-demand convenience platform in India, connecting consumers, restaurant partners, and delivery partners {{c_biz001}}. Its core offerings span food delivery and quick-commerce grocery delivery under the Instamart brand {{c_biz002}}.",
+      "claims": [
+        {
+          "claim_id": "c_biz001",
+          "text": "on-demand convenience platform connecting consumers, restaurant partners, and delivery partners",
+          "source_chunk_id": "chunk_seed_biz_01",
+          "drhp_page": 120,
+          "section": "Our Business",
+          "verbatim_span": "We are a technology-led, on-demand convenience platform in India that connects consumers, restaurant partners and delivery partners.",
+          "span_offsets": [0, 133],
+          "sources": [
+            {
+              "chunk_id": "chunk_seed_biz_01",
+              "page_start": 120,
+              "page_end": 121,
+              "printed_page_label": "118",
+              "section": "Our Business",
+              "score": 0.91,
+              "verbatim_span": "We are a technology-led, on-demand convenience platform in India that connects consumers, restaurant partners and delivery partners.",
+              "span_offsets": [0, 133]
+            }
+          ]
+        },
+        {
+          "claim_id": "c_biz002",
+          "text": "food delivery and quick-commerce grocery delivery under the Instamart brand",
+          "source_chunk_id": "chunk_seed_biz_02",
+          "drhp_page": 121,
+          "section": "Our Business",
+          "verbatim_span": "Our principal business lines are food delivery and quick commerce, the latter operated under the Instamart brand.",
+          "span_offsets": [0, 115],
+          "sources": [
+            {
+              "chunk_id": "chunk_seed_biz_02",
+              "page_start": 121,
+              "page_end": 121,
+              "printed_page_label": "119",
+              "section": "Our Business",
+              "score": 0.89,
+              "verbatim_span": "Our principal business lines are food delivery and quick commerce, the latter operated under the Instamart brand.",
+              "span_offsets": [0, 115]
+            }
+          ]
+        }
+      ],
+      "sub_question_addressed": [],
+      "sub_question_unaddressed": []
+    },
+    "financials": {
+      "answer_prose": "Swiggy reported a net loss in the periods preceding the IPO {{c_fin001}}, with revenue from operations growing year-over-year {{c_fin002}}.",
+      "claims": [
+        {
+          "claim_id": "c_fin001",
+          "text": "net loss reported in restated financial statements for the periods preceding the IPO",
+          "source_chunk_id": "chunk_seed_fin_01",
+          "drhp_page": 280,
+          "section": "Restated Financial Statements",
+          "verbatim_span": "Restated loss for the period attributable to owners of the Company.",
+          "span_offsets": [0, 69],
+          "sources": [
+            {
+              "chunk_id": "chunk_seed_fin_01",
+              "page_start": 280,
+              "page_end": 282,
+              "printed_page_label": "278",
+              "section": "Restated Financial Statements",
+              "score": 0.87,
+              "verbatim_span": "Restated loss for the period attributable to owners of the Company.",
+              "span_offsets": [0, 69]
+            }
+          ]
+        },
+        {
+          "claim_id": "c_fin002",
+          "text": "revenue from operations grew year-over-year across the restated periods",
+          "source_chunk_id": "chunk_seed_fin_02",
+          "drhp_page": 281,
+          "section": "Restated Financial Statements",
+          "verbatim_span": "Revenue from operations increased across the restated fiscal years presented.",
+          "span_offsets": [0, 79],
+          "sources": [
+            {
+              "chunk_id": "chunk_seed_fin_02",
+              "page_start": 281,
+              "page_end": 281,
+              "printed_page_label": "279",
+              "section": "Restated Financial Statements",
+              "score": 0.86,
+              "verbatim_span": "Revenue from operations increased across the restated fiscal years presented.",
+              "span_offsets": [0, 79]
+            }
+          ]
+        }
+      ],
+      "sub_question_addressed": [],
+      "sub_question_unaddressed": []
+    },
+    "risks": {
+      "answer_prose": "Swiggy's DRHP discloses that the company has a history of net losses and may continue to incur losses {{c_risk001}}, and operates in a highly competitive food-delivery and quick-commerce market {{c_risk002}}.",
+      "claims": [
+        {
+          "claim_id": "c_risk001",
+          "text": "history of net losses; may continue to incur losses",
+          "source_chunk_id": "chunk_seed_risk_01",
+          "drhp_page": 45,
+          "section": "Risk Factors",
+          "verbatim_span": "We have a history of net losses, and we may not achieve or sustain profitability in the future.",
+          "span_offsets": [0, 96],
+          "sources": [
+            {
+              "chunk_id": "chunk_seed_risk_01",
+              "page_start": 45,
+              "page_end": 45,
+              "printed_page_label": "43",
+              "section": "Risk Factors",
+              "score": 0.92,
+              "verbatim_span": "We have a history of net losses, and we may not achieve or sustain profitability in the future.",
+              "span_offsets": [0, 96]
+            }
+          ]
+        },
+        {
+          "claim_id": "c_risk002",
+          "text": "highly competitive food-delivery and quick-commerce market",
+          "source_chunk_id": "chunk_seed_risk_02",
+          "drhp_page": 47,
+          "section": "Risk Factors",
+          "verbatim_span": "We face significant competition in the food delivery and quick commerce industries in India.",
+          "span_offsets": [0, 94],
+          "sources": [
+            {
+              "chunk_id": "chunk_seed_risk_02",
+              "page_start": 47,
+              "page_end": 47,
+              "printed_page_label": "45",
+              "section": "Risk Factors",
+              "score": 0.88,
+              "verbatim_span": "We face significant competition in the food delivery and quick commerce industries in India.",
+              "span_offsets": [0, 94]
+            }
+          ]
+        }
+      ],
+      "sub_question_addressed": [],
+      "sub_question_unaddressed": []
+    },
+    "use_of_proceeds": {
+      "answer_prose": "Of the total issue, the fresh-issue proceeds are proposed to be used for investment in subsidiaries for expansion of the dark-store network, investment in technology and cloud infrastructure, brand marketing and business promotion, and general corporate purposes {{c_ofs001}}. The offer also includes an offer for sale by existing selling shareholders {{c_ofs002}}.",
+      "claims": [
+        {
+          "claim_id": "c_ofs001",
+          "text": "fresh-issue proceeds for dark-store expansion, technology/cloud infrastructure, brand marketing, and general corporate purposes",
+          "source_chunk_id": "chunk_seed_ofs_01",
+          "drhp_page": 95,
+          "section": "Objects of the Offer",
+          "verbatim_span": "The Net Proceeds are proposed to be utilised towards investment in certain of our Subsidiaries for expansion of our dark stores network, investment in technology and cloud infrastructure, brand marketing and business promotion, and general corporate purposes.",
+          "span_offsets": [0, 261],
+          "sources": [
+            {
+              "chunk_id": "chunk_seed_ofs_01",
+              "page_start": 95,
+              "page_end": 96,
+              "printed_page_label": "93",
+              "section": "Objects of the Offer",
+              "score": 0.93,
+              "verbatim_span": "The Net Proceeds are proposed to be utilised towards investment in certain of our Subsidiaries for expansion of our dark stores network, investment in technology and cloud infrastructure, brand marketing and business promotion, and general corporate purposes.",
+              "span_offsets": [0, 261]
+            }
+          ]
+        },
+        {
+          "claim_id": "c_ofs002",
+          "text": "offer includes an offer for sale by existing selling shareholders",
+          "source_chunk_id": "chunk_seed_ofs_02",
+          "drhp_page": 1,
+          "section": "The Issue",
+          "verbatim_span": "The Offer comprises a Fresh Issue and an Offer for Sale by the Selling Shareholders.",
+          "span_offsets": [0, 85],
+          "sources": [
+            {
+              "chunk_id": "chunk_seed_ofs_02",
+              "page_start": 1,
+              "page_end": 1,
+              "printed_page_label": "1",
+              "section": "The Issue",
+              "score": 0.9,
+              "verbatim_span": "The Offer comprises a Fresh Issue and an Offer for Sale by the Selling Shareholders.",
+              "span_offsets": [0, 85]
+            }
+          ]
+        }
+      ],
+      "sub_question_addressed": [],
+      "sub_question_unaddressed": []
+    },
+    "promoter": {
+      "refusal": {
+        "reason": "unsupported_claim",
+        "explanation": "This DRHP/Prospectus does not disclose any promoter shareholding pledge. Swiggy is professionally managed and the filing does not identify a promoter or promoter group with pledged shareholding, so no pledging figure can be honestly cited here.",
+        "reformulation_suggestions": [
+          "Who are Swiggy's key managerial personnel?",
+          "What is Swiggy's pre-issue and post-issue shareholding pattern?",
+          "Are there any outstanding litigations involving Swiggy's directors?"
+        ]
+      }
+    }
+  },
+  "ofs_fresh": {
+    "ofs_pct": 41.0,
+    "fresh_pct": 59.0,
+    "source_claim_id": "c_ofs002"
+  }
+}
