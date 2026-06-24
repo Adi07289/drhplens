@@ -15,13 +15,13 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Snapshot (Per-IPO summary surface)
 
-- [ ] **SNAP-01**: User can browse the list of covered Indian mainboard IPOs (recent + currently-open)
-- [ ] **SNAP-02**: User sees per-IPO metadata — price band, lot size, dates, issue size, fresh-issue vs OFS split, lead managers
-- [ ] **SNAP-03**: User sees a plain-English business-model summary, with DRHP citation
-- [ ] **SNAP-04**: User sees a key-financials snapshot (3–5 year revenue, profit, margins, debt, ROE, ROCE) extracted from DRHP restated financial statements
-- [ ] **SNAP-05**: User sees a prioritized risk-factors summary, each cluster citing original DRHP risk text
-- [ ] **SNAP-06**: User sees a use-of-proceeds breakdown with OFS-vs-fresh-issue percentage highlighted
-- [ ] **SNAP-07**: User sees a promoter / management section (names, pre/post holdings, pledging status, prior matters) with citations
+- [x] **SNAP-01**: User can browse the list of covered Indian mainboard IPOs (recent + currently-open)
+- [x] **SNAP-02**: User sees per-IPO metadata — price band, lot size, dates, issue size, fresh-issue vs OFS split, lead managers
+- [x] **SNAP-03**: User sees a plain-English business-model summary, with DRHP citation
+- [x] **SNAP-04**: User sees a key-financials snapshot (3–5 year revenue, profit, margins, debt, ROE, ROCE) extracted from DRHP restated financial statements
+- [x] **SNAP-05**: User sees a prioritized risk-factors summary, each cluster citing original DRHP risk text
+- [x] **SNAP-06**: User sees a use-of-proceeds breakdown with OFS-vs-fresh-issue percentage highlighted
+- [x] **SNAP-07**: User sees a promoter / management section (names, pre/post holdings, pledging status, prior matters) with citations
 
 ### RAG (Q&A with Citations)
 
@@ -78,7 +78,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Ops (Coverage & Deployment)
 
-- [ ] **OPS-01**: v1 covers 5–10 recent mainboard IPOs and 1–2 currently-open mainboard IPOs
+- [x] **OPS-01**: v1 covers 5–10 recent mainboard IPOs and 1–2 currently-open mainboard IPOs
 - [ ] **OPS-02**: App is publicly deployed on a free-tier host (e.g., Hugging Face Spaces) and accessible via URL
 - [ ] **OPS-03**: Repo is portfolio-presentable — README, methodology writeup, model card, failure gallery, eval dashboards committed
 
@@ -147,13 +147,13 @@ Which phases cover which requirements. Updated by roadmap creation.
 | INGEST-01 | Phase 1 | Complete |
 | INGEST-02 | Phase 1 | Code-complete (upsert pending) |
 | INGEST-03 | Phase 1 | Code-complete (upsert pending) |
-| SNAP-01 | Phase 2 | Pending |
-| SNAP-02 | Phase 2 | Pending |
-| SNAP-03 | Phase 2 | Pending |
-| SNAP-04 | Phase 2 | Pending |
-| SNAP-05 | Phase 2 | Pending |
-| SNAP-06 | Phase 2 | Pending |
-| SNAP-07 | Phase 2 | Pending |
+| SNAP-01 | Phase 2 | Complete |
+| SNAP-02 | Phase 2 | Complete |
+| SNAP-03 | Phase 2 | Complete |
+| SNAP-04 | Phase 2 | Complete |
+| SNAP-05 | Phase 2 | Complete |
+| SNAP-06 | Phase 2 | Complete |
+| SNAP-07 | Phase 2 | Complete |
 | RAG-01 | Phase 1 | Pending |
 | RAG-02 | Phase 1 | Pending |
 | RAG-03 | Phase 1 | Pending |
@@ -183,7 +183,7 @@ Which phases cover which requirements. Updated by roadmap creation.
 | UI-02 | Phase 1 | Complete |
 | UI-03 | Phase 5 | Pending |
 | UI-04 | Phase 4 | Pending |
-| OPS-01 | Phase 2 | Pending |
+| OPS-01 | Phase 2 | Complete |
 | OPS-02 | Phase 1 | Pending |
 | OPS-03 | Phase 6 | Pending |
 | METHOD-01 | Phase 3 | Pending |
