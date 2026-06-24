@@ -89,11 +89,23 @@ if ! echo "$METH_BODY" | grep -qi 'DOCTYPE\|html'; then
   exit 1
 fi
 
+echo "Checking /snapshot?drhp_id=swiggy_2024_11 page..."
+SNAPSHOT_BODY=$(curl -sf "http://127.0.0.1:$PORT/snapshot?drhp_id=swiggy_2024_11")
+# Phase 2 Wave 4 (02-05-PLAN.md Task 2): the snapshot page must boot for the
+# seeded swiggy_2024_11 IPO. Same shell-HTML-only assertion pattern as the
+# /methodology probe above — a deeper interactive check is a Phase 6 item.
+if ! echo "$SNAPSHOT_BODY" | grep -qi 'DOCTYPE\|html'; then
+  echo "FAIL: /snapshot?drhp_id=swiggy_2024_11 did not return valid HTML."
+  echo "--- HTML head ---"
+  echo "$SNAPSHOT_BODY" | head -50
+  exit 1
+fi
+
 echo "Checking /healthz endpoint..."
 # Streamlit 1.45+ exposes /_stcore/health
 if curl -sf "http://127.0.0.1:$PORT/_stcore/health" -o /dev/null 2>/dev/null; then
   echo "Health endpoint: OK"
 fi
 
-echo "PASS: Streamlit boots; home + /methodology both return 200 with expected copy."
+echo "PASS: Streamlit boots; home + /methodology + /snapshot all return 200 with expected copy."
 exit 0
