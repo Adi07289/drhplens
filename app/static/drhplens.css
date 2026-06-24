@@ -277,6 +277,14 @@
   }
 }
 
+/* Mobile S/L — split-bar segment labels drop when too narrow to read */
+@media (max-width: 639px) {
+  .drhp-split-bar-ofs span,
+  .drhp-split-bar-fresh span {
+    font-size: 11px;
+  }
+}
+
 /* Tablet — 640–1023px */
 @media (min-width: 640px) and (max-width: 1023px) {
   .drhp-content {
@@ -299,6 +307,208 @@
     min-height: 48px;
     position: relative;
   }
+}
+
+/* ── Phase 2 — Catalogue grid + IPO card ─────────────────────────────────── */
+/* 02-UI-SPEC.md §IA Catalogue Page. Cards are factual only — NO color verdict,
+   NO listing-gain badge. A winner and a flop must be visually identical. */
+.drhp-catalogue-grid {
+  margin-top: var(--drhp-space-xl);
+}
+
+.drhp-ipo-card {
+  display: block;
+  background: #FFFFFF;
+  border: 1px solid var(--drhp-border-subtle);
+  border-radius: 8px;
+  padding: var(--drhp-space-lg);
+  min-height: 88px;
+  margin-bottom: var(--drhp-space-md);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.drhp-ipo-card:hover,
+.drhp-ipo-card:active {
+  background: var(--drhp-surface-secondary);
+}
+
+.drhp-ipo-card:focus-visible {
+  outline: 2px solid var(--drhp-accent);
+  outline-offset: 2px;
+}
+
+.drhp-ipo-card-issuer {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--drhp-text-primary);
+  margin-bottom: var(--drhp-space-sm);
+}
+
+.drhp-ipo-card-sector {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--drhp-text-muted);
+  margin-bottom: var(--drhp-space-xs);
+}
+
+.drhp-ipo-card-meta {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--drhp-text-muted);
+}
+
+.drhp-ipo-card-open-tag {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--drhp-text-muted);
+  margin-bottom: var(--drhp-space-sm);
+}
+
+/* ── Phase 2 — Snapshot page blocks ──────────────────────────────────────── */
+/* 02-UI-SPEC.md §IA Snapshot Page. All 6 blocks share identical chrome. */
+.drhp-breadcrumb {
+  font-size: 12px;
+  color: var(--drhp-text-muted);
+  margin-bottom: var(--drhp-space-lg);
+}
+
+.drhp-breadcrumb a {
+  color: var(--drhp-accent);
+  text-decoration: underline;
+}
+
+.drhp-snapshot-block {
+  background: #FFFFFF;
+  border: 1px solid var(--drhp-border-subtle);
+  border-radius: 8px;
+  padding: var(--drhp-space-lg);
+  margin-bottom: var(--drhp-space-xl);
+}
+
+.drhp-snapshot-block-heading {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--drhp-text-primary);
+  margin: 0 0 var(--drhp-space-md) 0;
+}
+
+/* ── Phase 2 — OFS-vs-fresh split bar (THE Phase 2 signal element) ──────── */
+/* 02-UI-SPEC.md §Split-Bar Contract. NO red/green. Accent = OFS, neutral = fresh. */
+.drhp-split-bar-caption {
+  font-size: 12px;
+  color: var(--drhp-text-muted);
+  margin-bottom: var(--drhp-space-sm);
+}
+
+.drhp-split-bar {
+  display: flex;
+  width: 100%;
+  height: 28px;
+  border: 1px solid var(--drhp-border-subtle);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: var(--drhp-space-md) 0;
+}
+
+.drhp-split-bar-ofs {
+  background: var(--drhp-accent);
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.drhp-split-bar-fresh {
+  background: var(--drhp-surface-secondary);
+  color: var(--drhp-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  overflow: hidden;
+  border-left: 1px solid var(--drhp-border-subtle);
+}
+
+/* ── Phase 2 — Financials table ──────────────────────────────────────────── */
+/* 02-UI-SPEC.md §Financials Rendering. Losses render in parentheses, SAME
+   text color as profits — no red for losses. */
+.drhp-fin-table-wrap {
+  overflow-x: auto;
+}
+
+.drhp-fin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.drhp-fin-table th,
+.drhp-fin-table td {
+  padding: var(--drhp-space-sm) var(--drhp-space-md);
+  text-align: right;
+  border-bottom: 1px solid var(--drhp-border-subtle);
+}
+
+.drhp-fin-table th:first-child,
+.drhp-fin-table td:first-child {
+  text-align: left;
+  position: sticky;
+  left: 0;
+  background: #FFFFFF;
+}
+
+.drhp-fin-table thead th {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--drhp-text-muted);
+  background: var(--drhp-surface-secondary);
+}
+
+.drhp-fin-table tbody th {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--drhp-text-muted);
+}
+
+.drhp-fin-table td {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--drhp-text-primary);
+}
+
+.drhp-fin-table tbody tr:nth-child(even) {
+  background: var(--drhp-surface-secondary);
+}
+
+/* ── Phase 2 — Risk item ─────────────────────────────────────────────────── */
+.drhp-risk-item {
+  margin-bottom: var(--drhp-space-md);
+}
+
+.drhp-risk-item-counter {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--drhp-text-muted);
+  margin-bottom: var(--drhp-space-xs);
+}
+
+/* ── Phase 2 — Not-disclosed honesty note ────────────────────────────────── */
+/* P2-L8: absence shown as absence, never a fabricated value. */
+.drhp-not-disclosed {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--drhp-text-muted);
+  font-style: italic;
 }
 
 /* ── Accessibility: prefers-reduced-motion ──────────────────────────────── */
