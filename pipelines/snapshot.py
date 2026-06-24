@@ -206,20 +206,50 @@ def compute_ofs_fresh(field) -> dict | None:
     text_blobs.extend((claim.claim_id, claim.text) for claim in field.claims)
     text_blobs.extend((claim.claim_id, claim.verbatim_span) for claim in field.claims)
 
-    ofs_pattern = re.compile(r"(\d{1,3}(?:\.\d+)?)\s*%[^.]*?\bOFS\b|\bOFS\b[^.]*?(\d{1,3}(?:\.\d+)?)\s*%", re.IGNORECASE)
-    fresh_pattern = re.compile(r"(\d{1,3}(?:\.\d+)?)\s*%[^.]*?\bfresh\b|\bfresh\b[^.]*?(\d{1,3}(?:\.\d+)?)\s*%", re.IGNORECASE)
+    pct_pattern = re.compile(r"(\d{1,3}(?:\.\d+)?)\s*%")
+    ofs_kw_pattern = re.compile(r"\bOFS\b|\boffer\s+for\s+sale\b", re.IGNORECASE)
+    fresh_kw_pattern = re.compile(r"\bfresh\b", re.IGNORECASE)
+    # Keyword must be within this many characters of the "%" to be considered
+    # its label (keeps "100% fresh issue, no OFS" from misattributing the
+    # number to the farther keyword).
+    PROXIMITY_WINDOW = 20
 
     for claim_id, blob in text_blobs:
-        if ofs_pct is None:
-            m = ofs_pattern.search(blob)
-            if m:
-                ofs_pct = float(m.group(1) or m.group(2))
-                source_claim_id = source_claim_id or claim_id
-        if fresh_pct is None:
-            m = fresh_pattern.search(blob)
-            if m:
-                fresh_pct = float(m.group(1) or m.group(2))
-                source_claim_id = source_claim_id or claim_id
+        for pct_match in pct_pattern.finditer(blob):
+            value = float(pct_match.group(1))
+            pct_start, pct_end = pct_match.span()
+
+            window_start = max(0, pct_start - PROXIMITY_WINDOW)
+            window_end = min(len(blob), pct_end + PROXIMITY_WINDOW)
+            window = blob[window_start:window_end]
+            window_pct_start = pct_start - window_start
+
+            ofs_dist = None
+            for kw in ofs_kw_pattern.finditer(window):
+                dist = min(abs(kw.start() - window_pct_start), abs(kw.end() - window_pct_start))
+                ofs_dist = dist if ofs_dist is None else min(ofs_dist, dist)
+
+            fresh_dist = None
+            for kw in fresh_kw_pattern.finditer(window):
+                dist = min(abs(kw.start() - window_pct_start), abs(kw.end() - window_pct_start))
+                fresh_dist = dist if fresh_dist is None else min(fresh_dist, dist)
+
+            if ofs_dist is None and fresh_dist is None:
+                continue
+
+            if fresh_dist is None or (ofs_dist is not None and ofs_dist < fresh_dist):
+                if ofs_pct is None:
+                    ofs_pct = value
+                    source_claim_id = source_claim_id or claim_id
+            elif ofs_dist is None or fresh_dist < ofs_dist:
+                if fresh_pct is None:
+                    fresh_pct = value
+                    source_claim_id = source_claim_id or claim_id
+
+            if ofs_pct is not None and fresh_pct is not None:
+                break
+        if ofs_pct is not None and fresh_pct is not None:
+            break
 
     # Honest single-sided disclosures (D2-06 / RESEARCH §Section Conventions):
     # "100% OFS" or "entirely an offer for sale" -> fresh is 0, and vice versa.

@@ -122,7 +122,7 @@ every IPO's `source_sha256` (Step 1), update `data/catalogue.json` to record
 the real, confirmed values — this file is reviewed in PRs and treated as
 trusted config (T-02-02), so getting the provenance right here matters.
 
-## What this runbook intentionally does NOT do
+## What this runbook intentionally does NOT do (Wave 2 scope)
 
 - Does not download any DRHP/RHP/Prospectus PDF (network step, deferred).
 - Does not start or require a live Qdrant daemon during Wave 2 execution.
@@ -133,3 +133,66 @@ trusted config (T-02-02), so getting the provenance right here matters.
 All ingestion *logic* (parameterization, idempotency, parse-quality gate) is
 implemented and unit-tested with a mocked Qdrant client + mocked embedder in
 Wave 2. This file is the bridge from "code complete" to "data live."
+
+---
+
+## Step 5 — Snapshot pre-compute (Wave 3 → runbook, after live ingest)
+
+Wave 3 (`02-04-PLAN.md`) added `pipelines/snapshot.py::precompute(drhp_id)` +
+`pipelines/snapshot_queries.py::SNAPSHOT_QUERIES` + `agent/snapshot_schema.py`.
+`precompute()` runs the EXISTING compiled agent (`agent.graph.GRAPH`) 6x per
+IPO with the 6 canned snapshot queries — no new LLM path. This is **fully
+unit-tested with a monkeypatched `GRAPH.invoke`** in Wave 3
+(`tests/unit/test_snapshot_fields.py`, `test_ofs_fresh.py`,
+`test_snapshot_cache.py`) — no live Gemini/Groq call and no live Qdrant query
+happened during Wave 3 execution (CODE-NOW-DEFER).
+
+`data/snapshots/swiggy_2024_11.json` currently contains a **hand-authored
+CODE-NOW seed** (see its `_source_note` field) — built to exercise the
+SnapshotRecord round-trip and to give Wave 4's catalogue + snapshot UI
+something real to render before live ingestion exists. It is NOT the output
+of a live agent run and MUST be regenerated once Step 1-4 above have actually
+been run for real.
+
+Once live ingestion (Steps 0-4) has completed for some or all of the 8
+catalogue IPOs, regenerate every snapshot from the real agent + real Qdrant:
+
+```bash
+# Dry-run sanity check is not applicable here (precompute always calls the
+# live agent — there is no dry-run mode, since SNAP fields ARE the agent's
+# real cited output). Pre-compute a single IPO first to spot-check quality:
+python -m pipelines.snapshot precompute-one swiggy_2024_11
+
+# Spot-check the financials field by hand before committing (P2 — the
+# financials snapshot is the single highest hallucination-risk field; the
+# existing cite-check gates fabricated numbers, but a right-number/wrong-
+# fiscal-year mistake can still pass cite-check, per RESEARCH §Pitfall P2
+# carry-over). Open data/snapshots/swiggy_2024_11.json and read the
+# financials.claims[].verbatim_span against the source DRHP page by hand.
+
+# Then loop over the full catalogue (failure-isolated per IPO, mirrors
+# pipelines.ingest.ingest_all's posture):
+python -m pipelines.snapshot precompute-all
+```
+
+After `precompute-all` completes:
+
+```bash
+# Confirm every IPO's snapshot file exists and round-trips:
+python -c "
+from data.catalogue_loader import load_catalogue
+from pipelines.snapshot import load_snapshot
+for ipo in load_catalogue():
+    record = load_snapshot(ipo.drhp_id)
+    print(ipo.drhp_id, list(record.fields.keys()), record.ofs_fresh)
+"
+```
+
+**What this step intentionally does NOT do until run for real:**
+- Does not call Gemini/Groq or query live Qdrant during Wave 3 execution.
+- Does not regenerate `data/snapshots/swiggy_2024_11.json` from its CODE-NOW
+  hand-authored seed — that only happens when `precompute-one swiggy_2024_11`
+  (or `precompute-all`) is actually run against live infra.
+- Does not mark SNAP-02..07 requirements "Complete" — they remain pending
+  until the live 6x8 pre-compute run has produced real, agent-grounded
+  snapshots for the catalogue (per 02-04-PLAN.md constraint 7).

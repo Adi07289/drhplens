@@ -242,7 +242,7 @@
       "sub_question_unaddressed": []
     },
     "use_of_proceeds": {
-      "answer_prose": "Of the total issue, the fresh-issue proceeds are proposed to be used for investment in subsidiaries for expansion of the dark-store network, investment in technology and cloud infrastructure, brand marketing and business promotion, and general corporate purposes {{c_ofs001}}. The offer also includes an offer for sale by existing selling shareholders {{c_ofs002}}.",
+      "answer_prose": "Of the total issue, the fresh-issue proceeds are proposed to be used for investment in subsidiaries for expansion of the dark-store network, investment in technology and cloud infrastructure, brand marketing and business promotion, and general corporate purposes {{c_ofs001}}. The offer is approximately 59% fresh issue and 41% offer for sale by existing selling shareholders {{c_ofs002}}.",
       "claims": [
         {
           "claim_id": "c_ofs001",
@@ -267,12 +267,12 @@
         },
         {
           "claim_id": "c_ofs002",
-          "text": "offer includes an offer for sale by existing selling shareholders",
+          "text": "the offer is approximately 59% fresh issue and 41% offer for sale",
           "source_chunk_id": "chunk_seed_ofs_02",
           "drhp_page": 1,
           "section": "The Issue",
-          "verbatim_span": "The Offer comprises a Fresh Issue and an Offer for Sale by the Selling Shareholders.",
-          "span_offsets": [0, 85],
+          "verbatim_span": "The Offer comprises a Fresh Issue of approximately 59% and an Offer for Sale of approximately 41% by the Selling Shareholders.",
+          "span_offsets": [0, 127],
           "sources": [
             {
               "chunk_id": "chunk_seed_ofs_02",
@@ -281,8 +281,8 @@
               "printed_page_label": "1",
               "section": "The Issue",
               "score": 0.9,
-              "verbatim_span": "The Offer comprises a Fresh Issue and an Offer for Sale by the Selling Shareholders.",
-              "span_offsets": [0, 85]
+              "verbatim_span": "The Offer comprises a Fresh Issue of approximately 59% and an Offer for Sale of approximately 41% by the Selling Shareholders.",
+              "span_offsets": [0, 127]
             }
           ]
         }
