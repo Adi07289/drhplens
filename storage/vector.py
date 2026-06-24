@@ -184,6 +184,35 @@ def upsert_chunks(payloads: list[ChunkPayload], vectors: list[list[float]]) -> N
         )
 
 
+def delete_by_drhp_id(drhp_id: str) -> None:
+    """Delete all existing points for a drhp_id (idempotent re-ingest, T-02-A6).
+
+    Call this BEFORE upsert_chunks() when re-ingesting an IPO so that
+    re-ingestion does not duplicate points (chunk_id UUIDs are generated fresh
+    each run, so without this delete-by-filter step a re-ingest simply appends
+    a second copy of every chunk into the collection).
+
+    Idempotent: deleting a drhp_id with no existing points is a no-op.
+
+    Args:
+        drhp_id: Delete all points whose payload.drhp_id matches this value.
+    """
+    ensure_collection()
+    client().delete(
+        collection_name=COLLECTION_NAME,
+        points_selector=rest.FilterSelector(
+            filter=rest.Filter(
+                must=[
+                    rest.FieldCondition(
+                        key="drhp_id",
+                        match=rest.MatchValue(value=drhp_id),
+                    )
+                ]
+            )
+        ),
+    )
+
+
 # ---------------------------------------------------------------------------
 # Read path (runtime agent only)
 # ---------------------------------------------------------------------------
