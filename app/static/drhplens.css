@@ -262,6 +262,15 @@
   .drhp-footer {
     min-height: 56px;
   }
+  /* Field rows stack fully: label, value, confidence each on its own line. */
+  .drhp-redflag-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--drhp-space-xs);
+  }
+  .drhp-redflag-value {
+    text-align: left;
+  }
 }
 
 /* Mobile L — 375–639px */
@@ -274,6 +283,15 @@
   }
   .drhp-footer {
     min-height: 56px;
+  }
+  /* Long values (auditor history, debt trajectory prose) wrap below the label. */
+  .drhp-redflag-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--drhp-space-xs);
+  }
+  .drhp-redflag-value {
+    text-align: left;
   }
 }
 
@@ -509,6 +527,124 @@
   font-weight: 400;
   color: var(--drhp-text-muted);
   font-style: italic;
+}
+
+/* ── Phase 3 — Red-flag signal table (03-UI-SPEC.md §Red-Flag Signal Table) ─ */
+/* No red/green, no badges, no severity icons (L3-1). A concerning value and a
+   clean value render in IDENTICAL chrome — only the factual text differs. The
+   block chrome mirrors .drhp-snapshot-block; rows are field-row label/value
+   pairs separated by a 1px border-subtle rule (not zebra fill, to stay calm). */
+.drhp-redflag-table {
+  background: #FFFFFF;
+  border: 1px solid var(--drhp-border-subtle);
+  border-radius: 8px;
+  padding: var(--drhp-space-lg);
+  margin-bottom: var(--drhp-space-xl);
+}
+
+.drhp-redflag-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--drhp-space-md);
+  padding: var(--drhp-space-sm) 0;
+  border-bottom: 1px solid var(--drhp-border-subtle);
+}
+
+.drhp-redflag-row:last-child {
+  border-bottom: none;
+}
+
+.drhp-redflag-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--drhp-text-muted);
+  flex: 0 0 auto;
+}
+
+.drhp-redflag-value {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--drhp-text-primary);
+  /* Numeric red-flag values align across the 7 stacked rows (UI-SPEC Typography). */
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  flex: 1 1 auto;
+}
+
+/* Confidence label — Small 12 muted text ONLY. No pill, no fill, no color
+   judgment regardless of tier (L3-2). */
+.drhp-confidence-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--drhp-text-muted);
+  margin-top: var(--drhp-space-xs);
+}
+
+/* ── Phase 3 — Specificity meter (03-UI-SPEC.md R-2) ─────────────────────── */
+/* Mirrors the .drhp-split-bar accent-fill-on-neutral-track grammar. The accent
+   fill is a MAGNITUDE indicator (more fill = more issuer-specific), NOT a
+   good/bad verdict and NOT red/green. A text % label always accompanies the
+   meter so color is never the sole differentiator (WCAG 1.4.1). */
+.drhp-spec-meter {
+  position: relative;
+  width: 100%;
+  height: 6px;
+  background: var(--drhp-surface-secondary);
+  border: 1px solid var(--drhp-border-subtle);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: var(--drhp-space-sm) 0 var(--drhp-space-xs) 0;
+}
+
+.drhp-spec-meter-fill {
+  height: 100%;
+  background: var(--drhp-accent);
+}
+
+.drhp-spec-meter-label {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--drhp-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Phase 3 — Methodology pane ("Show your work") (03-UI-SPEC.md) ───────── */
+/* Optional wrapper for pane sub-sections; the code/chunk/prompt panel is a
+   surface-secondary scrollable block. Muted, monochrome — no eval-score color
+   coding (a 0.91 faithfulness is not green). */
+.drhp-methodology-pane {
+  margin-top: var(--drhp-space-md);
+}
+
+.drhp-methodology-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--drhp-text-muted);
+  margin: var(--drhp-space-md) 0 var(--drhp-space-xs) 0;
+}
+
+.drhp-methodology-code {
+  background: var(--drhp-surface-secondary);
+  border: 1px solid var(--drhp-border-subtle);
+  border-radius: 8px;
+  padding: var(--drhp-space-md);
+  font-size: 12px;
+  color: var(--drhp-text-primary);
+  line-height: 1.6;
+  max-height: 320px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.drhp-methodology-eval {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--drhp-text-muted);
+  line-height: 1.6;
 }
 
 /* ── Accessibility: prefers-reduced-motion ──────────────────────────────── */

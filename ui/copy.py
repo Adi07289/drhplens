@@ -240,6 +240,134 @@ SNAPSHOT_CACHE_UNREACHABLE: str = (
 
 UNKNOWN_DRHP_ID_COPY: str = "That IPO isn't in the catalogue."
 
+# ---------------------------------------------------------------------------
+# Phase 3 — Red-flag signal table copy (03-UI-SPEC.md §Copywriting Contract)
+# Every string VERBATIM from the UI-SPEC Copywriting Contract (L3-8). Do NOT
+# paraphrase — scrubber-clean copy stability is load-bearing. No banned token
+# (subscribe / avoid / buy / sell / target / recommend / fair value /
+# overvalued / undervalued / target price) appears anywhere below.
+# ---------------------------------------------------------------------------
+
+REDFLAG_BLOCK_HEADING: str = "Red-flag signals"
+
+REDFLAG_BLOCK_SUBLINE: str = (
+    "Structured signals extracted from the prospectus. Each value cites the "
+    "DRHP page it came from and shows how confident the extractor is."
+)
+
+# The 7 field labels in canonical order (UI-SPEC R-1 fixed order; 600 semibold).
+REDFLAG_FIELD_LABEL_RPT_PCT: str = "RPT % of revenue"
+REDFLAG_FIELD_LABEL_OFS_VS_FRESH: str = "OFS vs fresh issue"
+REDFLAG_FIELD_LABEL_PROMOTER_PLEDGE_PCT: str = "Promoter pledge %"
+REDFLAG_FIELD_LABEL_CUSTOMER_CONCENTRATION: str = "Customer concentration"
+REDFLAG_FIELD_LABEL_AUDITOR_HISTORY: str = "Auditor history"
+REDFLAG_FIELD_LABEL_DEBT_TRAJECTORY: str = "Debt trajectory"
+REDFLAG_FIELD_LABEL_GOING_CONCERN: str = "Going-concern mentions"
+
+# field_key -> display label (canonical order); keys match REDFLAG_FIELD_KEYS.
+REDFLAG_FIELD_LABELS: dict[str, str] = {
+    "rpt_pct": REDFLAG_FIELD_LABEL_RPT_PCT,
+    "ofs_vs_fresh": REDFLAG_FIELD_LABEL_OFS_VS_FRESH,
+    "promoter_pledge_pct": REDFLAG_FIELD_LABEL_PROMOTER_PLEDGE_PCT,
+    "customer_concentration": REDFLAG_FIELD_LABEL_CUSTOMER_CONCENTRATION,
+    "auditor_history": REDFLAG_FIELD_LABEL_AUDITOR_HISTORY,
+    "debt_trajectory": REDFLAG_FIELD_LABEL_DEBT_TRAJECTORY,
+    "going_concern": REDFLAG_FIELD_LABEL_GOING_CONCERN,
+}
+
+CONFIDENCE_LABEL_TEMPLATE: str = "Confidence: {confidence_tier}"
+"""Per-field confidence label (Small 12 muted, text only — no pill, no color,
+L3-2). .format(confidence_tier='high'|'medium'|'low')."""
+
+CONFIDENCE_RUBRIC_LINE: str = (
+    "Confidence reflects how directly the value is stated in the DRHP — "
+    "high: stated verbatim in the cited span; medium: stated but needed light "
+    "parsing or aggregation; low: inferred across sections."
+)
+
+FIELD_NUMERIC_GATE_BLOCKED: str = (
+    "Could not ground this number to a cited DRHP page, so it is not shown."
+)
+"""L3-9 blocked-copy — rendered instead of an unsourced number when the
+cite_check numeric sub-check fails."""
+
+# ---------------------------------------------------------------------------
+# Phase 3 — IDF-ranked risk list copy (03-UI-SPEC.md §Copywriting Contract)
+# ---------------------------------------------------------------------------
+
+RISK_BLOCK_HEADING: str = "Risk factors, ranked by how specific they are"
+
+RISK_BLOCK_SUBLINE: str = (
+    "Risks unique to this company are listed first; risks that appear in most "
+    "prospectuses are listed lower. Order is the signal — not severity."
+)
+
+RISK_SPECIFICITY_COUNTER_TEMPLATE: str = "Risk {n} of {m} · {specificity}"
+"""Rank + specificity counter (Small 12 muted). .format(n=.., m=.., specificity=..)
+where specificity ∈ the three SPECIFICITY_WORD_* values."""
+
+SPECIFICITY_WORD_ISSUER_SPECIFIC: str = "Issuer-specific"
+SPECIFICITY_WORD_MOSTLY_ISSUER_SPECIFIC: str = "Mostly issuer-specific"
+SPECIFICITY_WORD_INDUSTRY_STANDARD: str = "Industry-standard"
+
+# specificity_band enum (RankedRisk.specificity_band) -> display word.
+SPECIFICITY_BAND_WORDS: dict[str, str] = {
+    "issuer_specific": SPECIFICITY_WORD_ISSUER_SPECIFIC,
+    "mostly_issuer_specific": SPECIFICITY_WORD_MOSTLY_ISSUER_SPECIFIC,
+    "industry_standard": SPECIFICITY_WORD_INDUSTRY_STANDARD,
+}
+
+SPEC_METER_ARIA_TEMPLATE: str = (
+    "Issuer-specificity: {pct} percent. Higher means more specific to this company."
+)
+"""Specificity-meter aria-label. .format(pct=..)."""
+
+# ---------------------------------------------------------------------------
+# Phase 3 — Methodology pane ("Show your work") copy (03-UI-SPEC.md)
+# ---------------------------------------------------------------------------
+
+METHODOLOGY_TRIGGER: str = "Show your work"
+"""Methodology-pane expander header (Primary CTA — the one explicit affordance
+Phase 3 adds). Neutral verb phrase, no emoji, no icon."""
+
+METHODOLOGY_PANE_LABEL_QUERY: str = "Retrieval query"
+METHODOLOGY_PANE_LABEL_CHUNKS: str = "Retrieved chunks (with scores)"
+METHODOLOGY_PANE_LABEL_PROMPT: str = "Prompt used"
+METHODOLOGY_PANE_LABEL_SOURCES: str = "Sources cited"
+METHODOLOGY_PANE_LABEL_EVAL: str = "Eval scores (from the latest committed report)"
+
+METHODOLOGY_EVAL_PROVENANCE_NOTE: str = (
+    "These scores come from the most recent committed evaluation report, not a "
+    "fresh check run when you expanded this. See the methodology page for the "
+    "full eval."
+)
+
+METHODOLOGY_EVAL_NOT_AVAILABLE: str = (
+    "No committed eval score yet for this field. The numeric-faithfulness gate "
+    "still applies before this number is shown."
+)
+
+FIELD_NOT_DISCLOSED_IN_DRHP_NOTE: str = "Not disclosed in DRHP"
+"""Phase 3 not-disclosed note (L3-3). Distinct verbatim string from the Phase 2
+FIELD_NOT_DISCLOSED_NOTE ('Not disclosed in this DRHP.') per the UI-SPEC."""
+
+# ---------------------------------------------------------------------------
+# Phase 3 — Red-flag table empty / error states (03-UI-SPEC.md)
+# ---------------------------------------------------------------------------
+
+REDFLAG_EMPTY_HEADING: str = "No structured signals extracted yet."
+
+REDFLAG_EMPTY_BODY: str = (
+    "This IPO's red-flag table hasn't been computed. Try one of the IPOs "
+    "already processed, or check back once ingestion completes."
+)
+
+REDFLAG_ERROR_STATE: str = (
+    "The red-flag table couldn't load for this IPO. This is a free-tier "
+    "infrastructure hiccup, not a problem with the prospectus. Try again in a "
+    "minute."
+)
+
 
 # ---------------------------------------------------------------------------
 # TRUST-03 anchor: import-time scrubber assertion.
@@ -271,6 +399,9 @@ _SAMPLE_FORMAT_VALUES = {
     "size": "₹1,000 cr",
     "grounded_answer": "sample grounded answer",
     "missing_part": "sample missing part",
+    "specificity": "Issuer-specific",
+    "pct": "62",
+    "confidence_tier": "high",
 }
 
 
