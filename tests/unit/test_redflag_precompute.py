@@ -142,7 +142,11 @@ def test_not_disclosed_becomes_refusal(monkeypatch) -> None:
 
     record = redflag.precompute_redflags(KNOWN_DRHP_ID, write=False)
 
+    # ofs_vs_fresh reuses the swiggy snapshot's grounded split (not the graph),
+    # so the not-disclosed assertion applies to the graph-driven fields.
     for key, field in record.fields.items():
+        if key == "ofs_vs_fresh":
+            continue
         assert isinstance(field.value, RefusalResponse), f"{key} should be a refusal"
         assert field.confidence_tier is None
         assert field.confidence_score is None
@@ -163,7 +167,11 @@ def test_ungrounded_number_becomes_blocked_refusal(monkeypatch) -> None:
 
     record = redflag.precompute_redflags(KNOWN_DRHP_ID, write=False)
 
+    # ofs_vs_fresh reuses the swiggy snapshot (grounded), not the blocked graph
+    # state; the numeric-block applies to the graph-driven fields.
     for key, field in record.fields.items():
+        if key == "ofs_vs_fresh":
+            continue
         assert isinstance(field.value, RefusalResponse), (
             f"{key} with an ungrounded number must be a refusal, not a GroundedAnswer"
         )
