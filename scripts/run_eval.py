@@ -306,10 +306,193 @@ def run_eval(
     return report_path
 
 
+# ===========================================================================
+# Numeric-faithfulness track (D3-11 / D3-13) — ADDITIVE; the Phase 1 track above
+# is unchanged. numeric_faithfulness = fraction of eval Qs whose EVERY emitted
+# number grounds to a cited DRHP span via the Plan 02 extended cite_check
+# per-number grounding. release_gate.py imports compute_numeric_faithfulness so
+# the gate runs the SAME computation — no duplication.
+# ===========================================================================
+
+
+def _question_numbers_grounded(grounded_answer: Any, reranked: list[dict]) -> bool:
+    """True iff every number the agent emitted grounds via cite_check (D3-10/D3-13).
+
+    Reuses the Plan 02 extended per-number grounding in agent.nodes.cite_check
+    (lakh/crore/million reconciliation + relative tolerance) rather than
+    re-implementing a numeric subset check here — one normalization path across
+    cite-check + eval (RESEARCH §Don't Hand-Roll). A grounded_answer whose every
+    claim is grounded by the cite_check node has every emitted number grounded;
+    we re-run cite_check against the reranked window so the eval is independent of
+    runtime state and exercises the SAME deterministic antibody the gate enforces.
+    """
+    from agent.nodes.cite_check import cite_check
+
+    if grounded_answer is None:
+        return False
+
+    retrieved_chunks: dict[str, str] = {}
+    for chunk in reranked:
+        payload = chunk.get("payload", {})
+        chunk_id = payload.get("chunk_id", chunk.get("id", ""))
+        chunk_text = payload.get("chunk_text", "")
+        if chunk_id:
+            retrieved_chunks[chunk_id] = chunk_text
+
+    all_grounded, _failures = cite_check(grounded_answer, retrieved_chunks)
+    return all_grounded
+
+
+def compute_numeric_faithfulness(
+    numeric_set_path: str = "eval/gold/numeric_eval.jsonl",
+    output_dir: str = "eval/reports",
+    write_report: bool = True,
+) -> float:
+    """Run the numeric-only eval set against live services and return the score.
+
+    numeric_faithfulness = (# eval Qs whose every emitted number grounds) /
+    (# eval Qs). Writes a dated markdown numeric-track section to output_dir when
+    write_report=True. This is the importable computation release_gate.py calls
+    (D3-12) so the gate enforces the SAME number the report shows.
+
+    Returns the aggregate numeric_faithfulness in [0.0, 1.0]; raises SystemExit
+    (via _check_env / missing file) if the live environment is not ready.
+    """
+    _check_env()
+
+    numeric_path = PROJECT_ROOT / numeric_set_path
+    if not numeric_path.exists():
+        print(f"ERROR: numeric eval set not found at {numeric_path}")
+        sys.exit(1)
+
+    entries = [
+        json.loads(line)
+        for line in numeric_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    print(f"Loaded {len(entries)} numeric eval entries from {numeric_path}")
+
+    try:
+        from agent.graph import invoke_with_tracing
+    except ImportError as exc:
+        print(f"ERROR: Cannot import agent: {exc}")
+        sys.exit(1)
+
+    per_q: list[dict[str, Any]] = []
+    for entry in entries:
+        qid = entry["qid"]
+        question = entry["question"]
+        print(f"\n[{qid}] {question[:60]}...")
+
+        try:
+            final_state = invoke_with_tracing({"question": question}, question)
+        except Exception as exc:
+            print(f"  CRASHED: {exc}")
+            # A crash means no grounded numbers were emitted faithfully → fail.
+            per_q.append({"qid": qid, "grounded": False, "status": "crashed"})
+            continue
+
+        grounded_answer = final_state.get("grounded_answer")
+        reranked = final_state.get("reranked_top_k", [])
+        grounded = _question_numbers_grounded(grounded_answer, reranked)
+        print(f"  numbers_grounded={grounded}")
+        per_q.append({"qid": qid, "grounded": grounded, "status": "ok"})
+
+    n = len(per_q)
+    n_grounded = sum(1 for r in per_q if r["grounded"])
+    numeric_faithfulness = (n_grounded / n) if n else 0.0
+    print(
+        f"\nnumeric_faithfulness = {n_grounded}/{n} = {numeric_faithfulness:.3f}"
+    )
+
+    if write_report:
+        _write_numeric_report(per_q, numeric_faithfulness, output_dir)
+
+    return numeric_faithfulness
+
+
+def _write_numeric_report(
+    per_q: list[dict[str, Any]],
+    numeric_faithfulness: float,
+    output_dir: str,
+) -> Path:
+    """Write the dated numeric-track markdown section (mirrors the Phase 1 writer)."""
+    from agent.policies import NUMERIC_FAITHFULNESS_GATE
+
+    out_dir = PROJECT_ROOT / output_dir
+    out_dir.mkdir(parents=True, exist_ok=True)
+    report_path = out_dir / f"{date.today()}-numeric-faithfulness.md"
+
+    n = len(per_q)
+    n_grounded = sum(1 for r in per_q if r["grounded"])
+    passes = numeric_faithfulness >= NUMERIC_FAITHFULNESS_GATE
+
+    lines = [
+        f"# Numeric-Faithfulness Track — {date.today()}",
+        "",
+        "## Summary",
+        "",
+        "| Metric | Value | Gate | Status |",
+        "|---|---|---|---|",
+        f"| numeric_faithfulness | {numeric_faithfulness:.3f} | "
+        f">= {NUMERIC_FAITHFULNESS_GATE} (EVAL-03 / D3-12) | "
+        f"{'PASS' if passes else 'FAIL'} |",
+        f"| Questions grounded | {n_grounded}/{n} | — | — |",
+        "",
+        "**Interpretation (P10):** numeric_faithfulness is the fraction of "
+        "numeric-only eval questions whose *every* emitted number grounds to a "
+        "cited DRHP span via the deterministic, non-LLM cite_check per-number "
+        "antibody (lakh/crore/million reconciliation + relative tolerance, D3-10). "
+        "A single hallucinated or mis-reconciled number fails that question. The "
+        f">= {NUMERIC_FAITHFULNESS_GATE} release gate (scripts/release_gate.py) "
+        "physically refuses deploy below this threshold — enforcement, not a "
+        "printed warning.",
+        "",
+        "## Per-Question Results",
+        "",
+        "| qid | numbers_grounded | status |",
+        "|---|---|---|",
+    ]
+    for r in per_q:
+        lines.append(
+            f"| {r['qid']} | {'yes' if r['grounded'] else 'no'} | {r['status']} |"
+        )
+
+    lines += [
+        "",
+        "## Notes",
+        "",
+        "- Numeric eval set: `eval/gold/numeric_eval.jsonl` (Swiggy-anchored; "
+        "right-sized to the ingested DRHP set per D3-05).",
+        "- Grounding reuses `agent.nodes.cite_check.cite_check` — the same "
+        "deterministic antibody the agent uses at emit time (no LLM judge).",
+        f"- Generated: {date.today()} by scripts/run_eval.py "
+        "(compute_numeric_faithfulness).",
+    ]
+
+    report_path.write_text("\n".join(lines), encoding="utf-8")
+    print(f"Numeric-track report written to: {report_path}")
+    return report_path
+
+
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="DRHPLens Phase 1 eval suite")
     parser.add_argument("--gold-set", default="tests/eval/gold_set.jsonl")
     parser.add_argument("--output-dir", default="eval/reports")
+    parser.add_argument(
+        "--numeric",
+        action="store_true",
+        help="Run the numeric-faithfulness track (D3-11/D3-13) instead of the "
+        "Phase 1 track.",
+    )
+    parser.add_argument(
+        "--numeric-set", default="eval/gold/numeric_eval.jsonl"
+    )
     args = parser.parse_args()
-    run_eval(gold_set_path=args.gold_set, output_dir=args.output_dir)
+    if args.numeric:
+        compute_numeric_faithfulness(
+            numeric_set_path=args.numeric_set, output_dir=args.output_dir
+        )
+    else:
+        run_eval(gold_set_path=args.gold_set, output_dir=args.output_dir)
