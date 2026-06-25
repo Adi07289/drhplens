@@ -1,0 +1,25 @@
+# Hand-curated boilerplate risk-factor phrases (D3-14 / P12 floor list).
+#
+# These are generic SEBI / Indian merchant-banker risk-factor phrasings that
+# appear in almost every DRHP and carry little issuer-specific signal. A risk
+# statement whose rapidfuzz token_set_ratio against any line below is
+# >= agent.policies.IDF_BOILERPLATE_FUZZ_THRESHOLD is CLAMPED to the bottom
+# "industry_standard" specificity band, regardless of its in-corpus IDF score —
+# a deterministic guard against small-n (n~8) IDF noise foregrounding boilerplate.
+#
+# Format: one phrase per line; lines starting with '#' and blank lines are
+# ignored. Treat edits as a reviewable change — this list shapes which risks the
+# UI foregrounds. Phrases are lower-bound generic; keep them broad, not issuer-
+# or sector-specific.
+our business is subject to extensive government regulation
+our business is dependent on indian macroeconomic conditions
+changes in laws and regulations could adversely affect our business
+we are subject to general litigation and legal proceedings in the ordinary course of business
+adverse fluctuations in foreign exchange rates may affect our results
+our results of operations are subject to seasonality and quarterly fluctuations
+we operate in a highly competitive industry and face significant competition
+any downgrade in our credit ratings could increase our borrowing costs
+we may be unable to obtain or renew the licences and approvals required for our business
+political and economic instability in india could adversely affect our business
+changes in tax laws or rates could adversely affect our financial condition
+we depend on the continued availability of skilled personnel and key management
