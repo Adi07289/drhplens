@@ -29,7 +29,7 @@ progress:
 ## Current Position
 
 Phase: 03 (Structured Signal Extraction (Red-Flag Table)) — EXECUTING
-Plan: 1 of 7
+Plan: 2 of 7 complete (Wave 2: numeric grounding + confidence rubric)
 **Phase:** 2 of 6 — Multi-IPO Catalogue + DRHP Snapshot Surface
 **Plan:** 02-02 of 02-05 complete (Wave 1: drhp_id threading + catalogue loader/allow-list + 8-IPO catalogue)
 **Status:** Executing Phase 03
@@ -122,11 +122,11 @@ None yet.
 
 ### What I Was Doing
 
-Phase 2 Plan 02-02 (Wave 1) complete: threaded drhp_id through GraphState -> intake -> retrieve -> refuse_with_reformulation with a back-compat-preserving default; shipped data/catalogue_loader.py (Pydantic CatalogueIPO model + load_catalogue() + is_known_drhp_id() V5 allow-list); filled data/catalogue.json with all 8 curated IPOs. 3 xfail stubs flipped to 11 real passing tests. 237 unit tests passing (226 baseline + 11 new), 6 xfail remaining (Wave 2/3 stubs), 1 pre-existing ignorable embedder failure (missing sentence-transformers).
+Phase 3 Plan 03-02 (Wave 2) complete: extended agent/nodes/cite_check.py with per-number unit-aware (lakh/crore/million/billion, ₹/%) + relative-tolerance grounding (D3-10) — exact-string subset kept as a fast short-circuit, unit reconciliation via _extract_scaled_numbers/_scaled_numbers_grounded runs on the residue; created pipelines/confidence.py with deterministic classify_confidence (verbatim->high, reconcile->medium, cross-section->low) + confidence_for_field returning (None,None) for RefusalResponse (D3-03). Both LLM-free, both reuse the cite_check normalization path. Flipped 7 Wave-0 stubs (test_numeric_grounding x3, test_confidence_rubric x4) skip->green. 281 unit tests passing, 1 pre-existing ignorable embedder failure (missing sentence-transformers).
 
 ### Where to Resume
 
-Execute Plan 02-03 (Wave 2): ingest generalization — pipelines/ingest_swiggy.py -> pipelines/ingest.py(drhp_id, pdf_path) parameterized, looped over data/catalogue.json's 8 entries. Requires live Qdrant + bge-m3/torch for the actual multi-IPO ingest (deferred dependency from Phase 1's INGEST_LATER.md).
+Execute Plan 03-03 (Wave 3): pipelines/redflag.py precompute loop (mirror pipelines/snapshot.py; call confidence_for_field per field) + pipelines/risk_idf.py (the only genuinely-new algorithm — in-corpus IDF over risk sections + boilerplate floor). Flips test_redflag_precompute + test_risk_idf stubs.
 
 ### Files of Record
 
