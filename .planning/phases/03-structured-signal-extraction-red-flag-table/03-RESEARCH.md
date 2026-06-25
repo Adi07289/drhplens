@@ -479,19 +479,24 @@ def set_overlap_f1(pred: list[str], gold: list[str], thresh: int = 85) -> float:
 | A5 | `scikit-learn` latest = 1.9.0 (2026-06-02) | Standard Stack | Only matters if sklearn is adopted (not recommended); verify at install time. |
 | A6 | Right-sizing gold-set n to currently-ingested DRHPs (likely just `swiggy_2024_11` until live ingest) is acceptable per D3-05 | Runtime State Inventory | If only 1 DRHP is ingested, F1 n is tiny; D3-05 explicitly allows honest small-n with 20-30 documented as target. The phase must not block on full ingest. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **How many DRHPs are actually ingested into live Qdrant at Phase 3 start?**
+   - **RESOLVED (Plans 03/04, D3-05):** right-size F1 to the actually-ingested DRHPs; report the honest n; keep 20-30 as the documented target. Plan 04 reads predictions from the cached `data/redflag/<id>.json` (offline), and the gold set is scoped to ingested IPOs.
    - What we know: only `swiggy_2024_11` is seeded (hand-placeholder per STATE.md); the other 7 catalogue IPOs await live ingest (`data/INGEST_ALL_LATER.md`, Phase 2 carry-over). F1 requires the extractor to RUN on each labeled DRHP (D3-05 coupling).
    - What's unclear: whether the planner schedules a partial live-ingest of a few more DRHPs within Phase 3 to make F1 meaningful (n>1), or right-sizes to whatever is ingested.
    - Recommendation: plan an early "ingest the gold-set DRHPs" wave (extend `pipelines/ingest.py` loop, the discretion option), targeting enough DRHPs for an honest F1; report true n; keep 20-30 as the documented target.
 
-2. **Does the cached structure already retain the retrieval query + full chunk list for the methodology pane?**
+2. **RESOLVED (Plan 06, D3-17):** the methodology pane takes the query as a caller-supplied param (`render_methodology_pane(query=REDFLAG_QUERIES[field_key], ...)`); cited sources+scores already persist via `GroundedAnswer.claims[].sources[]`. No cache-schema change required beyond persisting the minimum trace.
+
+   **Does the cached structure already retain the retrieval query + full chunk list for the methodology pane?**
    - What we know: `claim.sources[]` carries score/section/span; the canned query is known per field; `state["reranked_top_k"]` exists at runtime.
    - What's unclear: whether the full reranked chunk list (beyond the cited sources) is persisted anywhere after precompute.
    - Recommendation: during the redflag-schema task, decide the minimum trace to persist (query + the cited sources' scores are likely enough for the UI-SPEC pane); avoid over-persisting full chunk text to keep the cache small.
 
-3. **Per-field numeric tolerances and IDF band thresholds.**
+3. **RESOLVED (Plan 04, D3-07/D3-14 — Claude's Discretion):** deferred to empirical tuning; chosen tolerances/IDF cutoffs are committed into `eval/gold/extraction_rubric.md` and held as calibration constants in `agent/policies.py` (`F1_NUMERIC_TOLERANCES`, IDF band constants).
+
+   **Per-field numeric tolerances and IDF band thresholds.**
    - What we know: D3-07/D3-14 leave these to empirical tuning, documented in the rubric.
    - What's unclear: exact values (e.g. ±0.5pp for %, ± rounding for amounts; IDF percentile cutoffs for the 3 bands).
    - Recommendation: tune against the labeled set, commit the chosen values + procedure into `extraction_rubric.md`; treat thresholds as calibration constants (mirror `agent/policies.py`'s single-source-of-truth posture).
