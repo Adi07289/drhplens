@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-06-25T12:04:07.206Z"
+last_updated: "2026-06-25T12:38:26.798Z"
 progress:
   total_phases: 6
   completed_phases: 2
@@ -24,13 +24,15 @@ progress:
 
 **Audience:** Indian retail investors (mobile-first); secondary audience is the DS-recruiter reviewing the portfolio piece.
 
-**Current Focus:** Phase 2 — Multi-IPO Catalogue + DRHP Snapshot Surface (Wave 1 complete: drhp_id threading + catalogue allow-list + 8-IPO catalogue.json).
+**Current Focus:** Phase 03 — Structured Signal Extraction (Red-Flag Table)
 
 ## Current Position
 
+Phase: 03 (Structured Signal Extraction (Red-Flag Table)) — EXECUTING
+Plan: 1 of 7
 **Phase:** 2 of 6 — Multi-IPO Catalogue + DRHP Snapshot Surface
 **Plan:** 02-02 of 02-05 complete (Wave 1: drhp_id threading + catalogue loader/allow-list + 8-IPO catalogue)
-**Status:** Ready to execute
+**Status:** Executing Phase 03
 **Progress:** [██████████] 100%
 
 ## Phase Map
