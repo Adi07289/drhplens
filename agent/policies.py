@@ -93,3 +93,69 @@ RELAXED_SEARCH_TOP_SECTIONS: int = 2
 Number of unique section names to surface as reformulation chip suggestions.
 Bounded to 2 per Open Question 5 (UI-SPEC chip cap is 3; we emit at most 2).
 """
+
+# ---------------------------------------------------------------------------
+# Phase 3 — Structured signal extraction (red-flag table) tunables
+#
+# Single-source-of-truth constants for Phase 3. Every value below is a control
+# surface to be CALIBRATED EMPIRICALLY; the calibration procedure is documented
+# in eval/gold/extraction_rubric.md (created in the gold-set plan). Each carries
+# a calibration comment mirroring the GATE1_THRESHOLD posture above.
+# ---------------------------------------------------------------------------
+
+NUMERIC_GROUNDING_REL_TOLERANCE: float = 0.01  # Calibrate empirically; procedure documented in eval/gold/extraction_rubric.md
+"""
+Relative tolerance for the per-number source-grounding reconciliation (D3-10).
+A claimed number grounds against a cited-span number when
+abs(claim - window) / window <= this tolerance, AFTER lakh (×1e5) / crore
+(×1e7) / million (×1e6) unit normalization — so "₹11,247 crore" reconciles with
+"1,12,470 lakh" instead of false-failing the exact-string subset check.
+Default 0.01 (1%) absorbs disclosed-rounding noise. Calibrate against the
+numeric-faithfulness eval set; document the chosen value in extraction_rubric.md.
+"""
+
+IDF_BAND_THRESHOLDS: tuple[float, float] = (2.0, 4.0)  # Calibrate empirically; procedure documented in eval/gold/extraction_rubric.md
+"""
+The two in-corpus IDF cutpoints that map a risk's specificity score to a band
+(D3-14). With (low, high): score < low -> "industry_standard"; low <= score <
+high -> "mostly_issuer_specific"; score >= high -> "issuer_specific". Defaults
+are placeholders over a small n≈8 corpus (documented as small, D3-14); calibrate
+once the catalogue grows and record in extraction_rubric.md.
+"""
+
+F1_NUMERIC_TOLERANCES: dict[str, float] = {  # Calibrate empirically; procedure documented in eval/gold/extraction_rubric.md
+    "rpt_pct": 0.5,
+    "ofs_vs_fresh": 0.5,
+    "promoter_pledge_pct": 0.5,
+    "debt_trajectory": 0.5,
+}
+"""
+Per-numeric-field ABSOLUTE tolerances for the extraction F1 scorer (D3-07): a
+predicted numeric value matches the gold value when abs(pred - gold) <= the
+field's tolerance. Covers the four numeric red-flag fields (rpt_pct,
+ofs_vs_fresh, promoter_pledge_pct, debt_trajectory); boolean (going_concern) and
+set fields (customer_concentration, auditor_history) use exact / set-overlap
+rules instead. Defaults are ± percentage-point placeholders; calibrate per field
+against the gold set and document in extraction_rubric.md.
+"""
+
+IDF_BOILERPLATE_FUZZ_THRESHOLD: int = 85  # Calibrate empirically; procedure documented in eval/gold/extraction_rubric.md
+"""
+rapidfuzz token_set_ratio floor for the deterministic boilerplate clamp (D3-14).
+A normalized risk statement scoring >= this against any phrase in
+eval/gold/boilerplate_phrases.txt is clamped to the bottom specificity band,
+regardless of its IDF score. Default 85 mirrors the existing fuzzy-match posture
+(CITE_CHECK_TOKEN_RATIO=80); calibrate against the boilerplate floor list and
+document in extraction_rubric.md.
+"""
+
+NUMERIC_FAITHFULNESS_GATE: float = 0.95  # Calibrate empirically; procedure documented in eval/gold/extraction_rubric.md
+"""
+The numeric-faithfulness RELEASE GATE (D3-12). numeric_faithfulness =
+fraction of eval questions whose every emitted number grounds to a cited DRHP
+span (per-number source-grounding, D3-10). The pre-deploy gate
+(scripts/release_gate.py) writes a report and exits non-zero when the measured
+faithfulness is < this threshold — enforcement over discipline. Locked at 0.95
+per the ROADMAP cross-phase invariant; this is the threshold, not a tunable to
+relax. The calibration note refers to the eval-set construction procedure.
+"""
