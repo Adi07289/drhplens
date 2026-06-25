@@ -68,11 +68,13 @@ def test_set_overlap_f1() -> None:
     # Fuzzy near-match still counts (token_set_ratio >= thresh).
     f1_fuzzy = set_overlap_f1(["S.R. Batliboi & Associates LLP"], ["S.R. Batliboi and Associates LLP"])
     assert f1_fuzzy == 1.0
-    # Partial overlap -> strictly between 0 and 1.
-    partial = set_overlap_f1(["Customer A"], ["Customer A", "Customer B"])
+    # Partial overlap -> strictly between 0 and 1. Use lexically-distinct gold
+    # items so token_set_ratio does not fuzzy-bridge them (precision 1.0,
+    # recall 0.5 -> F1 ~= 0.667).
+    partial = set_overlap_f1(["Reliance Retail"], ["Reliance Retail", "Tata Digital"])
     assert 0.0 < partial < 1.0
     # Empty pred but non-empty gold -> 0.0.
-    assert set_overlap_f1([], ["Customer A"]) == 0.0
+    assert set_overlap_f1([], ["Reliance Retail"]) == 0.0
     # score_field dispatches set on field_type.
     row = {
         "field_key": "customer_concentration",
