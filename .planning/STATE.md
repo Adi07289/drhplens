@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-06-25T12:38:26.798Z"
+last_updated: "2026-06-25T18:23:29.580Z"
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 18
-  completed_plans: 12
-  percent: 36
+  completed_plans: 16
+  percent: 33
 ---
 
 # STATE: DRHPLens
@@ -29,11 +29,9 @@ progress:
 ## Current Position
 
 Phase: 03 (Structured Signal Extraction (Red-Flag Table)) — EXECUTING
-Plan: 3 of 7 complete (Wave 3: redflag precompute pipeline + in-corpus IDF risk ranker)
-**Phase:** 2 of 6 — Multi-IPO Catalogue + DRHP Snapshot Surface
-**Plan:** 02-02 of 02-05 complete (Wave 1: drhp_id threading + catalogue loader/allow-list + 8-IPO catalogue)
+Plan: 4 of 7 complete (Wave 4: EXTRACT-03 gold-set F1 scorer + labeling rubric)
 **Status:** Executing Phase 03
-**Progress:** [██████████] 100%
+**Progress:** [█████████░] 89%
 
 ## Phase Map
 
@@ -150,6 +148,7 @@ BLOCKING CHECKPOINT — Plan 03-05 Task 3 (live `make release`) is PENDING and r
 | Phase 02 P05 | 70min | 2 tasks | 8 files |
 | Phase 03 P03 | 22min | 2 tasks | 5 files; 290 unit tests passing |
 | Phase 03 P05 | ~25min | 2 of 3 tasks (Task 3 live checkpoint pending) | 5 files; 292 passed; numeric gate offline-green |
+| Phase 03 P04 | 12min | 2 tasks | 5 files |
 
 ## Decisions
 
@@ -160,3 +159,4 @@ BLOCKING CHECKPOINT — Plan 03-05 Task 3 (live `make release`) is PENDING and r
 - [Phase 03]: a numeric-gate-blocked red-flag field maps to RefusalResponse(reason=unsupported_claim, explanation=L3-9 copy) — no new RefusalReason literal; the explanation carries the verbatim blocked-copy the renderer needs
 - [Phase 03]: ofs_vs_fresh reuse surfaces the snapshot's already-vetted use_of_proceeds GroundedAnswer without re-scrubbing (the snapshot pipeline already scrubbed + cite-checked it) — re-gating defeats reuse
 - [Phase 03]: in-corpus IDF is phrase-level (3-5 word shingles, not unigram); boilerplate floor is a deterministic small-n IDF-noise clamp; stdlib + rapidfuzz only, no sklearn
+- [Phase ?]: EXTRACT-03 gold set is honest-n (1 ingested DRHP, 7 cells); end-to-end F1 run over cached records deferred-to-live

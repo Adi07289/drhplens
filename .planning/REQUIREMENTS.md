@@ -33,7 +33,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **EXTRACT-01**: System extracts a structured red-flag signal table per IPO: RPT % of revenue, OFS vs fresh-issue %, promoter pledge %, customer concentration (if disclosed), auditor history, debt trajectory, "going concern" mentions
 - [x] **EXTRACT-02**: Each extracted field carries an extractor confidence score visible in the UI
-- [ ] **EXTRACT-03**: Extractors are evaluated against a hand-labeled gold set with per-field F1 reported and committed to the repo
+- [x] **EXTRACT-03**: Extractors are evaluated against a hand-labeled gold set with per-field F1 reported and committed to the repo
 
 ### Peer (Peer Comparison)
 
@@ -159,7 +159,7 @@ Which phases cover which requirements. Updated by roadmap creation.
 | RAG-03 | Phase 1 | Pending |
 | EXTRACT-01 | Phase 3 | Complete |
 | EXTRACT-02 | Phase 3 | Complete |
-| EXTRACT-03 | Phase 3 | Pending |
+| EXTRACT-03 | Phase 3 | Complete |
 | PEER-01 | Phase 4 | Pending |
 | PEER-02 | Phase 4 | Pending |
 | FCAST-01 | Phase 5 | Pending |
