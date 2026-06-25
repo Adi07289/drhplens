@@ -45,14 +45,20 @@ def _answer(claim: Claim) -> GroundedAnswer:
 
 
 def test_lakh_crore_reconciles() -> None:
-    """'₹11,247 crore' grounds against '1,12,470 lakh' after unit normalization.
+    """'₹11,247 crore' grounds against the same magnitude written in lakh.
 
-    11,247 crore = 1,12,470 lakh (11247e7 == 112470e5). The exact-string subset
-    check would false-fail; unit reconciliation within tolerance must ground it.
+    11,247 crore = 11,247 x 1e7 = 11,24,700 lakh (both 1.1247e11). The exact-string
+    subset check would false-fail this legitimate Indian-numeral normalization;
+    unit reconciliation within tolerance must ground it.
     """
-    claim = _make_claim("Revenue from operations was ₹11,247 crore in FY2024")
+    claim = _make_claim(
+        "Revenue from operations was ₹11,247 crore for the company"
+    )
     retrieved = {
-        "chunk_001": "Revenue from operations was 1,12,470 lakh in FY2024."
+        "chunk_001": (
+            "Revenue from operations was 11,24,700 lakh for the company "
+            "as per the restated financial statements."
+        )
     }
     all_grounded, failures = cite_check(_answer(claim), retrieved)
     assert all_grounded is True, failures

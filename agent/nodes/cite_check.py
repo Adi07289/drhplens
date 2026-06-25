@@ -19,7 +19,11 @@ import unicodedata
 
 from rapidfuzz import fuzz
 
-from agent.policies import CITE_CHECK_SPAN_TOLERANCE_CHARS, CITE_CHECK_TOKEN_RATIO
+from agent.policies import (
+    CITE_CHECK_SPAN_TOLERANCE_CHARS,
+    CITE_CHECK_TOKEN_RATIO,
+    NUMERIC_GROUNDING_REL_TOLERANCE,
+)
 from agent.schemas import GroundedAnswer, RefusalResponse
 from agent.state import GraphState
 from app.observability.cite_check_metric import score_cite_check
@@ -61,14 +65,100 @@ def _extract_numbers(s: str) -> set[str]:
     return set(re.findall(r"\d+(?:\.\d+)?", s_no_commas))
 
 
+# Indian/international magnitude words → multiplier (D3-10 unit reconciliation).
+# Matched as whole tokens immediately following an extracted number so
+# "₹11,247 crore" canonicalizes to 1.1247e11 and reconciles with "1,12,470 lakh"
+# (1.1247e11) instead of false-failing the exact-string subset check.
+_UNIT_SCALES: dict[str, float] = {
+    "lakh": 1e5,
+    "lakhs": 1e5,
+    "lac": 1e5,
+    "lacs": 1e5,
+    "crore": 1e7,
+    "crores": 1e7,
+    "cr": 1e7,
+    "million": 1e6,
+    "mn": 1e6,
+    "billion": 1e9,
+    "bn": 1e9,
+}
+
+# A number optionally preceded by ₹, optionally followed by a magnitude word.
+# Operates on _normalize()d text (lowercase; commas already collapsible).
+_SCALED_NUMBER_RE = re.compile(
+    r"₹?\s*(\d+(?:\.\d+)?)\s*"
+    r"(lakhs?|lacs?|crores?|cr|million|mn|billion|bn|%)?",
+    re.IGNORECASE,
+)
+
+
+def _extract_scaled_numbers(s: str) -> list[float]:
+    """Extract numbers as CANONICAL float magnitudes, honouring adjacent units.
+
+    Strips Indian thousands commas (mirroring `_extract_numbers`), then maps each
+    number to its magnitude using a neighbouring lakh/crore/million/billion token
+    (or ₹/% markers, which carry no scale). Returns a list (not a set) so repeated
+    values still participate in reconciliation. This is the unit-aware sibling of
+    `_extract_numbers`; both share the same comma-stripping normalization path.
+    """
+    s_no_commas = re.sub(r"(\d),(\d)", r"\1\2", s)
+    magnitudes: list[float] = []
+    for match in _SCALED_NUMBER_RE.finditer(s_no_commas):
+        raw = match.group(1)
+        if raw is None:
+            continue
+        value = float(raw)
+        unit = (match.group(2) or "").lower()
+        scale = _UNIT_SCALES.get(unit, 1.0)  # ₹/%/no-unit → ×1
+        magnitudes.append(value * scale)
+    return magnitudes
+
+
+def _number_reconciles(claim_val: float, window_val: float) -> bool:
+    """True iff two canonical magnitudes match within the policy rel-tolerance.
+
+    abs(claim - window) / max(window, 1) <= NUMERIC_GROUNDING_REL_TOLERANCE.
+    The max(window, 1) floor mirrors the policy docstring and avoids a divide-by-
+    zero when a disclosed figure is exactly 0.
+    """
+    return abs(claim_val - window_val) / max(abs(window_val), 1.0) <= (
+        NUMERIC_GROUNDING_REL_TOLERANCE
+    )
+
+
 def _numbers_subset(claim_numbers: set[str], window_numbers: set[str]) -> bool:
     """Return True iff every number in the claim appears in the window.
+
+    Fast path: exact-string subset (preserves existing green cite-check behavior,
+    no regression). This is intentionally a backward-compatible signature; the
+    unit-aware + tolerance reconciliation lives in `_scaled_numbers_grounded`,
+    which the cite_check loop calls when the exact-string check fails.
 
     If the claim has no numbers, trivially True (non-numeric claims can't fail P2).
     """
     if not claim_numbers:
         return True
     return claim_numbers.issubset(window_numbers)
+
+
+def _scaled_numbers_grounded(
+    claim_norm: str, window_norm: str
+) -> bool:
+    """Per-number unit-aware + tolerance grounding over normalized texts (D3-10).
+
+    Each canonical claim magnitude must reconcile (same OR a reconcilable unit
+    scale, within NUMERIC_GROUNDING_REL_TOLERANCE) with SOME canonical window
+    magnitude. A claim with no numbers is trivially grounded. A claim whose every
+    emitted number fails reconciliation is ungrounded → downstream blocks it as a
+    RefusalResponse (T-03-03).
+    """
+    claim_mags = _extract_scaled_numbers(claim_norm)
+    if not claim_mags:
+        return True
+    window_mags = _extract_scaled_numbers(window_norm)
+    return all(
+        any(_number_reconciles(c, w) for w in window_mags) for c in claim_mags
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -143,14 +233,21 @@ def cite_check(
                 )
                 continue  # Try next source
 
-            # Numeric subset check (PITFALL P2 antibody)
+            # Numeric grounding (PITFALL P2 antibody + D3-10 unit reconciliation).
+            # Fast path: exact-string subset short-circuits to grounded (no
+            # regression to existing cite-check tests). Slow path: per-number
+            # unit-aware + tolerance reconciliation so "₹11,247 crore" grounds
+            # against "1,12,470 lakh" instead of false-failing the 0.95 gate.
             claim_numbers = _extract_numbers(claim_norm)
             window_numbers = _extract_numbers(window_norm)
-            if not _numbers_subset(claim_numbers, window_numbers):
+            if not _numbers_subset(claim_numbers, window_numbers) and not (
+                _scaled_numbers_grounded(claim_norm, window_norm)
+            ):
                 failure_reason = (
-                    f"claim {claim.claim_id!r}: numeric subset failed — "
-                    f"claim has {claim_numbers} but window has {window_numbers} "
-                    f"(PITFALL P2: number swap detected)"
+                    f"claim {claim.claim_id!r}: numeric grounding failed — "
+                    f"claim has {claim_numbers} but window has {window_numbers}; "
+                    f"no unit-reconcilable match within tolerance "
+                    f"(PITFALL P2 / D3-10)"
                 )
                 continue  # Try next source
 
