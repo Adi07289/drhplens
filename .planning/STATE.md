@@ -110,7 +110,7 @@ Plan: 3 of 7 complete (Wave 3: redflag precompute pipeline + in-corpus IDF risk 
 
 ### Open Blockers
 
-None yet.
+- **[03-05 Task 3 — blocking checkpoint]** Live `make release` numeric-gate run is PENDING. Needs `GEMINI_API_KEY` / `QDRANT_URL` / `QDRANT_API_KEY` + swiggy_2024_11 ingested into live Qdrant. The gate logic is CI-tested offline (0.94 fails / 0.95 / 0.96 pass); only the live verification remains. EVAL-03 stays open until verified.
 
 ## Research Flags (from ROADMAP.md)
 
@@ -122,11 +122,11 @@ None yet.
 
 ### What I Was Doing
 
-Phase 3 Plan 03-03 (Wave 3) complete: created pipelines/redflag.py — precompute_redflags mirrors snapshot.py's canned-query x GRAPH.invoke loop over the 7 REDFLAG_QUERIES, storing each field as a cited GroundedAnswer + confidence tier (classify_confidence), an honest not-disclosed RefusalResponse (D3-03), or a numeric-gate-blocked RefusalResponse carrying the L3-9 copy when all_claims_grounded is False (T-03-03); ofs_vs_fresh reuses the snapshot's cached ofs_fresh; is_known_drhp_id guards every cache path (T-03-01); typer precompute-one/-all + load_redflag round-trip; data/redflag/<id>.json write. Created pipelines/risk_idf.py — rank_risks: phrase-level (3-5 word shingle) in-corpus IDF (log(N/(1+df)) over n~8 catalogue corpus) + hand-curated boilerplate floor clamp, neutral list[RankedRisk] sorted descending; stdlib math/Counter + rapidfuzz + cite_check._normalize, no sklearn. Created eval/gold/boilerplate_phrases.txt (12 phrases). Flipped test_redflag_precompute + test_risk_idf stubs skip->green. 290 unit tests passing, 1 pre-existing ignorable embedder failure (missing sentence-transformers).
+Phase 3 Plan 03-05 (Wave 4) AUTONOMOUS WORK complete; LIVE checkpoint PENDING. Created eval/gold/numeric_eval.jsonl — 50 Swiggy-anchored numeric-only Qs, each with arithmetically-correct gold_numeric + gold_unit + source_page (D3-11); lakh/crore conversions use 1 crore = 100 lakh (11,327.43 cr = 11,32,743 lakh), explicitly avoiding the off-by-10x 1,12,470-lakh figure in 03-RESEARCH/03-PATTERNS; fresh/OFS use real Swiggy figures (4,499 cr / 6,828.43 cr) not the snapshot's 59/41 placeholder. Extended scripts/run_eval.py additively with compute_numeric_faithfulness (reuses agent.nodes.cite_check per-number grounding; importable by the gate; dated numeric-track report) — Phase 1 track untouched. Created scripts/release_gate.py — pure enforce_gate(score) reads NUMERIC_FAITHFULNESS_GATE from policy, writes dated *-numeric-gate.md report + sys.exit(1) below threshold, passes at/above (>= boundary); main() owns the only live call. Created Makefile release: target (Make halts on non-zero exit). Flipped tests/eval/test_release_gate.py skip->green (0.94 fails+reports / 0.95 / 0.96 pass), fully offline. 292 passed, 1 pre-existing ignorable embedder failure. Commits 1c6f927 (feat), 561b06e (test RED), d5db2a4 (feat GREEN).
 
 ### Where to Resume
 
-Execute Plan 03-04 (Wave 4): extraction-F1 eval harness reading the RedFlagRecord cache (tests/eval/test_extraction_f1.py). The red-flag write side (cache schema + precompute + IDF ranking) is now complete; Plan 04 evaluates extraction quality, Plans 06/07 render the fields + ranked_risks + blocked-copy in the UI.
+BLOCKING CHECKPOINT — Plan 03-05 Task 3 (live `make release`) is PENDING and requires live services. Run `make release` against live Qdrant+Gemini with swiggy_2024_11 ingested; confirm it exits non-zero below 0.95 (writing eval/reports/<date>-numeric-gate.md) or prints OK at >=0.95; commit the report; then mark EVAL-03 complete and close 03-05 via `gsd-sdk query roadmap.update-plan-progress 03 03-05 complete`. Only after that, execute Plan 03-04 (extraction-F1 eval harness) and Plans 06/07 (UI render of fields + ranked_risks + methodology pane).
 
 ### Files of Record
 
@@ -149,6 +149,7 @@ Execute Plan 03-04 (Wave 4): extraction-F1 eval harness reading the RedFlagRecor
 | Phase 02 P04 | 50m | 2 tasks | 9 files |
 | Phase 02 P05 | 70min | 2 tasks | 8 files |
 | Phase 03 P03 | 22min | 2 tasks | 5 files; 290 unit tests passing |
+| Phase 03 P05 | ~25min | 2 of 3 tasks (Task 3 live checkpoint pending) | 5 files; 292 passed; numeric gate offline-green |
 
 ## Decisions
 
