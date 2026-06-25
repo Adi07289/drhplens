@@ -8,8 +8,8 @@ progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 18
-  completed_plans: 11
-  percent: 33
+  completed_plans: 12
+  percent: 36
 ---
 
 # STATE: DRHPLens
@@ -29,7 +29,7 @@ progress:
 ## Current Position
 
 Phase: 03 (Structured Signal Extraction (Red-Flag Table)) — EXECUTING
-Plan: 2 of 7 complete (Wave 2: numeric grounding + confidence rubric)
+Plan: 3 of 7 complete (Wave 3: redflag precompute pipeline + in-corpus IDF risk ranker)
 **Phase:** 2 of 6 — Multi-IPO Catalogue + DRHP Snapshot Surface
 **Plan:** 02-02 of 02-05 complete (Wave 1: drhp_id threading + catalogue loader/allow-list + 8-IPO catalogue)
 **Status:** Executing Phase 03
@@ -122,11 +122,11 @@ None yet.
 
 ### What I Was Doing
 
-Phase 3 Plan 03-02 (Wave 2) complete: extended agent/nodes/cite_check.py with per-number unit-aware (lakh/crore/million/billion, ₹/%) + relative-tolerance grounding (D3-10) — exact-string subset kept as a fast short-circuit, unit reconciliation via _extract_scaled_numbers/_scaled_numbers_grounded runs on the residue; created pipelines/confidence.py with deterministic classify_confidence (verbatim->high, reconcile->medium, cross-section->low) + confidence_for_field returning (None,None) for RefusalResponse (D3-03). Both LLM-free, both reuse the cite_check normalization path. Flipped 7 Wave-0 stubs (test_numeric_grounding x3, test_confidence_rubric x4) skip->green. 281 unit tests passing, 1 pre-existing ignorable embedder failure (missing sentence-transformers).
+Phase 3 Plan 03-03 (Wave 3) complete: created pipelines/redflag.py — precompute_redflags mirrors snapshot.py's canned-query x GRAPH.invoke loop over the 7 REDFLAG_QUERIES, storing each field as a cited GroundedAnswer + confidence tier (classify_confidence), an honest not-disclosed RefusalResponse (D3-03), or a numeric-gate-blocked RefusalResponse carrying the L3-9 copy when all_claims_grounded is False (T-03-03); ofs_vs_fresh reuses the snapshot's cached ofs_fresh; is_known_drhp_id guards every cache path (T-03-01); typer precompute-one/-all + load_redflag round-trip; data/redflag/<id>.json write. Created pipelines/risk_idf.py — rank_risks: phrase-level (3-5 word shingle) in-corpus IDF (log(N/(1+df)) over n~8 catalogue corpus) + hand-curated boilerplate floor clamp, neutral list[RankedRisk] sorted descending; stdlib math/Counter + rapidfuzz + cite_check._normalize, no sklearn. Created eval/gold/boilerplate_phrases.txt (12 phrases). Flipped test_redflag_precompute + test_risk_idf stubs skip->green. 290 unit tests passing, 1 pre-existing ignorable embedder failure (missing sentence-transformers).
 
 ### Where to Resume
 
-Execute Plan 03-03 (Wave 3): pipelines/redflag.py precompute loop (mirror pipelines/snapshot.py; call confidence_for_field per field) + pipelines/risk_idf.py (the only genuinely-new algorithm — in-corpus IDF over risk sections + boilerplate floor). Flips test_redflag_precompute + test_risk_idf stubs.
+Execute Plan 03-04 (Wave 4): extraction-F1 eval harness reading the RedFlagRecord cache (tests/eval/test_extraction_f1.py). The red-flag write side (cache schema + precompute + IDF ranking) is now complete; Plan 04 evaluates extraction quality, Plans 06/07 render the fields + ranked_risks + blocked-copy in the UI.
 
 ### Files of Record
 
@@ -148,6 +148,7 @@ Execute Plan 03-03 (Wave 3): pipelines/redflag.py precompute loop (mirror pipeli
 | Phase 01 P02 | 45min | 3 tasks | 11 files; 108 unit tests passing |
 | Phase 02 P04 | 50m | 2 tasks | 9 files |
 | Phase 02 P05 | 70min | 2 tasks | 8 files |
+| Phase 03 P03 | 22min | 2 tasks | 5 files; 290 unit tests passing |
 
 ## Decisions
 
@@ -155,3 +156,6 @@ Execute Plan 03-03 (Wave 3): pipelines/redflag.py precompute loop (mirror pipeli
 - [Phase ?]: swiggy_2024_11.json snapshot seeded by hand (CODE-NOW placeholder), numerically self-consistent, flagged for live regeneration via the runbook
 - [Phase 02]: Split-bar caption reworded to avoid scrubber sell-stem collision (shares offered by existing shareholders)
 - [Phase 02]: render_snapshot_chat extracted into ui/snapshot_chat.py so pages/02_snapshot.py does not import app.py
+- [Phase 03]: a numeric-gate-blocked red-flag field maps to RefusalResponse(reason=unsupported_claim, explanation=L3-9 copy) — no new RefusalReason literal; the explanation carries the verbatim blocked-copy the renderer needs
+- [Phase 03]: ofs_vs_fresh reuse surfaces the snapshot's already-vetted use_of_proceeds GroundedAnswer without re-scrubbing (the snapshot pipeline already scrubbed + cite-checked it) — re-gating defeats reuse
+- [Phase 03]: in-corpus IDF is phrase-level (3-5 word shingles, not unigram); boilerplate floor is a deterministic small-n IDF-noise clamp; stdlib + rapidfuzz only, no sklearn
