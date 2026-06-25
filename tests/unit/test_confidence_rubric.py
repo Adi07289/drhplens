@@ -64,13 +64,14 @@ def test_verbatim_is_high() -> None:
 
 
 def test_light_parse_is_medium() -> None:
-    """A value that is a numeric transformation/aggregation of source numbers
-    (reconcilable but not a verbatim substring) classifies as medium."""
-    # The emitted value 4499 reconciles with the source's 4499 crore magnitude,
-    # but the emitted string "44.99%" does not appear verbatim in the span.
-    span = "Fresh issue is 4,499 crore out of a total issue size of 10,000 crore."
+    """A value that is a numeric transformation of source numbers (reconcilable
+    in magnitude but not a verbatim digit-string) classifies as medium."""
+    # Claim writes "4,499 crore"; the span states the SAME magnitude as
+    # "44,990 million" (4499 crore == 44990 million == 4.499e10). The digit
+    # string "4499" is NOT verbatim in the span, but the magnitude reconciles.
+    span = "The fresh issue component is 44,990 million as disclosed."
     claim = _claim(
-        text="Related-party transactions are 44.99% of total",
+        text="The fresh issue is 4,499 crore",
         verbatim_span=span,
         sources=[_source(verbatim_span=span)],
     )
