@@ -10,7 +10,7 @@
 
 - [ ] **Phase 1: Foundation + MVP-A (Cited Q&A on One IPO)** - End-to-end cited Q&A working on one hand-loaded DRHP with full compliance posture, citation infrastructure, and deployed demo URL.
 - [x] **Phase 2: Multi-IPO Catalogue + DRHP Snapshot Surface** - Browseable catalogue of 5-10 IPOs, each with a per-IPO snapshot page (metadata, business summary, financials, risks, use of proceeds, promoter section), all DRHP-cited. (completed 2026-06-24)
-- [ ] **Phase 3: Structured Signal Extraction (Red-Flag Table)** - NLP-extracted structured red-flag table per IPO with per-field confidence scores, hand-labeled gold set evaluation (F1), and numeric-faithfulness release gate.
+- [x] **Phase 3: Structured Signal Extraction (Red-Flag Table)** - NLP-extracted structured red-flag table per IPO with per-field confidence scores, hand-labeled gold set evaluation (F1), and numeric-faithfulness release gate. (completed 2026-07-05)
 - [ ] **Phase 4: Historical IPO Dataset + Peer Comparator + GMP Display** - Survivorship-corrected historical IPO dataset (SEBI-sourced universe with status column), peer multiples comparison table, GMP read-only display, Indian-context formatting throughout.
 - [ ] **Phase 5: Calibrated Listing-Day Forecaster** - XGBoost + MAPIE conformal regression with walk-forward backtest, four baselines, committed model card, GMP-vs-model gap signal, uncertainty rendered as first-class UI.
 - [ ] **Phase 6: Full Eval Harness + Agentic Polish + Portfolio Surface** - RAGAS/DeepEval/Langfuse eval dashboards, in-UI metric surfacing, "Show your work" pane, agent trace visibility, portfolio-presentable repo (README + methodology + failure gallery).
@@ -141,7 +141,7 @@
 |-------|----------------|--------|-----------|
 | 1. Foundation + MVP-A | 5/6 | In Progress|  |
 | 2. Multi-IPO Catalogue + DRHP Snapshot | 5/5 | Complete   | 2026-06-24 |
-| 3. Structured Signal Extraction | 6/7 | In Progress|  |
+| 3. Structured Signal Extraction | 7/7 | Complete   | 2026-07-05 |
 | 4. Historical IPO Dataset + Peer Comparator + GMP | 0/0 | Not started | - |
 | 5. Calibrated Listing-Day Forecaster | 0/0 | Not started | - |
 | 6. Full Eval Harness + Agentic Polish + Portfolio | 0/0 | Not started | - |
