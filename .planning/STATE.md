@@ -3,18 +3,18 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-06-25T18:23:29.580Z"
+last_updated: "2026-07-05T14:09:30.413Z"
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 18
-  completed_plans: 16
+  completed_plans: 17
   percent: 33
 ---
 
 # STATE: DRHPLens
 
-**Last Updated:** 2026-06-23
+**Last Updated:** 2026-07-05
 
 ## Project Reference
 
@@ -29,9 +29,9 @@ progress:
 ## Current Position
 
 Phase: 03 (Structured Signal Extraction (Red-Flag Table)) — EXECUTING
-Plan: 4 of 7 complete (Wave 4: EXTRACT-03 gold-set F1 scorer + labeling rubric)
+Plan: 6 of 7 complete (Wave 4: METHOD-01 cached-only methodology "Show your work" pane + Phase 3 scrubber-guarded copy + monochrome CSS)
 **Status:** Executing Phase 03
-**Progress:** [█████████░] 89%
+**Progress:** [█████████░] 94%
 
 ## Phase Map
 
@@ -105,6 +105,13 @@ Plan: 4 of 7 complete (Wave 4: EXTRACT-03 gold-set F1 scorer + labeling rubric)
 - drhp_id defaults via intake.run (`state.get('drhp_id') or DRHP_ID_DEFAULT`) to preserve every Phase 1 call shape
 - V5 allow-list guard (is_known_drhp_id) lives inside retrieve.run, before search() — co-located with the boundary it protects
 - catalogue.json holds catalogue-level metadata only; no fabricated financials; source_sha256 stays null until Wave 2 ingest pins it per IPO
+
+### Key Decisions (from Phase 3 Wave 4 / 03-06)
+
+- Methodology pane (`ui/methodology_pane.py`) is a cached-only render — the numeric confidence score (0.00-1.00) surfaces ONLY inside the Show-your-work expander (D3-02/L3-2), never in the up-front row
+- The pane reuses `ui.expander.render_citation_expanders` for the escaped Sources-cited `metadata_footer` and reads chunk scores directly from the cached `GroundedAnswer.claims[].sources[].score` (the descriptor omits score)
+- No live LLM/Qdrant call on expand (Pitfall 5 / D3-17), pinned by an `inspect.getsource` no-client substring gate (`test_no_llm_or_qdrant_import`)
+- `latest_eval_scores` picks the newest `eval/reports/*.md` by ISO-date-prefixed filename (lexical == chronological) and degrades to `None` → eval-not-available copy on a missing/empty report dir
 
 ### Open Blockers
 
