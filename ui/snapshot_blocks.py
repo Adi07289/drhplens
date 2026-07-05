@@ -15,13 +15,28 @@ import html as _html
 
 import streamlit as st
 
+from agent.policies import IDF_BAND_THRESHOLDS
+from agent.redflag_schema import RankedRisk, RedFlagRecord
 from agent.schemas import GroundedAnswer, RefusalResponse
+from pipelines.redflag_queries import REDFLAG_QUERIES
 from ui.chip import render_answer_with_chips
 from ui.disclaimer import render_per_answer_footer
 from ui.expander import render_citation_expanders
+from ui.methodology_pane import render_methodology_pane
 from ui.copy import (
+    CONFIDENCE_LABEL_TEMPLATE,
+    FIELD_NOT_DISCLOSED_IN_DRHP_NOTE,
     FIELD_NOT_DISCLOSED_NOTE,
+    FIELD_NUMERIC_GATE_BLOCKED,
+    REDFLAG_BLOCK_HEADING,
+    REDFLAG_BLOCK_SUBLINE,
+    REDFLAG_FIELD_LABELS,
+    RISK_BLOCK_HEADING,
+    RISK_BLOCK_SUBLINE,
     RISK_COUNTER_TEMPLATE,
+    RISK_SPECIFICITY_COUNTER_TEMPLATE,
+    SPEC_METER_ARIA_TEMPLATE,
+    SPECIFICITY_BAND_WORDS,
     SPLIT_BAR_CAPTION_TEMPLATE,
     SPLIT_BAR_PURE_FRESH,
     SPLIT_BAR_PURE_OFS,
@@ -272,3 +287,198 @@ def _chip_for(claim_id: str, chip_map: dict[str, int]) -> str:
     if chip_n is None:
         return ""
     return " " + build_chip_html(claim_id, chip_n)
+
+
+# ===========================================================================
+# Phase 3 — Red-flag signals table + IDF-ranked risk list (03-07-PLAN.md Task 1)
+# ===========================================================================
+
+# Meter fill saturates at the "issuer_specific" IDF threshold (agent.policies
+# IDF_BAND_THRESHOLDS high bound) so the accent magnitude and the specificity
+# WORD are driven by the SAME rubric — a risk at/above the issuer-specific
+# threshold fills the bar fully. Fill is a magnitude indicator (more fill = more
+# issuer-specific), NEVER a danger verdict (L3-1, T-03-14).
+_SPEC_METER_MAX_IDF: float = IDF_BAND_THRESHOLDS[1]
+
+
+def _spec_meter_pct(idf_score: float) -> int:
+    """Normalize an IDF score to a 0-100 meter-fill percentage (clamped)."""
+    if _SPEC_METER_MAX_IDF <= 0:
+        return 0
+    pct = idf_score / _SPEC_METER_MAX_IDF * 100.0
+    return max(0, min(100, round(pct)))
+
+
+def _render_redflag_refusal(refusal: RefusalResponse) -> None:
+    """Render a red-flag row's honest absence value (L3-3 / L3-9).
+
+    The confidence label is ALWAYS omitted for a refusal (D3-03). A refusal
+    carrying the numeric-gate blocked-copy renders that copy (never an unsourced
+    number, L3-9); any other refusal renders the honest not-disclosed note.
+    """
+    if refusal.explanation == FIELD_NUMERIC_GATE_BLOCKED:
+        note = FIELD_NUMERIC_GATE_BLOCKED
+    else:
+        note = FIELD_NOT_DISCLOSED_IN_DRHP_NOTE
+    st.markdown(
+        f'<div class="drhp-redflag-value drhp-not-disclosed">{_html.escape(note)}</div>',
+        unsafe_allow_html=True,
+    )
+
+
+def render_redflag_table(record: RedFlagRecord) -> None:
+    """Render the Red-flag signals table — 7 stacked monochrome field rows.
+
+    Per 03-UI-SPEC.md §Red-Flag Signal Table Contract: the 7 canonical fields
+    render in the fixed REDFLAG_FIELD_LABELS order, ALWAYS all seven (never a
+    hidden row). Each grounded field value renders via the UNCHANGED
+    render_answer_with_chips (tabular-nums numeric values with inline citation
+    chips), then its per-row citation expanders, then a plain
+    `Confidence: high|medium|low` TEXT label (no pill, no color, L3-2), then the
+    cached-only `Show your work` methodology pane (METHOD-01). A not-disclosed
+    field renders the honest not-disclosed note with the confidence label OMITTED
+    (L3-3/D3-03); a numeric-gate-blocked field renders the blocked-copy, never an
+    unsourced number (L3-9). NO red/green, NO badge, NO severity icon, NO
+    aggregate score anywhere (EXTRACT-01/02, L3-1).
+    """
+    st.markdown('<div class="drhp-redflag-table">', unsafe_allow_html=True)
+    st.markdown(
+        f'<h2 class="drhp-snapshot-block-heading">{_html.escape(REDFLAG_BLOCK_HEADING)}</h2>',
+        unsafe_allow_html=True,
+    )
+    st.caption(REDFLAG_BLOCK_SUBLINE)
+
+    for field_key, label in REDFLAG_FIELD_LABELS.items():
+        field = record.fields.get(field_key)
+        st.markdown('<div class="drhp-redflag-row">', unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="drhp-redflag-label">{_html.escape(label)}</div>',
+            unsafe_allow_html=True,
+        )
+
+        if field is None:
+            # Field not present in the cached record — honest absence (never a
+            # fabricated row); confidence omitted.
+            st.markdown(
+                f'<div class="drhp-redflag-value drhp-not-disclosed">'
+                f'{_html.escape(FIELD_NOT_DISCLOSED_IN_DRHP_NOTE)}</div>',
+                unsafe_allow_html=True,
+            )
+        elif isinstance(field.value, GroundedAnswer):
+            rendered_html, chip_map = render_answer_with_chips(field.value)
+            st.markdown(
+                f'<div class="drhp-redflag-value">{rendered_html}</div>',
+                unsafe_allow_html=True,
+            )
+            _render_expanders(field.value, chip_map)
+            if field.confidence_tier is not None:
+                st.markdown(
+                    f'<div class="drhp-confidence-label">'
+                    f'{_html.escape(CONFIDENCE_LABEL_TEMPLATE.format(confidence_tier=field.confidence_tier))}'
+                    f'</div>',
+                    unsafe_allow_html=True,
+                )
+            # METHOD-01: cached-only Show-your-work pane on each red-flag field.
+            render_methodology_pane(
+                query=REDFLAG_QUERIES.get(field_key, ""),
+                grounded_answer=field.value,
+                confidence_tier=field.confidence_tier,
+                confidence_score=field.confidence_score,
+            )
+        else:
+            _render_redflag_refusal(field.value)
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+
+def _claim_lookup(record: RedFlagRecord) -> dict:
+    """Map claim_id -> (Claim, parent GroundedAnswer, field_key) over grounded fields.
+
+    RankedRisk carries only claim_id/idf_score/specificity_band, so the risk
+    text + citations are resolved back to the originating Claim here.
+    """
+    lookup: dict = {}
+    for field_key, field in record.fields.items():
+        value = field.value
+        if isinstance(value, GroundedAnswer):
+            for claim in value.claims:
+                lookup[claim.claim_id] = (claim, value, field_key)
+    return lookup
+
+
+def render_idf_risk_list(ranked_risks: list[RankedRisk], record: RedFlagRecord) -> None:
+    """Render the SINGLE IDF-ranked risk list (supersedes the Phase 2 ordering).
+
+    Per 03-UI-SPEC.md §IDF-Ranked Risk List Contract (L3-4): one ranked list,
+    descending idf_score (most issuer-specific first), each item carrying the
+    `Risk n of m · {specificity}` counter, a monochrome `.drhp-spec-meter`
+    (accent fill proportional to the normalized IDF on a neutral track — more
+    fill = more issuer-specific, NEVER a danger verdict, T-03-14), a text `{pct}%`
+    label, and the cited risk text (chips + citation expander) via the UNCHANGED
+    render_answer_with_chips. Industry-standard risks render LOWER in the SAME
+    list (no collapsed bucket). NO red/green anywhere (L3-1).
+    """
+    lookup = _claim_lookup(record)
+    total = len(ranked_risks)
+
+    st.markdown('<div class="drhp-snapshot-block">', unsafe_allow_html=True)
+    st.markdown(
+        f'<h2 class="drhp-snapshot-block-heading">{_html.escape(RISK_BLOCK_HEADING)}</h2>',
+        unsafe_allow_html=True,
+    )
+    st.caption(RISK_BLOCK_SUBLINE)
+
+    # ranked_risks arrives ordered by descending idf_score (pipeline contract);
+    # re-sort defensively so the render never depends on caller ordering.
+    ordered = sorted(ranked_risks, key=lambda r: r.idf_score, reverse=True)
+
+    for i, risk in enumerate(ordered, start=1):
+        specificity = SPECIFICITY_BAND_WORDS.get(
+            risk.specificity_band, risk.specificity_band
+        )
+        counter = RISK_SPECIFICITY_COUNTER_TEMPLATE.format(
+            n=i, m=total, specificity=specificity
+        )
+        pct = _spec_meter_pct(risk.idf_score)
+
+        st.markdown('<div class="drhp-risk-item">', unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="drhp-risk-item-counter">{_html.escape(counter)}</div>',
+            unsafe_allow_html=True,
+        )
+
+        # Monochrome specificity meter — accent fill on neutral track (copies the
+        # render_split_bar grammar), always accompanied by a text % + word label.
+        aria_label = SPEC_METER_ARIA_TEMPLATE.format(pct=pct)
+        st.markdown(
+            f'<div class="drhp-spec-meter" role="img" '
+            f'aria-label="{_html.escape(aria_label, quote=True)}">'
+            f'<div class="drhp-spec-meter-fill" style="width:{pct}%;"></div>'
+            f'</div>'
+            f'<div class="drhp-spec-meter-label">{pct}% · {_html.escape(specificity)}</div>',
+            unsafe_allow_html=True,
+        )
+
+        entry = lookup.get(risk.claim_id)
+        if entry is not None:
+            claim, _parent, _field_key = entry
+            # Isolate this risk's citation to a single-claim GroundedAnswer so the
+            # chip numbering + its expander are scoped to this one item; reuses the
+            # UNCHANGED render_answer_with_chips / expander renderers.
+            single = GroundedAnswer(
+                answer_prose=f"{{{{{claim.claim_id}}}}}",
+                claims=[claim],
+            )
+            _rendered, chip_map = render_answer_with_chips(single)
+            st.markdown(
+                f'<div class="drhp-risk-item-text">{_html.escape(claim.text)}'
+                f'{_chip_for(claim.claim_id, chip_map)}</div>',
+                unsafe_allow_html=True,
+            )
+            _render_expanders(single, chip_map)
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
