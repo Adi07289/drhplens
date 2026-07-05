@@ -341,56 +341,58 @@ def render_redflag_table(record: RedFlagRecord) -> None:
     unsourced number (L3-9). NO red/green, NO badge, NO severity icon, NO
     aggregate score anywhere (EXTRACT-01/02, L3-1).
     """
-    st.markdown('<div class="drhp-redflag-table">', unsafe_allow_html=True)
-    st.markdown(
-        f'<h2 class="drhp-snapshot-block-heading">{_html.escape(REDFLAG_BLOCK_HEADING)}</h2>',
-        unsafe_allow_html=True,
-    )
-    st.caption(REDFLAG_BLOCK_SUBLINE)
-
-    for field_key, label in REDFLAG_FIELD_LABELS.items():
-        field = record.fields.get(field_key)
-        st.markdown('<div class="drhp-redflag-row">', unsafe_allow_html=True)
+    # Real Streamlit container as the card — a split open/close <div> across two
+    # st.markdown calls renders an EMPTY styled box (Streamlit isolates each
+    # markdown in its own DOM block), which is why a raw wrapper showed a blank
+    # white bar. st.container(border=True) actually wraps the rows.
+    with st.container(border=True):
         st.markdown(
-            f'<div class="drhp-redflag-label">{_html.escape(label)}</div>',
+            f'<h2 class="drhp-snapshot-block-heading">{_html.escape(REDFLAG_BLOCK_HEADING)}</h2>',
             unsafe_allow_html=True,
         )
+        st.caption(REDFLAG_BLOCK_SUBLINE)
 
-        if field is None:
-            # Field not present in the cached record — honest absence (never a
-            # fabricated row); confidence omitted.
-            st.markdown(
-                f'<div class="drhp-redflag-value drhp-not-disclosed">'
-                f'{_html.escape(FIELD_NOT_DISCLOSED_IN_DRHP_NOTE)}</div>',
-                unsafe_allow_html=True,
-            )
-        elif isinstance(field.value, GroundedAnswer):
-            rendered_html, chip_map = render_answer_with_chips(field.value)
-            st.markdown(
-                f'<div class="drhp-redflag-value">{rendered_html}</div>',
-                unsafe_allow_html=True,
-            )
-            _render_expanders(field.value, chip_map)
-            if field.confidence_tier is not None:
+        for field_key, label in REDFLAG_FIELD_LABELS.items():
+            field = record.fields.get(field_key)
+            with st.container():
                 st.markdown(
-                    f'<div class="drhp-confidence-label">'
-                    f'{_html.escape(CONFIDENCE_LABEL_TEMPLATE.format(confidence_tier=field.confidence_tier))}'
-                    f'</div>',
+                    f'<div class="drhp-redflag-label">{_html.escape(label)}</div>',
                     unsafe_allow_html=True,
                 )
-            # METHOD-01: cached-only Show-your-work pane on each red-flag field.
-            render_methodology_pane(
-                query=REDFLAG_QUERIES.get(field_key, ""),
-                grounded_answer=field.value,
-                confidence_tier=field.confidence_tier,
-                confidence_score=field.confidence_score,
-            )
-        else:
-            _render_redflag_refusal(field.value)
 
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown('</div>', unsafe_allow_html=True)
+                if field is None:
+                    # Field not present in the cached record — honest absence
+                    # (never a fabricated row); confidence omitted.
+                    st.markdown(
+                        f'<div class="drhp-redflag-value drhp-not-disclosed">'
+                        f'{_html.escape(FIELD_NOT_DISCLOSED_IN_DRHP_NOTE)}</div>',
+                        unsafe_allow_html=True,
+                    )
+                elif isinstance(field.value, GroundedAnswer):
+                    rendered_html, chip_map = render_answer_with_chips(field.value)
+                    st.markdown(
+                        f'<div class="drhp-redflag-value">{rendered_html}</div>',
+                        unsafe_allow_html=True,
+                    )
+                    _render_expanders(field.value, chip_map)
+                    if field.confidence_tier is not None:
+                        st.markdown(
+                            f'<div class="drhp-confidence-label">'
+                            f'{_html.escape(CONFIDENCE_LABEL_TEMPLATE.format(confidence_tier=field.confidence_tier))}'
+                            f'</div>',
+                            unsafe_allow_html=True,
+                        )
+                    # METHOD-01: cached-only Show-your-work pane on each field.
+                    # key=field_key keeps each pane's toggle id unique.
+                    render_methodology_pane(
+                        query=REDFLAG_QUERIES.get(field_key, ""),
+                        grounded_answer=field.value,
+                        confidence_tier=field.confidence_tier,
+                        confidence_score=field.confidence_score,
+                        key=f"redflag_{field_key}",
+                    )
+                else:
+                    _render_redflag_refusal(field.value)
 
 
 def _claim_lookup(record: RedFlagRecord) -> dict:
