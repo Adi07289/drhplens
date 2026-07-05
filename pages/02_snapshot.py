@@ -20,8 +20,12 @@ st.set_page_config(
 
 from app.util.css_loader import load_global_css  # noqa: E402
 from data.catalogue_loader import is_known_drhp_id, load_catalogue  # noqa: E402
+from pipelines.redflag import load_redflag  # noqa: E402
 from pipelines.snapshot import load_snapshot  # noqa: E402
 from ui.copy import (  # noqa: E402
+    REDFLAG_EMPTY_BODY,
+    REDFLAG_EMPTY_HEADING,
+    REDFLAG_ERROR_STATE,
     SNAPSHOT_BLOCK_HEADING_BUSINESS,
     SNAPSHOT_BLOCK_HEADING_FINANCIALS,
     SNAPSHOT_BLOCK_HEADING_PROMOTER,
@@ -37,6 +41,8 @@ from ui.disclaimer import render_persistent_footer  # noqa: E402
 from ui.snapshot_blocks import (  # noqa: E402
     render_financials_table,
     render_grounded_block,
+    render_idf_risk_list,
+    render_redflag_table,
     render_risk_block,
     render_split_bar,
     render_use_of_proceeds_body,
@@ -86,6 +92,33 @@ def _issuer_for(drhp_id: str) -> str:
     return drhp_id
 
 
+def _render_redflag_block(redflag_record, redflag_state: str) -> None:
+    """Render the Red-flag signals block high on the page (UI-SPEC IA).
+
+    A cache miss renders the empty-state copy in the block slot (never fabricated
+    rows); an error renders the amber .drhp-refusal banner; a present record
+    renders the 7-row table. The rest of the page renders regardless.
+    """
+    if redflag_state == "error":
+        st.markdown(
+            f'<div class="drhp-refusal" role="alert" aria-live="polite">'
+            f'<p class="drhp-refusal-body">{_html.escape(REDFLAG_ERROR_STATE)}</p>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+        return
+    if redflag_record is None:
+        st.markdown('<div class="drhp-redflag-table">', unsafe_allow_html=True)
+        st.markdown(
+            f'<h2 class="drhp-empty-heading">{_html.escape(REDFLAG_EMPTY_HEADING)}</h2>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(REDFLAG_EMPTY_BODY)
+        st.markdown('</div>', unsafe_allow_html=True)
+        return
+    render_redflag_table(redflag_record)
+
+
 def main() -> None:
     raw_drhp_id = st.query_params.get("drhp_id")
 
@@ -123,6 +156,25 @@ def main() -> None:
         )
         record = None
 
+    # Phase 3 red-flag cache read — same allow-list guard (drhp_id validated
+    # above) + try/except posture as load_snapshot. A cache miss -> empty-state
+    # copy; any other error -> amber .drhp-refusal banner; never an unhandled
+    # exception (T-03-01).
+    redflag_record = None
+    redflag_state = "ok"
+    try:
+        redflag_record = load_redflag(drhp_id)
+    except FileNotFoundError:
+        redflag_record = None
+        redflag_state = "missing"
+    except Exception:
+        redflag_record = None
+        redflag_state = "error"
+
+    # Red-flag signals block — HIGH on the page (after the metadata header,
+    # above-the-fold-adjacent on mobile), before the Phase 2 field blocks.
+    _render_redflag_block(redflag_record, redflag_state)
+
     if record is not None:
         # Locked block order: metadata, business, financials, risks,
         # use-of-proceeds (split bar first), promoter.
@@ -138,14 +190,21 @@ def main() -> None:
         render_financials_table(record.fields.get("financials"))
         st.markdown('</div>', unsafe_allow_html=True)
 
-        st.markdown('<div class="drhp-snapshot-block">', unsafe_allow_html=True)
-        st.markdown(
-            f'<h2 class="drhp-snapshot-block-heading">'
-            f'{_html.escape(SNAPSHOT_BLOCK_HEADING_RISKS)}</h2>',
-            unsafe_allow_html=True,
-        )
-        render_risk_block(record.fields.get("risks"))
-        st.markdown('</div>', unsafe_allow_html=True)
+        # SINGLE risk list (UI-SPEC IA reconciliation, L3-4): the IDF-ranked list
+        # SUPERSEDES the Phase 2 prioritized ordering. Exactly ONE renders at
+        # runtime — the IDF list when ranked_risks exist, else the UNCHANGED
+        # Phase 2 render_risk_block as the empty-state fallback.
+        if redflag_record is not None and redflag_record.ranked_risks:
+            render_idf_risk_list(redflag_record.ranked_risks, redflag_record)
+        else:
+            st.markdown('<div class="drhp-snapshot-block">', unsafe_allow_html=True)
+            st.markdown(
+                f'<h2 class="drhp-snapshot-block-heading">'
+                f'{_html.escape(SNAPSHOT_BLOCK_HEADING_RISKS)}</h2>',
+                unsafe_allow_html=True,
+            )
+            render_risk_block(record.fields.get("risks"))
+            st.markdown('</div>', unsafe_allow_html=True)
 
         st.markdown('<div class="drhp-snapshot-block">', unsafe_allow_html=True)
         st.markdown(

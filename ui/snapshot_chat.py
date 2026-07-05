@@ -31,6 +31,7 @@ from ui.copy import (
 )
 from ui.disclaimer import render_per_answer_footer
 from ui.expander import render_citation_expanders
+from ui.methodology_pane import render_methodology_pane
 from ui.refusal_banner import MAX_CHIPS_RENDERED, render_refusal_banner
 from ui.state import append_to_chat_history, get_chat_history
 
@@ -86,6 +87,19 @@ def _render_chat_history(history: list) -> None:
                                 unsafe_allow_html=True,
                             )
                     st.markdown(render_per_answer_footer(), unsafe_allow_html=True)
+                    # METHOD-01: the primary Show-your-work surface — cached-only
+                    # pane on each Q&A answer, keyed to the user's question (the
+                    # immediately preceding user turn). No live call on expand.
+                    prev_turn = history[turn_index - 1] if turn_index > 0 else None
+                    question = (
+                        prev_turn["content"]
+                        if prev_turn and prev_turn["role"] == "user"
+                        else ""
+                    )
+                    render_methodology_pane(
+                        query=question,
+                        grounded_answer=content,
+                    )
 
                 elif isinstance(content, RefusalResponse):
                     st.markdown(render_refusal_banner(content), unsafe_allow_html=True)
