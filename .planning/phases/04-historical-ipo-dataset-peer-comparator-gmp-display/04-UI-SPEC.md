@@ -1,11 +1,12 @@
 ---
 phase: 4
 slug: historical-ipo-dataset-peer-comparator-gmp-display
-status: draft
+status: approved
 shadcn_initialized: false
 preset: not-applicable
 extends: [01-UI-SPEC.md, 02-UI-SPEC.md, 03-UI-SPEC.md]
 created: 2026-07-06
+reviewed_at: 2026-07-06
 ---
 
 # Phase 4 — UI Design Contract: Peer Comparator + Read-Only GMP + Indian Formatting & Glossary
