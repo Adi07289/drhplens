@@ -26,12 +26,46 @@ def _grounded_answer_from_record(synthetic_redflag_record):
     return synthetic_redflag_record.fields["rpt_pct"].value
 
 
-def test_pane_renders_from_cache(synthetic_redflag_record, tmp_path, capsys, monkeypatch):
-    """The pane builds its content (query / chunks+scores / prompt / sources /
-    eval scores) from cached RedFlagRecord + committed eval reports, no live call.
+def _stub_st(emitted, *, tech_on: bool):
+    """A recording Streamlit stub. `tech_on` controls the technical-details
+    toggle so tests can exercise Tier 1 alone or both tiers."""
 
-    We stub Streamlit so the test runs headless and asserts the five Phase 3 pane
-    labels are emitted, and that the numeric confidence score surfaces in the pane.
+    class _ExpanderCtx:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    class _StStub:
+        def expander(self, label, expanded=False):
+            emitted.append(f"EXPANDER:{label}")
+            return _ExpanderCtx()
+
+        def toggle(self, label, value=False, key=None):
+            emitted.append(f"TOGGLE:{label}")
+            return tech_on
+
+        def markdown(self, body, unsafe_allow_html=False):
+            emitted.append(body)
+
+        def caption(self, body):
+            emitted.append(body)
+
+        def code(self, body, language=None):
+            emitted.append(body)
+
+        def write(self, body):
+            emitted.append(str(body))
+
+    return _StStub()
+
+
+def test_pane_renders_from_cache(synthetic_redflag_record, tmp_path, capsys, monkeypatch):
+    """The pane builds its content from cached RedFlagRecord + committed eval
+    reports, no live call. With the technical toggle ON, both tiers render:
+    Tier 1 (source verification + plain trust line) and Tier 2 (the developer
+    internals — query / chunks+scores / prompt / sources / eval report).
     """
     ga = _grounded_answer_from_record(synthetic_redflag_record)
 
@@ -47,34 +81,8 @@ def test_pane_renders_from_cache(synthetic_redflag_record, tmp_path, capsys, mon
         encoding="utf-8",
     )
 
-    # Capture every markdown/label string the pane emits via a recording stub.
     emitted: list[str] = []
-
-    class _ExpanderCtx:
-        def __enter__(self):
-            return self
-
-        def __exit__(self, *a):
-            return False
-
-    class _StStub:
-        def expander(self, label, expanded=False):
-            emitted.append(f"EXPANDER:{label}")
-            return _ExpanderCtx()
-
-        def markdown(self, body, unsafe_allow_html=False):
-            emitted.append(body)
-
-        def caption(self, body):
-            emitted.append(body)
-
-        def code(self, body, language=None):
-            emitted.append(body)
-
-        def write(self, body):
-            emitted.append(str(body))
-
-    monkeypatch.setattr(mp, "st", _StStub())
+    monkeypatch.setattr(mp, "st", _stub_st(emitted, tech_on=True))
 
     render_methodology_pane(
         query="What are the related-party transactions?",
@@ -86,19 +94,60 @@ def test_pane_renders_from_cache(synthetic_redflag_record, tmp_path, capsys, mon
     )
 
     blob = "\n".join(emitted)
-    # The five Phase 3 pane labels render.
+    # Tier 1 — plain-English source verification (always shown).
     assert "Show your work" in blob
+    assert "Where this answer comes from" in blob
+    assert "Prospectus p.212" in blob
+    # The verbatim source passage renders (as a blockquote).
+    assert "related-party transactions" in blob.lower()
+    # Trust line: confidence-in-words + the committed citation-accuracy number.
+    assert "Confidence: High" in blob
+    assert "97%" in blob  # citation accuracy 0.97 -> "97%"
+    # Tier 2 — developer internals (toggle ON here).
+    assert "Show technical details" in blob
     assert "Retrieval query" in blob
     assert "Retrieved chunks (with scores)" in blob
     assert "Prompt used" in blob
     assert "Sources cited" in blob
     assert "Eval scores (from the latest committed report)" in blob
-    # The retrieval query string renders.
-    assert "related-party transactions" in blob.lower()
-    # The numeric confidence score (0.00-1.00) surfaces ONLY here.
+    # The numeric confidence score (0.00-1.00) surfaces ONLY here (Tier 2).
     assert "0.9" in blob
     # A retrieved-chunk score from the cached sources[] renders.
     assert "0.88" in blob
+
+
+def test_technical_details_hidden_by_default(synthetic_redflag_record, tmp_path, monkeypatch):
+    """With the toggle OFF (default), Tier 1 renders but the developer internals
+    (retrieval query, chunk scores, prompt) do NOT — the investor is not
+    overwhelmed unless they opt in."""
+    ga = _grounded_answer_from_record(synthetic_redflag_record)
+    report_dir = tmp_path / "reports"
+    report_dir.mkdir()
+    (report_dir / "2026-06-20-extraction-f1.md").write_text(
+        "## Summary\n| Citation accuracy (grounded) | 0.97 |\n", encoding="utf-8"
+    )
+
+    emitted: list[str] = []
+    monkeypatch.setattr(mp, "st", _stub_st(emitted, tech_on=False))
+
+    render_methodology_pane(
+        query="What are the related-party transactions?",
+        grounded_answer=ga,
+        confidence_tier="high",
+        confidence_score=0.9,
+        eval_report_dir=str(report_dir),
+    )
+
+    blob = "\n".join(emitted)
+    # Tier 1 present.
+    assert "Where this answer comes from" in blob
+    assert "Prospectus p.212" in blob
+    assert "Show technical details" in blob  # the toggle affordance itself
+    # Tier 2 internals absent (toggle OFF).
+    assert "Retrieval query" not in blob
+    assert "Prompt used" not in blob
+    # The raw numeric confidence score is NOT shown in the default view.
+    assert "Confidence score:" not in blob
 
 
 def test_pane_renders_eval_not_available_when_no_report(
@@ -111,32 +160,7 @@ def test_pane_renders_eval_not_available_when_no_report(
     empty_report_dir.mkdir()
 
     emitted: list[str] = []
-
-    class _ExpanderCtx:
-        def __enter__(self):
-            return self
-
-        def __exit__(self, *a):
-            return False
-
-    class _StStub:
-        def expander(self, label, expanded=False):
-            emitted.append(f"EXPANDER:{label}")
-            return _ExpanderCtx()
-
-        def markdown(self, body, unsafe_allow_html=False):
-            emitted.append(body)
-
-        def caption(self, body):
-            emitted.append(body)
-
-        def code(self, body, language=None):
-            emitted.append(body)
-
-        def write(self, body):
-            emitted.append(str(body))
-
-    monkeypatch.setattr(mp, "st", _StStub())
+    monkeypatch.setattr(mp, "st", _stub_st(emitted, tech_on=True))
 
     render_methodology_pane(
         query="What are the related-party transactions?",
@@ -150,7 +174,10 @@ def test_pane_renders_eval_not_available_when_no_report(
     from ui.copy import METHODOLOGY_EVAL_NOT_AVAILABLE
 
     assert METHODOLOGY_EVAL_NOT_AVAILABLE in blob
-    # The other four lines still render from cached trace.
+    # Tier 1 source verification still renders from the cached trace.
+    assert "Where this answer comes from" in blob
+    assert "Prospectus p.212" in blob
+    # Tier 2 internals still render (toggle ON) even with no eval report.
     assert "Retrieval query" in blob
     assert "Retrieved chunks (with scores)" in blob
     assert "Prompt used" in blob

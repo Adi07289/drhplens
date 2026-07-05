@@ -347,6 +347,44 @@ METHODOLOGY_EVAL_NOT_AVAILABLE: str = (
     "still applies before this number is shown."
 )
 
+# --- Redesigned two-tier "Show your work" pane (investor-first) -------------
+# Tier 1 leads with plain-English source verification; the developer internals
+# (query / chunk scores / prompt / raw eval report) move behind a toggle.
+
+METHODOLOGY_SOURCE_HEADING: str = "Where this answer comes from"
+METHODOLOGY_SOURCE_LEAD: str = (
+    "Pulled straight from the prospectus — here is the exact passage it rests on."
+)
+METHODOLOGY_SOURCE_LOCATION_TEMPLATE: str = "Prospectus p.{page} · {section}"
+"""Human-readable source location. .format(page=.., section=..)."""
+
+METHODOLOGY_TRUST_HEADING: str = "How much to trust this"
+
+CONFIDENCE_PLAIN_HIGH: str = "stated directly on the cited page"
+CONFIDENCE_PLAIN_MEDIUM: str = "supported by the cited page, with light parsing"
+CONFIDENCE_PLAIN_LOW: str = "inferred from the cited page — read it alongside the source"
+
+# confidence_tier -> plain-English meaning (what the tier actually implies).
+CONFIDENCE_PLAIN_WORDS: dict[str, str] = {
+    "high": CONFIDENCE_PLAIN_HIGH,
+    "medium": CONFIDENCE_PLAIN_MEDIUM,
+    "low": CONFIDENCE_PLAIN_LOW,
+}
+
+METHODOLOGY_TRUST_TEMPLATE: str = "Confidence: {tier_word} — {tier_meaning}."
+"""Plain trust sentence. .format(tier_word='High'|'Medium'|'Low', tier_meaning=..)."""
+
+METHODOLOGY_EVAL_ACCURACY_TEMPLATE: str = (
+    "In our testing, cited pages matched the claim {accuracy} of the time."
+)
+"""One-line eval summary for the investor view. .format(accuracy='97%')."""
+
+METHODOLOGY_TECH_TOGGLE: str = "Show technical details"
+METHODOLOGY_TECH_CAPTION: str = (
+    "For reviewers: the retrieval query, chunk scores, the prompt, and the full "
+    "evaluation report."
+)
+
 FIELD_NOT_DISCLOSED_IN_DRHP_NOTE: str = "Not disclosed in DRHP"
 """Phase 3 not-disclosed note (L3-3). Distinct verbatim string from the Phase 2
 FIELD_NOT_DISCLOSED_NOTE ('Not disclosed in this DRHP.') per the UI-SPEC."""
@@ -402,6 +440,11 @@ _SAMPLE_FORMAT_VALUES = {
     "specificity": "Issuer-specific",
     "pct": "62",
     "confidence_tier": "high",
+    "page": "212",
+    "section": "Related Party Transactions",
+    "tier_word": "High",
+    "tier_meaning": "stated directly on the cited page",
+    "accuracy": "97%",
 }
 
 

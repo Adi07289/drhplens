@@ -99,6 +99,7 @@ def _render_chat_history(history: list) -> None:
                     render_methodology_pane(
                         query=question,
                         grounded_answer=content,
+                        key=f"qa_{turn_index}",
                     )
 
                 elif isinstance(content, RefusalResponse):
