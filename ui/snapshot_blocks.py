@@ -15,6 +15,7 @@ import html as _html
 
 import streamlit as st
 
+from agent.peer_schema import PeerCell, PeerMetric, PeerRecord
 from agent.policies import IDF_BAND_THRESHOLDS
 from agent.redflag_schema import RankedRisk, RedFlagRecord
 from agent.schemas import GroundedAnswer, RefusalResponse
@@ -29,6 +30,21 @@ from ui.copy import (
     FIELD_NOT_DISCLOSED_IN_DRHP_NOTE,
     FIELD_NOT_DISCLOSED_NOTE,
     FIELD_NUMERIC_GATE_BLOCKED,
+    GLOSSARY,
+    PEER_ASOF_DRHP_LABEL,
+    PEER_BLOCK_HEADING,
+    PEER_BLOCK_SUBLINE,
+    PEER_CELL_NOT_AVAILABLE_ARIA,
+    PEER_COL_COMPANY,
+    PEER_COL_EV_EBITDA,
+    PEER_COL_PB,
+    PEER_COL_PE,
+    PEER_COL_ROE,
+    PEER_EMPTY_STATE,
+    PEER_IPO_ROW_TAG,
+    PEER_NM_NOTE,
+    PEER_PROVENANCE_LEGEND,
+    PEER_SOURCE_NAMES,
     REDFLAG_BLOCK_HEADING,
     REDFLAG_BLOCK_SUBLINE,
     REDFLAG_FIELD_LABELS,
@@ -490,3 +506,239 @@ def render_idf_risk_list(ranked_risks: list[RankedRisk], record: RedFlagRecord) 
         st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('</div>', unsafe_allow_html=True)
+
+
+# ===========================================================================
+# Phase 4 — Peer-multiples comparison table + glossary helper (04-05-PLAN.md)
+# ===========================================================================
+
+# Fixed column order (04-UI-SPEC.md R-2): Company · P/E · P/B · EV/EBITDA · ROE.
+# The (metric_key, header_copy) pairs drive both the <thead> and each row's cells.
+_PEER_METRIC_COLUMNS: list[tuple[str, str]] = [
+    ("pe", PEER_COL_PE),
+    ("pb", PEER_COL_PB),
+    ("ev_ebitda", PEER_COL_EV_EBITDA),
+    ("roe", PEER_COL_ROE),
+]
+
+
+def glossary_term(term: str) -> str:
+    """Return HTML wrapping `term` in the pure-CSS glossary tooltip (UI-04, R-1).
+
+    The trigger is an inline `.drhp-glossary` span (dotted underline, tabindex=0,
+    role="button") whose sibling `.drhp-glossary-pop` popover is revealed by CSS
+    on :hover / :focus / :focus-within — NO JavaScript. Definitions come from the
+    scrubber-guarded ui.copy.GLOSSARY map (D4-08). An unknown term degrades to its
+    HTML-escaped text (never an exception). Reusable across any rendered prose.
+    """
+    entry = GLOSSARY.get(term)
+    if entry is None:
+        return _html.escape(term)
+    label, definition = entry
+    slug = "".join(ch if ch.isalnum() else "-" for ch in term.lower()).strip("-")
+    pop_id = f"gl-{slug}"
+    return (
+        f'<span class="drhp-glossary" tabindex="0" role="button" '
+        f'aria-describedby="{pop_id}">{_html.escape(label)}'
+        f'<span class="drhp-glossary-pop" role="tooltip" id="{pop_id}">'
+        f'{_html.escape(definition)}</span></span>'
+    )
+
+
+def _peer_source_sup(source: str | None) -> str:
+    """Muted superscript provenance flag for one cell's source letter (R-3).
+
+    The `<sup>` is muted + unfilled — deliberately distinct from the accent,
+    filled citation chip. Its aria-label carries the FULL source name so a screen
+    reader never has to resolve a single letter (04-UI-SPEC a11y). No colour
+    encodes the source (monochrome invariant); an unknown source renders nothing.
+    """
+    if source is None:
+        return ""
+    name = PEER_SOURCE_NAMES.get(source, source)
+    return (
+        f'<sup class="drhp-provenance-flag" '
+        f'aria-label="source: {_html.escape(name, quote=True)}">'
+        f'{_html.escape(source)}</sup>'
+    )
+
+
+def _peer_missing_cell() -> str:
+    """Honest `—` for a value missing from EVERY source (D4-05); never a zero."""
+    return (
+        f'<span aria-label="{_html.escape(PEER_CELL_NOT_AVAILABLE_ARIA, quote=True)}">'
+        f'—</span>'
+    )
+
+
+def _peer_nm_cell(source: str | None) -> str:
+    """`NM` for a negative/undefined ratio (loss-making issuer), never a red number.
+
+    Carries the glossary-popover note `Not meaningful — the company reported a
+    loss` via the SAME pure-CSS .drhp-glossary mechanism (R-1), plus its per-cell
+    provenance flag. Distinguishable from both a real value and a missing cell.
+    """
+    return (
+        f'<span class="drhp-glossary" tabindex="0" role="button" '
+        f'aria-label="{_html.escape(PEER_NM_NOTE, quote=True)}">NM'
+        f'<span class="drhp-glossary-pop" role="tooltip">'
+        f'{_html.escape(PEER_NM_NOTE)}</span></span>'
+        f'{_peer_source_sup(source)}'
+    )
+
+
+def _format_peer_ratio(value: float, metric_key: str) -> str:
+    """One-decimal ratio (ROE as `%`); negatives in parentheses, SAME colour.
+
+    No red for negatives — the inherited financials no-red-for-losses rule
+    (D4-09). ROE is stored as a percent (×100 at precompute, 04-03).
+    """
+    neg = value < 0
+    magnitude = abs(value)
+    if metric_key == "roe":
+        s = f"{magnitude:.1f}%"
+    else:
+        s = f"{magnitude:.1f}"
+    return f"({s})" if neg else s
+
+
+def _render_peer_cell_value(cell: PeerCell | None, metric_key: str) -> str:
+    """Render ONE (company, metric, as-of) cell's inner HTML honestly.
+
+    Order of honesty (04-UI-SPEC §cell edge cases): NM sentinel first (a
+    loss-making ratio), then missing (`—`), then the value + provenance flag.
+    """
+    if cell is None:
+        return _peer_missing_cell()
+    if cell.not_meaningful:
+        return _peer_nm_cell(cell.source)
+    if cell.value is None:
+        return _peer_missing_cell()
+    return f"{_format_peer_ratio(cell.value, metric_key)}{_peer_source_sup(cell.source)}"
+
+
+def _render_peer_metric_cell(metric: PeerMetric | None, metric_key: str) -> str:
+    """Render a full table cell: the current-market value + an optional as-of-DRHP.
+
+    Carries BOTH dimensions where the record supplies them (D4-05): the headline
+    is the current-market value (per the sub-line); a muted secondary
+    `… as of DRHP` line renders when the drhp_date cell holds a value or the NM
+    sentinel. A metric a company has no cell for renders an honest `—`.
+    """
+    if metric is None:
+        return _peer_missing_cell()
+
+    parts = [
+        f'<span class="drhp-peer-current">'
+        f'{_render_peer_cell_value(metric.current, metric_key)}</span>'
+    ]
+    drhp_cell = metric.drhp_date
+    if drhp_cell is not None and (drhp_cell.value is not None or drhp_cell.not_meaningful):
+        parts.append(
+            f'<span class="drhp-peer-asof">'
+            f'{_render_peer_cell_value(drhp_cell, metric_key)} '
+            f'{_html.escape(PEER_ASOF_DRHP_LABEL)}</span>'
+        )
+    return "".join(parts)
+
+
+def _build_peer_table_html(record: PeerRecord) -> str:
+    """Build the self-contained `<table class="drhp-peer-table">` HTML (one call).
+
+    Rows = companies (the IPO's own row first, tagged + neutral-filled); columns =
+    Company · P/E · P/B · EV/EBITDA · ROE. Every scraped company name is
+    HTML-escaped (T-04-05-XSS) before interpolation. Wrapped in the inherited
+    .drhp-fin-table-wrap so the company column stays sticky-left while the metric
+    columns scroll (R-2). A single st.markdown call renders this — never a split
+    div (the Phase 3 white-bar lesson).
+    """
+    header_cells = "".join(
+        f'<th scope="col">{_html.escape(header)}</th>'
+        for _key, header in _PEER_METRIC_COLUMNS
+    )
+    thead = (
+        f'<thead><tr><th scope="col">{_html.escape(PEER_COL_COMPANY)}</th>'
+        f'{header_cells}</tr></thead>'
+    )
+
+    body_rows: list[str] = []
+    for company in record.companies:
+        metrics_by_key = {m.metric: m for m in company.metrics}
+        # T-04-05-XSS: escape the scraped/DRHP-derived peer name before interpolation.
+        name_html = _html.escape(company.name)
+        if company.is_ipo:
+            name_html += (
+                f'<span class="drhp-peer-ipo-tag">'
+                f'{_html.escape(PEER_IPO_ROW_TAG)}</span>'
+            )
+        row_class = ' class="drhp-peer-ipo-row"' if company.is_ipo else ""
+        cells = "".join(
+            f'<td>{_render_peer_metric_cell(metrics_by_key.get(key), key)}</td>'
+            for key, _header in _PEER_METRIC_COLUMNS
+        )
+        body_rows.append(
+            f'<tr{row_class}><th scope="row">{name_html}</th>{cells}</tr>'
+        )
+
+    return (
+        '<div class="drhp-fin-table-wrap"><table class="drhp-peer-table">'
+        f'{thead}<tbody>{"".join(body_rows)}</tbody></table></div>'
+    )
+
+
+def render_peer_table(record: PeerRecord) -> None:
+    """Render the peer-multiples comparison block (PEER-01, PEER-02, D4-04/05/06/09).
+
+    Wrapped in `st.container(border=True)` — NEVER a split open/close <div> across
+    two st.markdown calls (the Phase 3 empty-white-bar lesson). Renders entirely
+    from the CACHED PeerRecord (04-03) — NO live source call happens here.
+
+    Structure:
+      - heading `Comparison with listed peers`;
+      - when the DRHP disclosed a peer set (GroundedAnswer): the sub-line, the
+        peer-SET citation via the UNCHANGED render_answer_with_chips / expander
+        path (the ONLY accent element in the block, D4-04), then the sticky-left
+        peer table + the muted per-cell provenance legend (R-3);
+      - when the peer set is a RefusalResponse: the honest D4-06 empty-state note
+        `This DRHP disclosed no listed-peer comparison.` — no table, no fabrication.
+
+    No red/green anywhere; a low and a high multiple render identically (D4-09).
+    """
+    with st.container(border=True):
+        st.markdown(
+            f'<h2 class="drhp-snapshot-block-heading">'
+            f'{_html.escape(PEER_BLOCK_HEADING)}</h2>',
+            unsafe_allow_html=True,
+        )
+
+        peer_set = record.peer_set
+        if not isinstance(peer_set, GroundedAnswer):
+            # D4-06 honest empty-state — the DRHP named no listed peers.
+            st.markdown(
+                f'<div class="drhp-not-disclosed">'
+                f'{_html.escape(PEER_EMPTY_STATE)}</div>',
+                unsafe_allow_html=True,
+            )
+            st.markdown(render_per_answer_footer(), unsafe_allow_html=True)
+            return
+
+        # Sub-line + the peer-SET citation (the only accent element, D4-04) via the
+        # UNCHANGED Phase 1 chip + expander renderers.
+        st.caption(PEER_BLOCK_SUBLINE)
+        rendered_html, chip_map = render_answer_with_chips(peer_set)
+        st.markdown(
+            f'<div class="drhp-peer-citation">{rendered_html}</div>',
+            unsafe_allow_html=True,
+        )
+        _render_expanders(peer_set, chip_map)
+
+        # The table — a SINGLE self-contained st.markdown call (never a split div).
+        st.markdown(_build_peer_table_html(record), unsafe_allow_html=True)
+
+        # Per-cell provenance legend (R-3), then the inherited per-block disclaimer.
+        st.markdown(
+            f'<div class="drhp-provenance-legend">'
+            f'{_html.escape(PEER_PROVENANCE_LEGEND)}</div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(render_per_answer_footer(), unsafe_allow_html=True)
