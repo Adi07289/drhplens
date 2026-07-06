@@ -16,6 +16,7 @@ import streamlit as st
 
 from data.catalogue_loader import CatalogueIPO
 from ui.copy import CATALOGUE_CARD_ARIA_LABEL_TEMPLATE, CATALOGUE_CARD_OPEN_NOW_TAG
+from ui.format_inr import format_inr
 
 _MONTH_NAMES = {
     "01": "Jan", "02": "Feb", "03": "Mar", "04": "Apr",
@@ -35,10 +36,17 @@ def _format_listing_date(listing_date: str) -> str:
 
 
 def _format_issue_size(issue_size_cr: int | None) -> str:
-    """Format issue size in crore notation (lakh/crore, P2-L6)."""
+    """Format issue size via the shared format_inr utility (D4-07, P2-L6).
+
+    issue_size_cr is in CRORE units, so convert to rupees (* 1e7) before
+    calling format_inr — the utility applies its own lakh/crore scaling +
+    Indian digit grouping without double-scaling (a ₹11,327 cr issue renders
+    ₹11,327 crore, never ₹1.13 lakh crore). Fixes the FLAG-FORMAT Western-
+    grouping bug (the old `f"₹{n:,} cr"`); grouping now lives in ONE place.
+    """
     if issue_size_cr is None:
         return "Issue size not disclosed"
-    return f"₹{issue_size_cr:,} cr"
+    return format_inr(issue_size_cr * 1e7)
 
 
 def _card_html(ipo: CatalogueIPO) -> str:

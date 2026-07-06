@@ -22,6 +22,7 @@ from pipelines.redflag_queries import REDFLAG_QUERIES
 from ui.chip import render_answer_with_chips
 from ui.disclaimer import render_per_answer_footer
 from ui.expander import render_citation_expanders
+from ui.format_inr import format_inr
 from ui.methodology_pane import render_methodology_pane
 from ui.copy import (
     CONFIDENCE_LABEL_TEMPLATE,
@@ -178,16 +179,21 @@ _FIN_ROW_LABELS: list[tuple[str, str]] = [
 
 
 def _format_fin_value(value, row_key: str) -> str:
-    """Format one financials cell: losses in parentheses (same color as profits),
-    em-dash for missing, % suffix for margin/ROE/ROCE rows."""
+    """Format one financials cell via the shared format_inr utility (D4-07).
+
+    Missing → em-dash with aria-label (preserved). Margin/ROE/ROCE rows are
+    percentages (not rupees) → plain one-decimal `%`. The rupee rows
+    (revenue/profit_loss/debt) are in CRORE units, so convert to rupees
+    (* 1e7) before format_inr, which renders Indian grouping + lakh/crore and
+    wraps negatives (losses) in parentheses in the SAME text colour as profits
+    (no red). Fixes the second bare-Western `:,` FLAG-FORMAT site.
+    """
     if value is None:
         return f'<span aria-label="Not disclosed in this DRHP">—</span>'
     if isinstance(value, (int, float)):
         if row_key in ("margin_pct", "roe", "roce"):
             return f"{value:.1f}%"
-        if value < 0:
-            return f"(₹{abs(value):,.0f} cr)"
-        return f"₹{value:,.0f} cr"
+        return format_inr(value * 1e7)
     return _html.escape(str(value))
 
 
