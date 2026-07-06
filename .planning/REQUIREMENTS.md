@@ -50,8 +50,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### GMP (Grey Market Premium Display)
 
-- [ ] **GMP-01**: System displays read-only GMP scraped from public aggregators, with explicit caveats about provenance and reliability
-- [ ] **GMP-02**: GMP is computationally isolated from the forecast model — no model feature is derived from GMP
+- [x] **GMP-01**: System displays read-only GMP scraped from public aggregators, with explicit caveats about provenance and reliability
+- [x] **GMP-02**: GMP is computationally isolated from the forecast model — no model feature is derived from GMP
 - [ ] **GMP-03**: UI shows the gap between GMP and the GMP-free model forecast as a transparent comparative signal
 
 ### Eval (Evaluation Harness)
@@ -167,8 +167,8 @@ Which phases cover which requirements. Updated by roadmap creation.
 | FCAST-03 | Phase 5 | Pending |
 | FCAST-04 | Phase 5 | Pending |
 | FCAST-05 | Phase 5 | Pending |
-| GMP-01 | Phase 4 | Pending |
-| GMP-02 | Phase 4 | Pending |
+| GMP-01 | Phase 4 | Complete |
+| GMP-02 | Phase 4 | Complete |
 | GMP-03 | Phase 5 | Pending |
 | EVAL-01 | Phase 6 | Pending |
 | EVAL-02 | Phase 6 | Pending |

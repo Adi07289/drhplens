@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-last_updated: "2026-07-06T11:45:10.231Z"
+last_updated: "2026-07-06T12:32:37.212Z"
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 25
-  completed_plans: 21
+  completed_plans: 22
   percent: 50
 ---
 
@@ -31,7 +31,7 @@ progress:
 Phase: 03 (Structured Signal Extraction (Red-Flag Table)) — CODE WORK COMPLETE (7 of 7 plans)
 Plan: 7 of 7 complete (Wave 5: 03-07 — red-flag table + single IDF risk list + methodology pane wired into pages/02_snapshot.py; Task 3 375px human-verify checkpoint APPROVED)
 **Status:** Phase complete — ready for verification
-**Progress:** [████████░░] 84%
+**Progress:** [█████████░] 88%
 
 ## Phase Map
 
@@ -158,6 +158,7 @@ Phase 3 CODE WORK IS COMPLETE (7/7 plans). The ONLY outstanding Phase 3 item is 
 | Phase 03 P04 | 12min | 2 tasks | 5 files |
 | Phase 03 P07 | ~40min + human-verify | 3 tasks (Task 3 375px human-verify APPROVED) | 6 files; 303 passed; red-flag table + single IDF list + panes wired into the snapshot page |
 | Phase 04 P03 | 40min | 3 tasks | 8 files |
+| Phase 04 P04 | 20min | 2 tasks | 8 files |
 
 ## Decisions
 
