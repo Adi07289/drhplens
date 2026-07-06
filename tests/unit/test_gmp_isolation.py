@@ -33,25 +33,27 @@ FORBIDDEN_TOKENS = (
 )
 
 
+import pipelines.gmp
+import pipelines.gmp_sources
+
+
 def _gmp_modules():
     """The GMP modules under isolation audit.
 
-    Task 1 pins agent.gmp_schema; Task 2 extends the tuple to pipelines.gmp once
-    the pipeline module exists.
+    Both the schema (agent.gmp_schema) and the pipeline (pipelines.gmp +
+    pipelines.gmp_sources) must stay computationally isolated from any modelling
+    or downstream prediction/historical code (GMP-02, D4-03).
     """
-    mods = [agent.gmp_schema]
-    try:
-        import pipelines.gmp
-
-        mods.append(pipelines.gmp)
-    except ModuleNotFoundError:  # pragma: no cover — pipelines.gmp lands in Task 2
-        pass
-    return mods
+    return [
+        agent.gmp_schema,
+        pipelines.gmp,
+        pipelines.gmp_sources,
+    ]
 
 
 def test_gmp_modules_import_no_model_code() -> None:
-    """agent.gmp_schema (+ pipelines.gmp once it exists) reference NONE of the
-    forbidden modelling/prediction tokens — GMP is display-only, cache-only."""
+    """agent.gmp_schema + pipelines.gmp + pipelines.gmp_sources reference NONE of
+    the forbidden modelling/prediction tokens — GMP is display-only, cache-only."""
     for mod in _gmp_modules():
         src = inspect.getsource(mod)
         for token in FORBIDDEN_TOKENS:
