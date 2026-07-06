@@ -18,12 +18,15 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
+from agent.gmp_schema import GmpRecord  # noqa: E402
 from app.util.css_loader import load_global_css  # noqa: E402
 from data.catalogue_loader import is_known_drhp_id, load_catalogue  # noqa: E402
+from pipelines.gmp import load_gmp  # noqa: E402
 from pipelines.peers import load_peers  # noqa: E402
 from pipelines.redflag import load_redflag  # noqa: E402
 from pipelines.snapshot import load_snapshot  # noqa: E402
 from ui.copy import (  # noqa: E402
+    GMP_ERROR_STATE,
     PEER_BLOCK_HEADING,
     PEER_EMPTY_STATE,
     PEER_ERROR_STATE,
@@ -44,6 +47,7 @@ from ui.copy import (  # noqa: E402
 from ui.disclaimer import render_persistent_footer  # noqa: E402
 from ui.snapshot_blocks import (  # noqa: E402
     render_financials_table,
+    render_gmp_block,
     render_grounded_block,
     render_idf_risk_list,
     render_peer_table,
@@ -157,6 +161,28 @@ def _render_peer_block(peer_record, peer_state: str) -> None:
     render_peer_table(peer_record)
 
 
+def _render_gmp_block(gmp_record, gmp_state: str) -> None:
+    """Render the read-only GMP block as the LAST read block (UI-SPEC IA block 10).
+
+    Mirrors the peer/red-flag block posture (drhp_id already allow-list-validated
+    at the top of main()): a cache read error renders the inherited amber
+    .drhp-refusal banner (NOT red); otherwise render_gmp_block renders the cached
+    record — which itself carries the absent / single-source / spread states. A
+    missing cache file (FileNotFoundError) is normalised upstream into an honest
+    absent GmpRecord, so the common already-listed case renders identically to a
+    seeded empty-quotes record (never a fabricated number).
+    """
+    if gmp_state == "error":
+        st.markdown(
+            f'<div class="drhp-refusal" role="alert" aria-live="polite">'
+            f'<p class="drhp-refusal-body">{_html.escape(GMP_ERROR_STATE)}</p>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+        return
+    render_gmp_block(gmp_record)
+
+
 def main() -> None:
     raw_drhp_id = st.query_params.get("drhp_id")
 
@@ -225,6 +251,25 @@ def main() -> None:
         peer_record = None
         peer_state = "error"
 
+    # Phase 4 GMP cache read — SAME allow-list guard (drhp_id validated above) +
+    # try/except posture. Reads ONLY the cached data/gmp/<drhp_id>.json (04-04);
+    # no live scrape on render, imports no model module (GMP-02, D4-03). A missing
+    # cache file is normalised into an honest absent GmpRecord (the COMMON
+    # already-listed case) so it renders exactly like a seeded empty-quotes record
+    # — never a fabricated number. Any other error -> amber .drhp-refusal (NOT red).
+    gmp_record = None
+    gmp_state = "ok"
+    try:
+        gmp_record = load_gmp(drhp_id)
+    except FileNotFoundError:
+        gmp_record = GmpRecord(
+            drhp_id=drhp_id, computed_at="", as_of="", quotes=[]
+        )
+        gmp_state = "absent"
+    except Exception:
+        gmp_record = None
+        gmp_state = "error"
+
     # Red-flag signals block — HIGH on the page (after the metadata header,
     # above-the-fold-adjacent on mobile), before the Phase 2 field blocks.
     _render_redflag_block(redflag_record, redflag_state)
@@ -276,6 +321,13 @@ def main() -> None:
         st.markdown('</div>', unsafe_allow_html=True)
 
         render_grounded_block(record.fields.get("promoter"), SNAPSHOT_BLOCK_HEADING_PROMOTER)
+
+    # NEW (Phase 4) — Grey-market premium, the LAST read block immediately above
+    # the Q&A 2xl divider (UI-SPEC IA block 10, D4-02). Rendered OUTSIDE the
+    # `record is not None` guard because GMP is cache-independent of the snapshot
+    # record: it must remain the last read block even while the snapshot is still
+    # precomputing. Cache-only, monochrome, de-emphasised.
+    _render_gmp_block(gmp_record, gmp_state)
 
     # 2xl gap + divider before the co-located Q&A chat (D2-08).
     st.markdown(

@@ -15,6 +15,7 @@ import html as _html
 
 import streamlit as st
 
+from agent.gmp_schema import GmpRecord
 from agent.peer_schema import PeerCell, PeerMetric, PeerRecord
 from agent.policies import IDF_BAND_THRESHOLDS
 from agent.redflag_schema import RankedRisk, RedFlagRecord
@@ -31,6 +32,17 @@ from ui.copy import (
     FIELD_NOT_DISCLOSED_NOTE,
     FIELD_NUMERIC_GATE_BLOCKED,
     GLOSSARY,
+    GMP_ABSENT,
+    GMP_BLOCK_HEADING,
+    GMP_CAVEAT,
+    GMP_DISCLOSURE_BODY,
+    GMP_DISCLOSURE_HEADING,
+    GMP_RANGE_ARIA_TEMPLATE,
+    GMP_RANGE_HEADLINE_TEMPLATE,
+    GMP_SINGLE_SOURCE_NOTE,
+    GMP_SOURCE_ASOF_TEMPLATE,
+    GMP_SOURCE_ITEM_TEMPLATE,
+    GMP_SOURCE_LINE_JOINER,
     PEER_ASOF_DRHP_LABEL,
     PEER_BLOCK_HEADING,
     PEER_BLOCK_SUBLINE,
@@ -741,4 +753,142 @@ def render_peer_table(record: PeerRecord) -> None:
             f'{_html.escape(PEER_PROVENANCE_LEGEND)}</div>',
             unsafe_allow_html=True,
         )
+        st.markdown(render_per_answer_footer(), unsafe_allow_html=True)
+
+
+# ===========================================================================
+# Phase 4 — Read-only GMP block (04-06-PLAN.md Task 2, 04-UI-SPEC.md R-4)
+# ===========================================================================
+#
+# The QUIETEST surface in the app (D4-02): monochrome, NO accent, NO red/green,
+# no up/down arrow, no single big authoritative number — the cross-source spread
+# is the honesty signal (D4-01). Renders ONLY from the cached GmpRecord passed in
+# (04-04) — no live scrape happens here. GMP-02/D4-03: this render path imports
+# nothing from any model/prediction module (pinned by the Task 2 inspect audit).
+
+
+def _gmp_source_line_html(record: GmpRecord) -> str:
+    """Build the Small muted per-source list: `{source} {value} · … · as of {date}`.
+
+    Each ₹ value routes through format_inr (safe numeric string); every scraped
+    source label is _html.escape'd before interpolation (T-04-06-XSS). The as-of
+    date is a controlled ISO string, escaped defensively.
+    """
+    items = [
+        GMP_SOURCE_ITEM_TEMPLATE.format(
+            source=_html.escape(quote.source), value=format_inr(quote.value)
+        )
+        for quote in record.quotes
+    ]
+    asof = GMP_SOURCE_ASOF_TEMPLATE.format(date=_html.escape(record.as_of))
+    line = GMP_SOURCE_LINE_JOINER.join([*items, asof])
+    return f'<div class="drhp-gmp-source-line">{line}</div>'
+
+
+def _render_gmp_spread(record: GmpRecord) -> None:
+    """Render the monochrome multi-source range strip — the spread IS the point.
+
+    A single self-contained st.markdown (never a split div): the min–max headline
+    (₹ via format_inr, deliberately NOT bold), then a `surface-secondary` track
+    carrying one muted tick per aggregator positioned by inline `left:%`, then the
+    per-source list. `role="img"` + a text aria-label states the spread so it is
+    never conveyed by tick position alone (WCAG 1.4.1). NO accent, no red/green.
+    """
+    spread = record.spread()  # GmpSpread with n >= 2 (guaranteed by caller).
+    low_str = format_inr(spread.low)
+    high_str = format_inr(spread.high)
+    headline = GMP_RANGE_HEADLINE_TEMPLATE.format(
+        low=low_str, high=high_str, n=spread.n
+    )
+    aria = GMP_RANGE_ARIA_TEMPLATE.format(low=low_str, high=high_str, n=spread.n)
+
+    span = spread.high - spread.low
+    ticks = []
+    for quote in record.quotes:
+        pct = 50.0 if span <= 0 else (quote.value - spread.low) / span * 100.0
+        pct = max(0.0, min(100.0, pct))
+        ticks.append(f'<span class="drhp-gmp-tick" style="left:{pct:g}%;"></span>')
+
+    st.markdown(
+        f'<div class="drhp-gmp-range-headline">{_html.escape(headline)}</div>'
+        f'<div class="drhp-gmp-range" role="img" '
+        f'aria-label="{_html.escape(aria, quote=True)}">'
+        f'{"".join(ticks)}</div>'
+        f'{_gmp_source_line_html(record)}',
+        unsafe_allow_html=True,
+    )
+
+
+def _render_gmp_single_source(record: GmpRecord) -> None:
+    """Render the single-source state: the one value + an explicit no-cross-check note.
+
+    Absence of divergence is STATED, not hidden (04-UI-SPEC §States). No range
+    strip (a spread needs >= 2 sources), no fabricated second quote.
+    """
+    st.markdown(
+        f'{_gmp_source_line_html(record)}'
+        f'<div class="drhp-gmp-caveat">{_html.escape(GMP_SINGLE_SOURCE_NOTE)}</div>',
+        unsafe_allow_html=True,
+    )
+
+
+def render_gmp_block(record: GmpRecord) -> None:
+    """Render the read-only grey-market-premium block (GMP-01, D4-01/02/03).
+
+    The last read block on the snapshot page and, by design, the calmest: wrapped
+    in `st.container(border=True)` (never a split div — the Phase 3 white-bar
+    lesson), monochrome, with NO accent anywhere. Renders ENTIRELY from the CACHED
+    GmpRecord (04-04) — no live scrape happens here, and this module imports no
+    model/prediction code (GMP-02, D4-03).
+
+    Structure, top to bottom (04-UI-SPEC R-4):
+      - heading `Grey-market premium (unofficial)` with the GMP glossary tooltip;
+      - the persistent caveat (always visible, never collapsed);
+      - the state body:
+          * absent (`quotes == []`, the COMMON already-listed case) → the honest
+            `.drhp-not-disclosed` note (never a zero, never an error);
+          * single-source (`len == 1`) → the value + the no-cross-source note;
+          * default (>= 2 sources) → the monochrome spread strip (the honesty
+            signal);
+      - the `What is GMP? Why we don't trust it` explanation behind a collapsed
+        `st.expander` with a UNIQUE key;
+      - the inherited per-block disclaimer.
+    """
+    with st.container(border=True):
+        # Heading + persistent caveat in ONE self-contained markdown. The GMP
+        # glossary term (04-05 helper) rides the heading; glossary_term returns
+        # trusted CSS-tooltip HTML (already escaped internally) so it is not
+        # re-escaped. The heading is rendered calm — no bold headline number.
+        st.markdown(
+            f'<div class="drhp-gmp-block">'
+            f'<h2 class="drhp-snapshot-block-heading">'
+            f'{_html.escape(GMP_BLOCK_HEADING)} {glossary_term("GMP")}</h2>'
+            f'<div class="drhp-gmp-caveat">{_html.escape(GMP_CAVEAT)}</div>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+
+        if record.is_absent:
+            st.markdown(
+                f'<div class="drhp-not-disclosed">{_html.escape(GMP_ABSENT)}</div>',
+                unsafe_allow_html=True,
+            )
+        elif record.is_single_source:
+            _render_gmp_single_source(record)
+        else:
+            _render_gmp_spread(record)
+
+        # The disclosure — default-collapsed, a UNIQUE per-drhp_id key so the
+        # toggle never collides with another expander (StreamlitDuplicateElementId).
+        with st.expander(
+            GMP_DISCLOSURE_HEADING,
+            expanded=False,
+            key=f"gmp_disclosure_{record.drhp_id}",
+        ):
+            st.markdown(
+                f'<div class="drhp-gmp-disclosure-body">'
+                f'{_html.escape(GMP_DISCLOSURE_BODY)}</div>',
+                unsafe_allow_html=True,
+            )
+
         st.markdown(render_per_answer_footer(), unsafe_allow_html=True)
