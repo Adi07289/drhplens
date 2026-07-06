@@ -84,7 +84,15 @@
   3. User sees a read-only GMP value scraped from public aggregators with an explicit, above-the-fold caveat about provenance and reliability — and the GMP value is computationally isolated from any model feature pipeline (GMP-01, GMP-02).
   4. All financial numbers render in Indian conventions (lakh/crore, INR symbols), and acronyms (RPT, QIB, NII, RII) carry hoverable glossary tooltips (UI-04).
   5. The historical IPO dataset (~800-1000 mainboard IPOs from 2014-present) is committed to the repo with an explicit `status` column (withdrawn / listed_alive / delisted / merged / name_changed), and the dataset's median listing-day return is sanity-checked against the published ~7% academic baseline — flagged in the methodology page if it materially diverges (foundation for Phase 5; not yet user-visible).
-**Plans**: TBD
+**Plans:** 7 plans (4 waves)
+Plans:
+- [ ] 04-01-PLAN.md — Wave 0 spike: yfinance 1.5.1 pin + jugaad-data NSE endpoint validation + nightly integration test (PEER-02)
+- [ ] 04-02-PLAN.md — Shared `format_inr` Indian-grouping utility + app-wide adoption (fixes FLAG-FORMAT) (UI-04)
+- [ ] 04-03-PLAN.md — Peer data layer: PeerRecord schema + DRHP peer-SET query + per-cell source ladder + seed fixture (PEER-01, PEER-02)
+- [ ] 04-04-PLAN.md — GMP data layer: GmpRecord multi-source spread + GMP-02 isolation import-audit + seed fixtures (GMP-01, GMP-02)
+- [ ] 04-05-PLAN.md — Peer table renderer + pure-CSS glossary tooltips, wired into snapshot page (PEER-01, PEER-02, UI-04)
+- [ ] 04-06-PLAN.md — Read-only monochrome GMP block, last read block, cache-only (GMP-01, GMP-02, UI-04)
+- [ ] 04-07-PLAN.md — Survivorship-corrected historical IPO panel + ~7% median sanity-check (FCAST-03 foundation)
 **UI hint**: yes
 
 **Pitfalls owned:** P3 (survivorship bias — SEBI-issuer-side sourcing + status column + replace-with-NaN + ~7% median sanity check), P15 (yfinance data quality — NSE bhavcopy as primary, corporate-actions ledger), P16 (screener.in ToS / rate limits — aggressive caching, throttling, Plan-B source), P14 (brittle DRHP ingestion continues here for historical filings).
@@ -142,7 +150,7 @@
 | 1. Foundation + MVP-A | 5/6 | In Progress|  |
 | 2. Multi-IPO Catalogue + DRHP Snapshot | 5/5 | Complete   | 2026-06-24 |
 | 3. Structured Signal Extraction | 7/7 | Complete   | 2026-07-05 |
-| 4. Historical IPO Dataset + Peer Comparator + GMP | 0/0 | Not started | - |
+| 4. Historical IPO Dataset + Peer Comparator + GMP | 0/7 | Planned | - |
 | 5. Calibrated Listing-Day Forecaster | 0/0 | Not started | - |
 | 6. Full Eval Harness + Agentic Polish + Portfolio | 0/0 | Not started | - |
 
