@@ -20,9 +20,13 @@ st.set_page_config(
 
 from app.util.css_loader import load_global_css  # noqa: E402
 from data.catalogue_loader import is_known_drhp_id, load_catalogue  # noqa: E402
+from pipelines.peers import load_peers  # noqa: E402
 from pipelines.redflag import load_redflag  # noqa: E402
 from pipelines.snapshot import load_snapshot  # noqa: E402
 from ui.copy import (  # noqa: E402
+    PEER_BLOCK_HEADING,
+    PEER_EMPTY_STATE,
+    PEER_ERROR_STATE,
     REDFLAG_EMPTY_BODY,
     REDFLAG_EMPTY_HEADING,
     REDFLAG_ERROR_STATE,
@@ -42,6 +46,7 @@ from ui.snapshot_blocks import (  # noqa: E402
     render_financials_table,
     render_grounded_block,
     render_idf_risk_list,
+    render_peer_table,
     render_redflag_table,
     render_risk_block,
     render_split_bar,
@@ -119,6 +124,39 @@ def _render_redflag_block(redflag_record, redflag_state: str) -> None:
     render_redflag_table(redflag_record)
 
 
+def _render_peer_block(peer_record, peer_state: str) -> None:
+    """Render the peer-comparison block after Key Financials (UI-SPEC IA block 7).
+
+    Mirrors the red-flag block posture (drhp_id already allow-list-validated at the
+    top of main()): a cache read error renders the inherited amber .drhp-refusal
+    banner (NOT red); a missing cache (FileNotFoundError) renders the honest
+    D4-06 empty-state note in the block slot (never fabricated peers); a present
+    record renders the full peer table. The rest of the page renders regardless.
+    """
+    if peer_state == "error":
+        st.markdown(
+            f'<div class="drhp-refusal" role="alert" aria-live="polite">'
+            f'<p class="drhp-refusal-body">{_html.escape(PEER_ERROR_STATE)}</p>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+        return
+    if peer_record is None:
+        with st.container(border=True):
+            st.markdown(
+                f'<h2 class="drhp-snapshot-block-heading">'
+                f'{_html.escape(PEER_BLOCK_HEADING)}</h2>',
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                f'<div class="drhp-not-disclosed">'
+                f'{_html.escape(PEER_EMPTY_STATE)}</div>',
+                unsafe_allow_html=True,
+            )
+        return
+    render_peer_table(peer_record)
+
+
 def main() -> None:
     raw_drhp_id = st.query_params.get("drhp_id")
 
@@ -171,6 +209,22 @@ def main() -> None:
         redflag_record = None
         redflag_state = "error"
 
+    # Phase 4 peer-comparator cache read — SAME allow-list guard (drhp_id
+    # validated above) + try/except posture as load_redflag. Reads only the
+    # CACHED data/peers/<drhp_id>.json (04-03); no live source call on render.
+    # FileNotFoundError -> honest empty-state; any other error -> amber
+    # .drhp-refusal (NOT red); never an unhandled exception (T-04-05-PATH).
+    peer_record = None
+    peer_state = "ok"
+    try:
+        peer_record = load_peers(drhp_id)
+    except FileNotFoundError:
+        peer_record = None
+        peer_state = "missing"
+    except Exception:
+        peer_record = None
+        peer_state = "error"
+
     # Red-flag signals block — HIGH on the page (after the metadata header,
     # above-the-fold-adjacent on mobile), before the Phase 2 field blocks.
     _render_redflag_block(redflag_record, redflag_state)
@@ -189,6 +243,11 @@ def main() -> None:
         )
         render_financials_table(record.fields.get("financials"))
         st.markdown('</div>', unsafe_allow_html=True)
+
+        # NEW (Phase 4) — Comparison with listed peers, placed directly after Key
+        # Financials (UI-SPEC IA block 7 — topically adjacent: "here are its
+        # financials, here is how it compares"). Renders from the cached record.
+        _render_peer_block(peer_record, peer_state)
 
         # SINGLE risk list (UI-SPEC IA reconciliation, L3-4): the IDF-ranked list
         # SUPERSEDES the Phase 2 prioritized ordering. Exactly ONE renders at
