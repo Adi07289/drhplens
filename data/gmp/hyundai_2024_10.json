@@ -1,0 +1,22 @@
+{
+  "drhp_id": "hyundai_2024_10",
+  "computed_at": "2026-07-06T00:00:00Z",
+  "as_of": "2024-10-17",
+  "quotes": [
+    {
+      "source": "investorgain",
+      "value": 25.0,
+      "as_of": "2024-10-17"
+    },
+    {
+      "source": "ipowatch",
+      "value": 67.0,
+      "as_of": "2024-10-17"
+    },
+    {
+      "source": "ipocentral",
+      "value": 50.0,
+      "as_of": "2024-10-16"
+    }
+  ]
+}
