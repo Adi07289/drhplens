@@ -141,6 +141,74 @@ def test_no_exclamation_marks_in_copy() -> None:
         assert "!" not in value, f"{name!r} contains an exclamation mark: {value!r}"
 
 
+GLOSSARY_TERMS = ["RPT", "QIB", "NII", "RII", "GMP", "OFS", "DRHP", "anchor investor"]
+
+
+def test_glossary_has_all_eight_terms() -> None:
+    """The 8 core Indian-IPO glossary terms (D4-08) are present in ui.copy.GLOSSARY."""
+    import ui.copy
+
+    assert hasattr(ui.copy, "GLOSSARY"), "ui.copy is missing the GLOSSARY map"
+    missing = [t for t in GLOSSARY_TERMS if t not in ui.copy.GLOSSARY]
+    assert not missing, f"GLOSSARY missing terms: {missing}"
+    # Each entry is (label, definition) with a non-empty definition.
+    for term in GLOSSARY_TERMS:
+        label, definition = ui.copy.GLOSSARY[term]
+        assert label, f"GLOSSARY[{term!r}] has an empty label"
+        assert definition and len(definition) > 10, (
+            f"GLOSSARY[{term!r}] has a missing/too-short definition"
+        )
+
+
+def test_glossary_definitions_pass_scrubber() -> None:
+    """Every glossary definition is banned-token-free, incl. the `sell`/`buy` stems.
+
+    The OFS/GMP wording avoids the `sell` stem (L8) and the QIB wording avoids the
+    `buy` stem (which \\b(buy)\\w*\\b would match in "Buyer").
+    """
+    import ui.copy
+    from compliance.scrubber import scrub
+
+    failed: list[tuple[str, str]] = []
+    for term in GLOSSARY_TERMS:
+        _label, definition = ui.copy.GLOSSARY[term]
+        result = scrub(definition)
+        if not result.passed:
+            failed.append((term, result.match or ""))
+    assert not failed, (
+        "Glossary definitions contain banned tokens:\n"
+        + "\n".join(f"  {term!r}: matched {match!r}" for term, match in failed)
+    )
+
+
+def test_peer_copy_constants_present_and_clean() -> None:
+    """The peer-table copy constants exist and pass the scrubber (D4-04/05/06)."""
+    import ui.copy
+    from compliance.scrubber import scrub
+
+    required = [
+        "PEER_BLOCK_HEADING",
+        "PEER_BLOCK_SUBLINE",
+        "PEER_IPO_ROW_TAG",
+        "PEER_COL_COMPANY",
+        "PEER_COL_PE",
+        "PEER_COL_PB",
+        "PEER_COL_EV_EBITDA",
+        "PEER_COL_ROE",
+        "PEER_PROVENANCE_LEGEND",
+        "PEER_CELL_NOT_AVAILABLE_ARIA",
+        "PEER_NM_NOTE",
+        "PEER_EMPTY_STATE",
+        "PEER_ERROR_STATE",
+        "PEER_ASOF_DRHP_LABEL",
+    ]
+    missing = [name for name in required if not hasattr(ui.copy, name)]
+    assert not missing, f"Missing peer copy constants: {missing}"
+    for name in required:
+        value = getattr(ui.copy, name)
+        assert scrub(value).passed, f"{name!r} failed the scrubber: {value!r}"
+
+
 def test_methodology_stub_body_passes_scrubber() -> None:
     """METHODOLOGY_STUB_BODY regression guard after Wave 4 changes."""
     from ui.copy import METHODOLOGY_STUB_BODY

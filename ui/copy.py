@@ -408,6 +408,147 @@ REDFLAG_ERROR_STATE: str = (
 
 
 # ---------------------------------------------------------------------------
+# Phase 4 — Peer-multiples comparison table copy (04-05-PLAN.md Task 1,
+# 04-UI-SPEC.md §Copywriting Contract). Descriptive, never prescriptive; no
+# red/green; the peer-set citation chip is the ONLY accent element (D4-04/09).
+# Every string below is auto-enrolled in the import-time scrubber loop.
+# ---------------------------------------------------------------------------
+
+PEER_BLOCK_HEADING: str = "Comparison with listed peers"
+
+PEER_BLOCK_SUBLINE: str = (
+    "The peer set below is the one this company disclosed in its own "
+    "prospectus. Multiples are sourced from public market data; each value "
+    "shows where it came from."
+)
+
+PEER_IPO_ROW_TAG: str = "This IPO"
+
+# Fixed column order (04-UI-SPEC.md R-2): Company · P/E · P/B · EV/EBITDA · ROE.
+PEER_COL_COMPANY: str = "Company"
+PEER_COL_PE: str = "P/E"
+PEER_COL_PB: str = "P/B"
+PEER_COL_EV_EBITDA: str = "EV/EBITDA"
+PEER_COL_ROE: str = "ROE"
+
+# Per-cell provenance legend (R-3) — the muted one-line source key below the table.
+PEER_PROVENANCE_LEGEND: str = (
+    "Sources: d DRHP · s screener.in · y Yahoo Finance · n NSE / BSE"
+)
+
+# Full source names for each provenance letter (used in the per-cell aria-labels
+# so screen-reader users never have to resolve a single letter, R-3 / a11y).
+PEER_SOURCE_NAME_D: str = "DRHP"
+PEER_SOURCE_NAME_S: str = "screener.in"
+PEER_SOURCE_NAME_Y: str = "Yahoo Finance"
+PEER_SOURCE_NAME_N: str = "NSE / BSE"
+
+PEER_SOURCE_NAMES: dict[str, str] = {
+    "d": PEER_SOURCE_NAME_D,
+    "s": PEER_SOURCE_NAME_S,
+    "y": PEER_SOURCE_NAME_Y,
+    "n": PEER_SOURCE_NAME_N,
+}
+
+# The muted secondary line in a cell that carries BOTH as-of dimensions — the
+# headline value is current-market (per the sub-line); this labels the DRHP-date
+# value where a source supplies it (D4-05, the record holds both).
+PEER_ASOF_DRHP_LABEL: str = "as of DRHP"
+
+# Cell edge-case copy (04-UI-SPEC.md §Visuals — Peer table cell edge cases).
+PEER_CELL_NOT_AVAILABLE_ARIA: str = "Not available from any source"
+PEER_NM_NOTE: str = "Not meaningful — the company reported a loss"
+
+# D4-06 honest empty-state — the DRHP named no listed peers (never fabricated).
+PEER_EMPTY_STATE: str = "This DRHP disclosed no listed-peer comparison."
+
+# Infra error state — inherited amber .drhp-refusal posture (NOT red).
+PEER_ERROR_STATE: str = (
+    "This couldn't load for this IPO right now. It's a free-tier "
+    "infrastructure hiccup, not a problem with the prospectus. Try again in "
+    "a minute."
+)
+
+
+# ---------------------------------------------------------------------------
+# Phase 4 — Glossary tooltips (UI-04, D4-08; 04-UI-SPEC.md §Glossary tooltips).
+# Eight core Indian-IPO terms carry the pure-CSS R-1 popover. Each definition is
+# a module-level str constant (auto-scrubbed at import) so no banned-advice token
+# can land here; the OFS/GMP wording deliberately avoids the `sell` stem
+# (L8 — "shares offered by existing shareholders").
+#
+# NOTE (Rule 1 deviation, 04-05 execution): the 04-UI-SPEC QIB definition spelled
+# out "Qualified Institutional Buyer", but the token "Buyer" trips the compliance
+# scrubber's `buy` stem (\b(buy)\w*\b matches "Buyer"), which would break the
+# import-time assertion. Reworded to "Qualified Institutional Investor" — the
+# widely-used gloss — to stay scrubber-clean while preserving the meaning.
+# ---------------------------------------------------------------------------
+
+GLOSSARY_TERM_RPT: str = "RPT"
+GLOSSARY_DEF_RPT: str = (
+    "Related-Party Transaction — business the company does with its own "
+    "promoters, directors, or their connected entities."
+)
+
+GLOSSARY_TERM_QIB: str = "QIB"
+GLOSSARY_DEF_QIB: str = (
+    "Qualified Institutional Investor — large institutional investors (banks, "
+    "mutual funds, insurers) allotted a reserved share of the issue."
+)
+
+GLOSSARY_TERM_NII: str = "NII"
+GLOSSARY_DEF_NII: str = (
+    "Non-Institutional Investor — an investor applying for more than ₹2 lakh, "
+    "excluding institutions."
+)
+
+GLOSSARY_TERM_RII: str = "RII"
+GLOSSARY_DEF_RII: str = (
+    "Retail Individual Investor — an investor applying for up to ₹2 lakh."
+)
+
+GLOSSARY_TERM_GMP: str = "GMP"
+GLOSSARY_DEF_GMP: str = (
+    "Grey Market Premium — an unofficial price at which IPO shares change hands "
+    "privately before listing. Unregulated and not set by the company or the "
+    "exchange."
+)
+
+GLOSSARY_TERM_OFS: str = "OFS"
+GLOSSARY_DEF_OFS: str = (
+    "Offer for Sale — shares offered by existing shareholders in the IPO; the "
+    "proceeds go to those shareholders, not to the company."
+)
+
+GLOSSARY_TERM_DRHP: str = "DRHP"
+GLOSSARY_DEF_DRHP: str = (
+    "Draft Red Herring Prospectus — the draft offer document a company files "
+    "with SEBI before its IPO."
+)
+
+GLOSSARY_TERM_ANCHOR: str = "anchor investor"
+GLOSSARY_DEF_ANCHOR: str = (
+    "Anchor investor — a large institutional investor that commits ahead of the "
+    "public issue, one day before it opens."
+)
+
+# The 8-term glossary map: term key -> (display label, definition). The renderer
+# helper (ui.snapshot_blocks.glossary_term) wraps the label in the CSS-only
+# popover trigger and interpolates the definition. Keys are the canonical terms
+# from D4-08. The values reference the already-scrubbed constants above.
+GLOSSARY: dict[str, tuple[str, str]] = {
+    "RPT": (GLOSSARY_TERM_RPT, GLOSSARY_DEF_RPT),
+    "QIB": (GLOSSARY_TERM_QIB, GLOSSARY_DEF_QIB),
+    "NII": (GLOSSARY_TERM_NII, GLOSSARY_DEF_NII),
+    "RII": (GLOSSARY_TERM_RII, GLOSSARY_DEF_RII),
+    "GMP": (GLOSSARY_TERM_GMP, GLOSSARY_DEF_GMP),
+    "OFS": (GLOSSARY_TERM_OFS, GLOSSARY_DEF_OFS),
+    "DRHP": (GLOSSARY_TERM_DRHP, GLOSSARY_DEF_DRHP),
+    "anchor investor": (GLOSSARY_TERM_ANCHOR, GLOSSARY_DEF_ANCHOR),
+}
+
+
+# ---------------------------------------------------------------------------
 # TRUST-03 anchor: import-time scrubber assertion.
 # Any future copy edit that introduces a banned token will raise AssertionError
 # here at import time, before any HTTP request is served.

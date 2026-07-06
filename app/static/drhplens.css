@@ -271,6 +271,15 @@
   .drhp-redflag-value {
     text-align: left;
   }
+  /* Peer table stays a table (never stacked cards, R-2) — tighten cell padding
+     and cap the glossary popover so it stays on-screen at the narrowest width. */
+  .drhp-peer-table th,
+  .drhp-peer-table td {
+    padding: var(--drhp-space-sm);
+  }
+  .drhp-glossary-pop {
+    max-width: 240px;
+  }
 }
 
 /* Mobile L — 375–639px */
@@ -293,6 +302,14 @@
   .drhp-redflag-value {
     text-align: left;
   }
+  /* Peer table: company column sticky-left, four metric columns scroll (R-2). */
+  .drhp-peer-table th,
+  .drhp-peer-table td {
+    padding: var(--drhp-space-sm);
+  }
+  .drhp-glossary-pop {
+    max-width: 240px;
+  }
 }
 
 /* Mobile S/L — split-bar segment labels drop when too narrow to read */
@@ -311,6 +328,11 @@
   .drhp-footer {
     min-height: 48px;
   }
+  /* Full peer table usually fits without horizontal scroll at this width. */
+  .drhp-peer-table th,
+  .drhp-peer-table td {
+    padding: var(--drhp-space-sm) var(--drhp-space-md);
+  }
 }
 
 /* Desktop — 1024px+ */
@@ -324,6 +346,11 @@
   .drhp-footer {
     min-height: 48px;
     position: relative;
+  }
+  /* Peer table sits within the inherited 720px content max-width; hover reveals
+     the glossary popover (desktop). */
+  .drhp-peer-table {
+    width: 100%;
   }
 }
 
@@ -645,6 +672,168 @@
   font-weight: 400;
   color: var(--drhp-text-muted);
   line-height: 1.6;
+}
+
+/* ── Phase 4 — Peer-multiples comparison table (04-UI-SPEC.md R-2/R-3) ────── */
+/* Mirrors .drhp-fin-table: tabular-nums, sticky-left company column, neutral
+   surface-secondary header + zebra. NO red/green, NO new hex — a low P/E and a
+   high P/E render in identical text-primary (D4-09). Wrapped in the inherited
+   .drhp-fin-table-wrap overflow-x:auto so the four metric columns scroll while
+   the company column stays pinned. */
+.drhp-peer-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.drhp-peer-table th,
+.drhp-peer-table td {
+  padding: var(--drhp-space-sm) var(--drhp-space-md);
+  text-align: right;
+  border-bottom: 1px solid var(--drhp-border-subtle);
+  white-space: nowrap;
+  vertical-align: top;
+}
+
+.drhp-peer-table th:first-child,
+.drhp-peer-table td:first-child {
+  text-align: left;
+  position: sticky;
+  left: 0;
+  background: #FFFFFF;
+}
+
+.drhp-peer-table thead th {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--drhp-text-muted);
+  background: var(--drhp-surface-secondary);
+}
+
+.drhp-peer-table thead th:first-child {
+  background: var(--drhp-surface-secondary);
+}
+
+.drhp-peer-table tbody th {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--drhp-text-primary);
+}
+
+.drhp-peer-table td {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--drhp-text-primary);
+}
+
+.drhp-peer-table tbody tr:nth-child(even) {
+  background: var(--drhp-surface-secondary);
+}
+
+/* The IPO's own row — neutral surface-secondary fill for ORIENTATION only (the
+   same neutral grey as the financials zebra; carries zero verdict weight). The
+   IPO row is found by position (first) + the muted tag, never by colour. The
+   sticky first-child override keeps the pinned name cell filled to match. */
+.drhp-peer-ipo-row th,
+.drhp-peer-ipo-row td,
+.drhp-peer-ipo-row th:first-child,
+.drhp-peer-ipo-row td:first-child {
+  background: var(--drhp-surface-secondary);
+}
+
+.drhp-peer-ipo-tag {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--drhp-text-muted);
+  margin-left: var(--drhp-space-xs);
+  white-space: nowrap;
+}
+
+/* The muted secondary "as of DRHP" line inside a cell carrying both dimensions. */
+.drhp-peer-asof {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--drhp-text-muted);
+  margin-top: var(--drhp-space-xs);
+}
+
+/* ── Phase 4 — Per-cell provenance marker + legend (04-UI-SPEC.md R-3) ────── */
+/* A muted, UNFILLED superscript source letter — deliberately distinct from the
+   accent, FILLED citation chip (.drhp-cite). Monochrome only: the source is a
+   letter + legend, never a hue. */
+.drhp-provenance-flag {
+  font-size: 0.7em;
+  vertical-align: super;
+  font-weight: 400;
+  color: var(--drhp-text-muted);
+  margin-left: 2px;
+  line-height: 1.0;
+}
+
+.drhp-provenance-legend {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--drhp-text-muted);
+  margin-top: var(--drhp-space-sm);
+}
+
+/* ── Phase 4 — Glossary tooltip (UI-04, D4-08; 04-UI-SPEC.md R-1) ─────────── */
+/* Pure-CSS :hover / :focus / :focus-within popover on an inline term trigger —
+   NO JavaScript, NO third-party lib. Dotted underline is the "there is more
+   here" affordance, deliberately distinct from the accent citation chip. The
+   44×44 transparent ::before enlarger reuses the .drhp-cite tap-target grammar
+   so the term is a compliant mobile tap target. */
+.drhp-glossary {
+  position: relative;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+  cursor: help;
+  color: inherit;
+}
+
+.drhp-glossary::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.drhp-glossary:focus-visible {
+  outline: 2px solid var(--drhp-accent);
+  outline-offset: 2px;
+}
+
+.drhp-glossary-pop {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: calc(100% + var(--drhp-space-xs));
+  z-index: 60;
+  width: max-content;
+  max-width: 260px;
+  background: var(--drhp-surface-secondary);
+  border: 1px solid var(--drhp-border-subtle);
+  border-radius: 8px;
+  padding: var(--drhp-space-sm) var(--drhp-space-md);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--drhp-text-muted);
+  text-decoration: none;
+  white-space: normal;
+  text-align: left;
+}
+
+/* Reveal on hover (desktop), keyboard focus (Tab), and focus-within (mobile tap
+   moves focus into the trigger). Not dependent on a hover-only title= (R-1). */
+.drhp-glossary:hover .drhp-glossary-pop,
+.drhp-glossary:focus .drhp-glossary-pop,
+.drhp-glossary:focus-within .drhp-glossary-pop {
+  display: block;
 }
 
 /* ── Accessibility: prefers-reduced-motion ──────────────────────────────── */
