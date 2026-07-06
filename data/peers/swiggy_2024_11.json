@@ -1,0 +1,148 @@
+{
+  "drhp_id": "swiggy_2024_11",
+  "computed_at": "2026-07-06T00:00:00Z",
+  "as_of": "2026-07-06",
+  "peer_set": {
+    "answer_prose": "In its 'Basis for Issue Price' comparison with listed industry peers, the company names Zomato Limited as its listed peer {{c_peer01}}.",
+    "claims": [
+      {
+        "claim_id": "c_peer01",
+        "text": "Zomato Limited",
+        "source_chunk_id": "chunk_c_peer01",
+        "drhp_page": 118,
+        "section": "Basis for Issue Price",
+        "verbatim_span": "Comparison with Listed Industry Peers: Zomato Limited",
+        "span_offsets": [
+          0,
+          53
+        ],
+        "sources": [
+          {
+            "chunk_id": "chunk_c_peer01",
+            "page_start": 118,
+            "page_end": 118,
+            "printed_page_label": "118",
+            "section": "Basis for Issue Price",
+            "score": 0.83,
+            "verbatim_span": "Comparison with Listed Industry Peers: Zomato Limited",
+            "span_offsets": [
+              0,
+              53
+            ]
+          }
+        ]
+      }
+    ],
+    "sub_question_addressed": [],
+    "sub_question_unaddressed": []
+  },
+  "companies": [
+    {
+      "name": "Swiggy Limited",
+      "is_ipo": true,
+      "metrics": [
+        {
+          "metric": "pe",
+          "current": {
+            "value": null,
+            "source": "y",
+            "as_of": "current",
+            "not_meaningful": true
+          },
+          "drhp_date": {
+            "value": null,
+            "source": "d",
+            "as_of": "drhp_date",
+            "not_meaningful": true
+          }
+        },
+        {
+          "metric": "pb",
+          "current": {
+            "value": 9.4,
+            "source": "s",
+            "as_of": "current",
+            "not_meaningful": false
+          },
+          "drhp_date": {
+            "value": 7.1,
+            "source": "d",
+            "as_of": "drhp_date",
+            "not_meaningful": false
+          }
+        },
+        {
+          "metric": "ev_ebitda",
+          "current": {
+            "value": null,
+            "source": null,
+            "as_of": null,
+            "not_meaningful": false
+          },
+          "drhp_date": null
+        },
+        {
+          "metric": "roe",
+          "current": {
+            "value": -12.3,
+            "source": "y",
+            "as_of": "current",
+            "not_meaningful": false
+          },
+          "drhp_date": {
+            "value": -18.6,
+            "source": "d",
+            "as_of": "drhp_date",
+            "not_meaningful": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Zomato Limited",
+      "is_ipo": false,
+      "metrics": [
+        {
+          "metric": "pe",
+          "current": {
+            "value": 312.5,
+            "source": "s",
+            "as_of": "current",
+            "not_meaningful": false
+          },
+          "drhp_date": null
+        },
+        {
+          "metric": "pb",
+          "current": {
+            "value": 8.7,
+            "source": "s",
+            "as_of": "current",
+            "not_meaningful": false
+          },
+          "drhp_date": null
+        },
+        {
+          "metric": "ev_ebitda",
+          "current": {
+            "value": 145.2,
+            "source": "y",
+            "as_of": "current",
+            "not_meaningful": false
+          },
+          "drhp_date": null
+        },
+        {
+          "metric": "roe",
+          "current": {
+            "value": 1.5,
+            "source": "y",
+            "as_of": "current",
+            "not_meaningful": false
+          },
+          "drhp_date": null
+        }
+      ]
+    }
+  ]
+}
