@@ -549,6 +549,72 @@ GLOSSARY: dict[str, tuple[str, str]] = {
 
 
 # ---------------------------------------------------------------------------
+# Phase 4 — Read-only GMP block copy (04-06-PLAN.md Task 1, 04-UI-SPEC.md
+# §Copywriting Contract + §Visuals GMP). The QUIETEST surface in the app:
+# monochrome, de-emphasised, cache-only. Every string VERBATIM from the UI-SPEC
+# Copywriting Contract — descriptive, never a demand signal (D4-01/02/09). No
+# red/green, no "strong"/"demand" framing; the `sell` stem is avoided. Each
+# constant is auto-enrolled in the import-time scrubber loop below.
+# ---------------------------------------------------------------------------
+
+GMP_BLOCK_HEADING: str = "Grey-market premium (unofficial)"
+
+# Persistent one-line caveat — ALWAYS visible under the heading, never collapsed.
+GMP_CAVEAT: str = (
+    "An unofficial, unregulated number from private dealers — not a price the "
+    "company or any exchange sets. We show it for transparency only and never "
+    "use it in any forecast."
+)
+
+# The spread headline — the min–max range IS the honesty signal (D4-01). ₹ via
+# format_inr at render; {low}/{high} are the pre-formatted rupee strings.
+GMP_RANGE_HEADLINE_TEMPLATE: str = "{low}–{high} across {n} sources"
+
+# role="img" aria-label for the range strip — the spread is conveyed in TEXT,
+# never by tick position alone (WCAG 1.4.1). {low}/{high} are format_inr strings.
+GMP_RANGE_ARIA_TEMPLATE: str = (
+    "Grey-market premium ranges from {low} to {high} across {n} sources; "
+    "the sources disagree."
+)
+
+# Per-source list (Small muted): "{source} {value}" items joined by " · ",
+# then the trailing "as of {date}". ₹ via format_inr; source is html-escaped.
+GMP_SOURCE_ITEM_TEMPLATE: str = "{source} {value}"
+GMP_SOURCE_ASOF_TEMPLATE: str = "as of {date}"
+GMP_SOURCE_LINE_JOINER: str = " · "
+
+# Single-source state — absence of a cross-source check is STATED, not hidden.
+GMP_SINGLE_SOURCE_NOTE: str = (
+    "Only one source reported — no cross-source check available."
+)
+
+# Absent-GMP state — the COMMON case (already-listed IPOs). Never a fabricated
+# number, never a zero, never an error.
+GMP_ABSENT: str = (
+    "No grey-market premium is being reported for this IPO right now."
+)
+
+# The one explicit affordance Phase 4 adds — the disclosure expander header.
+GMP_DISCLOSURE_HEADING: str = "What is GMP? Why we don't trust it"
+
+GMP_DISCLOSURE_BODY: str = (
+    "The grey-market premium is a price at which IPO shares change hands "
+    "privately before listing, quoted by unofficial dealers. It is unregulated, "
+    "has no verified provenance, and can be moved by a handful of operators. "
+    "Because it is neither official nor reliable, we display it for context "
+    "only and keep it out of every forecast this app produces."
+)
+
+# Infra error state — inherited amber .drhp-refusal posture (NOT red). Verbatim
+# the shared peer/GMP error string from the UI-SPEC Copywriting Contract.
+GMP_ERROR_STATE: str = (
+    "This couldn't load for this IPO right now. It's a free-tier "
+    "infrastructure hiccup, not a problem with the prospectus. Try again in "
+    "a minute."
+)
+
+
+# ---------------------------------------------------------------------------
 # TRUST-03 anchor: import-time scrubber assertion.
 # Any future copy edit that introduces a banned token will raise AssertionError
 # here at import time, before any HTTP request is served.
@@ -586,6 +652,10 @@ _SAMPLE_FORMAT_VALUES = {
     "tier_word": "High",
     "tier_meaning": "stated directly on the cited page",
     "accuracy": "97%",
+    "low": "₹38",
+    "high": "₹52",
+    "source": "Aggregator A",
+    "value": "₹47",
 }
 
 

@@ -280,6 +280,10 @@
   .drhp-glossary-pop {
     max-width: 240px;
   }
+  /* GMP range strip full-bleed within the block padding; per-source list wraps. */
+  .drhp-gmp-range {
+    width: 100%;
+  }
 }
 
 /* Mobile L — 375–639px */
@@ -310,6 +314,10 @@
   .drhp-glossary-pop {
     max-width: 240px;
   }
+  /* GMP range strip full-bleed within the block padding; per-source list wraps. */
+  .drhp-gmp-range {
+    width: 100%;
+  }
 }
 
 /* Mobile S/L — split-bar segment labels drop when too narrow to read */
@@ -333,6 +341,10 @@
   .drhp-peer-table td {
     padding: var(--drhp-space-sm) var(--drhp-space-md);
   }
+  /* GMP range strip narrows (~60%) so it never dominates the block (R-4). */
+  .drhp-gmp-range {
+    max-width: 60%;
+  }
 }
 
 /* Desktop — 1024px+ */
@@ -351,6 +363,10 @@
      the glossary popover (desktop). */
   .drhp-peer-table {
     width: 100%;
+  }
+  /* GMP range strip stays ~60% width — the calmest, least-pointed-at surface. */
+  .drhp-gmp-range {
+    max-width: 60%;
   }
 }
 
@@ -834,6 +850,76 @@
 .drhp-glossary:focus .drhp-glossary-pop,
 .drhp-glossary:focus-within .drhp-glossary-pop {
   display: block;
+}
+
+/* ── Phase 4 — Read-only GMP block (04-UI-SPEC.md R-4; the QUIETEST surface) ─ */
+/* Deliberately de-emphasised: monochrome ONLY — NO accent, NO red/green, no
+   up/down arrow, no bold headline number. The cross-source spread strip is the
+   honesty signal (D4-01/02/09). Card chrome comes from st.container(border=True)
+   (never a split div — the Phase 3 white-bar lesson); these classes style the
+   inner elements using inherited --drhp-* tokens only. */
+.drhp-gmp-block {
+  /* Light semantic wrapper; the neutral container border is supplied by
+     st.container(border=True). No accent, no fill — the calmest block. */
+  color: var(--drhp-text-primary);
+}
+
+.drhp-gmp-caveat {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--drhp-text-muted);
+  margin-bottom: var(--drhp-space-sm);
+}
+
+/* The min–max range headline — Body 16, deliberately NOT bold (typographically
+   calm so GMP never out-shouts the peer/red-flag surfaces). tabular-nums keeps
+   the ₹ figures aligned. */
+.drhp-gmp-range-headline {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--drhp-text-primary);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: var(--drhp-space-sm);
+}
+
+/* The monochrome spread strip: a neutral surface-secondary track with one muted
+   tick per aggregator, positioned by inline left:%. NO accent — divergence
+   between ticks is the visual proof GMP is unreliable (D4-01). */
+.drhp-gmp-range {
+  position: relative;
+  width: 100%;
+  height: 28px;
+  background: var(--drhp-surface-secondary);
+  border: 1px solid var(--drhp-border-subtle);
+  border-radius: 8px;
+  margin: var(--drhp-space-sm) 0 var(--drhp-space-md) 0;
+}
+
+.drhp-gmp-tick {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: var(--drhp-text-muted);
+  transform: translateX(-1px);
+}
+
+.drhp-gmp-source-line {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--drhp-text-muted);
+  font-variant-numeric: tabular-nums;
+  margin-top: var(--drhp-space-md);
+}
+
+.drhp-gmp-disclosure-body {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--drhp-text-muted);
 }
 
 /* ── Accessibility: prefers-reduced-motion ──────────────────────────────── */
