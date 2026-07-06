@@ -1,0 +1,38 @@
+name: nightly-nse
+
+# Nightly NSE / Yahoo endpoint drift detection (Phase 4 · 04-01).
+# The peer table (04-03) and historical panel (04-07) build on external Indian
+# market-data sources that silently change. This job runs the integration smoke
+# tests against live NSE + Yahoo on a schedule so drift is caught early, not
+# mid-precompute. It never gates the unit CI — a failure here is a drift signal.
+
+on:
+  schedule:
+    # 01:30 UTC daily (~07:00 IST — after NSE EOD files settle).
+    - cron: "30 1 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  nse-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NSE_LIVE_SMOKE: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install market-data deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install "yfinance==1.5.1" "requests-cache==1.3.3" "jugaad-data==0.33.1" pytest
+
+      - name: Run NSE / Yahoo integration smoke
+        run: |
+          pytest -m integration -q \
+            tests/integration/test_yfinance_nse_smoke.py \
+            tests/integration/test_jugaad_data_nse.py
