@@ -37,8 +37,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Peer (Peer Comparison)
 
-- [ ] **PEER-01**: System surfaces peers identified from the DRHP's own "Comparison with Listed Peers" section
-- [ ] **PEER-02**: System displays peer multiples (P/E, P/B, EV/EBITDA, ROE) sourced from screener.in / yfinance / NSE / BSE
+- [x] **PEER-01**: System surfaces peers identified from the DRHP's own "Comparison with Listed Peers" section
+- [x] **PEER-02**: System displays peer multiples (P/E, P/B, EV/EBITDA, ROE) sourced from screener.in / yfinance / NSE / BSE
 
 ### Forecast (Calibrated Listing-Day Return)
 
@@ -160,8 +160,8 @@ Which phases cover which requirements. Updated by roadmap creation.
 | EXTRACT-01 | Phase 3 | Complete |
 | EXTRACT-02 | Phase 3 | Complete |
 | EXTRACT-03 | Phase 3 | Complete |
-| PEER-01 | Phase 4 | Pending |
-| PEER-02 | Phase 4 | Pending |
+| PEER-01 | Phase 4 | Complete |
+| PEER-02 | Phase 4 | Complete |
 | FCAST-01 | Phase 5 | Pending |
 | FCAST-02 | Phase 5 | Pending |
 | FCAST-03 | Phase 5 | Pending |
