@@ -50,3 +50,32 @@ Then confirm: row count ~800–1000, withdrawn/delisted statuses present
 (zero in a 2014-present universe is a survivorship red flag), and the
 median near the ~7% MAAR band (else the divergence flag above fires and is
 surfaced verbatim on /methodology). Commit the resulting parquet + CSV.
+
+## ⚠️ BLOCKED (2026-07-07): chittorgarh source rot — universe fetch returns 0 rows
+
+The deferred live build was attempted (Colab + local Mac) and **failed at the
+universe step**: `pipelines/historical/sources.py::fetch_chittorgarh_index` uses
+`soup.find("table")`, but **chittorgarh migrated to a Next.js app** and the
+mainboard-IPO index at `/report/mainboard-ipo-list-in-india-bse-nse/83/` no longer
+contains any `<table>` element — the list is rendered client-side / via RSC. Result:
+`Wrote 0 rows statuses=[] median=nan% flag=FIRED`.
+
+**This is NOT an IP/Colab problem** — the page loads HTTP 200 (~152 KB, real
+"Mainboard IPOs 2026" content) from a residential IP too; the scraper selector is
+simply stale (`# pragma: no cover - live only`, never validated against live HTML).
+
+**Fix path (for whoever builds the panel — likely at Phase 5 start, when it is
+first actually needed):** rewrite `fetch_chittorgarh_index` to hit chittorgarh's
+JSON API instead of scraping HTML. Confirmed lead:
+`https://webnodejs.chittorgarh.com/cloud/report/data-read/83/…` returns
+`HTTP 200 application/json` (report id **83** matches the URL slug); a guessed param
+set `.../data-read/83/1/5/2026/2025-26/0/all` returned `{"msg":-1,"error":"No data
+found."}`, so the endpoint is live but the exact segment order (page/size/year/FY/
+type) must be reverse-engineered from the site's network calls (the URL is built in
+the JS bundle, not embedded in the server HTML). The full 2014-present universe
+likely needs per-FY fetches. **Alternative:** switch the universe source to an
+official NSE/BSE IPO archive or SEBI, which may be more durable than a JS-app scraper.
+
+Until then: the committed **sample** panel keeps the schema, validator, artifact
+path, and all unit tests green; nothing user-facing depends on the real panel
+(it is Phase 5's backend foundation).

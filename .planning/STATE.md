@@ -117,6 +117,8 @@ Plan: 7 of 7 complete (Wave 5: 03-07 — red-flag table + single IDF risk list +
 
 - **[03-05 Task 3 — human-only, does NOT block code completion]** Live `make release` numeric-gate run is PENDING on the user's environment. Needs `GEMINI_API_KEY` / `QDRANT_URL` / `QDRANT_API_KEY` + swiggy_2024_11 ingested into live Qdrant. The gate logic is CI-tested offline (0.94 fails / 0.95 / 0.96 pass); only the live verification remains. EVAL-03 stays open until verified. This is the ONE outstanding Phase 3 item — the phase's CODE work is complete (7/7 plans).
 
+- **[04-07 live build — BLOCKED on source rot, DEFERRED to Phase 5 start]** Phase 4 is **6/7 code-complete** (04-01…04-06 done, all user-facing surfaces shipped + 375px-approved). The 04-07 full historical panel build fails at the universe step: `chittorgarh` migrated to a Next.js app, so `pipelines/historical/sources.py::fetch_chittorgarh_index` (`soup.find("table")`) returns 0 rows from BOTH Colab and a local residential IP (confirmed NOT an IP block). The offline SAMPLE + schema + validator + unit tests stay green; nothing user-facing depends on the real panel (it is Phase 5's foundation). **Fix documented in `data/historical/README.md`** (rewrite to chittorgarh's `webnodejs …/data-read/83/…` JSON API — endpoint confirmed live, params need reverse-engineering — or switch to an NSE/BSE/SEBI universe source). Do this when Phase 5 first needs the panel.
+
 ## Research Flags (from ROADMAP.md)
 
 - **Phase 4 start:** `jugaad-data` endpoint validation spike (~1 day) + nightly integration test setup
