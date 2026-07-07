@@ -74,7 +74,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **UI-01**: Web app is mobile-responsive and renders cleanly on a phone (Indian retail is mobile-first)
 - [x] **UI-02**: UI renders citations as superscript chips that expand to source-text snippets and link to the DRHP page
 - [ ] **UI-03**: Uncertainty is rendered as a first-class visual element (interval widths, confidence tags, GMP-vs-model gap)
-- [ ] **UI-04**: Indian-context formatting (lakh/crore numbers, INR symbols, RPT/QIB/NII/RII tooltips) is correct throughout
+- [x] **UI-04**: Indian-context formatting (lakh/crore numbers, INR symbols, RPT/QIB/NII/RII tooltips) is correct throughout
 
 ### Ops (Coverage & Deployment)
 
@@ -182,7 +182,7 @@ Which phases cover which requirements. Updated by roadmap creation.
 | UI-01 | Phase 1 | Complete |
 | UI-02 | Phase 1 | Complete |
 | UI-03 | Phase 5 | Pending |
-| UI-04 | Phase 4 | Pending |
+| UI-04 | Phase 4 | Complete |
 | OPS-01 | Phase 2 | Complete |
 | OPS-02 | Phase 1 | Pending |
 | OPS-03 | Phase 6 | Pending |
