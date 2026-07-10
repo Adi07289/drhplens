@@ -44,7 +44,7 @@ from ui.copy import (  # noqa: E402
     SNAPSHOT_PRECOMPUTING_HEADING,
     UNKNOWN_DRHP_ID_COPY,
 )
-from ui.disclaimer import render_persistent_footer  # noqa: E402
+from ui.chrome import render_nav, render_site_footer  # noqa: E402
 from ui.snapshot_blocks import (  # noqa: E402
     render_financials_table,
     render_gmp_block,
@@ -66,6 +66,7 @@ _css_html = load_global_css(st.session_state)
 if _css_html:
     st.markdown(_css_html, unsafe_allow_html=True)
 init_session_state(st.session_state)
+st.markdown(render_nav(), unsafe_allow_html=True)
 
 st.markdown(
     '<script>document.documentElement.lang = "en-IN";</script>',
@@ -91,7 +92,7 @@ def _render_unknown_id() -> None:
         unsafe_allow_html=True,
     )
     st.markdown("[← All IPOs](/)")
-    st.markdown(render_persistent_footer(), unsafe_allow_html=True)
+    st.markdown(render_site_footer(), unsafe_allow_html=True)
 
 
 def _issuer_for(drhp_id: str) -> str:
@@ -117,13 +118,12 @@ def _render_redflag_block(redflag_record, redflag_state: str) -> None:
         )
         return
     if redflag_record is None:
-        st.markdown('<div class="drhp-redflag-table">', unsafe_allow_html=True)
-        st.markdown(
-            f'<h2 class="drhp-empty-heading">{_html.escape(REDFLAG_EMPTY_HEADING)}</h2>',
-            unsafe_allow_html=True,
-        )
-        st.markdown(REDFLAG_EMPTY_BODY)
-        st.markdown('</div>', unsafe_allow_html=True)
+        with st.container(border=True, key="drhpcard-redflag-empty"):
+            st.markdown(
+                f'<h2 class="drhp-empty-heading">{_html.escape(REDFLAG_EMPTY_HEADING)}</h2>',
+                unsafe_allow_html=True,
+            )
+            st.markdown(REDFLAG_EMPTY_BODY)
         return
     render_redflag_table(redflag_record)
 
@@ -146,7 +146,7 @@ def _render_peer_block(peer_record, peer_state: str) -> None:
         )
         return
     if peer_record is None:
-        with st.container(border=True):
+        with st.container(border=True, key="drhpcard-peer-empty"):
             st.markdown(
                 f'<h2 class="drhp-snapshot-block-heading">'
                 f'{_html.escape(PEER_BLOCK_HEADING)}</h2>',
@@ -277,17 +277,20 @@ def main() -> None:
     if record is not None:
         # Locked block order: metadata, business, financials, risks,
         # use-of-proceeds (split bar first), promoter.
-        render_grounded_block(record.fields.get("metadata"), "")
-        render_grounded_block(record.fields.get("business"), SNAPSHOT_BLOCK_HEADING_BUSINESS)
-
-        st.markdown('<div class="drhp-snapshot-block">', unsafe_allow_html=True)
-        st.markdown(
-            f'<h2 class="drhp-snapshot-block-heading">'
-            f'{_html.escape(SNAPSHOT_BLOCK_HEADING_FINANCIALS)}</h2>',
-            unsafe_allow_html=True,
+        render_grounded_block(record.fields.get("metadata"), "", card_key="metadata")
+        render_grounded_block(
+            record.fields.get("business"),
+            SNAPSHOT_BLOCK_HEADING_BUSINESS,
+            card_key="business",
         )
-        render_financials_table(record.fields.get("financials"))
-        st.markdown('</div>', unsafe_allow_html=True)
+
+        with st.container(border=True, key="drhpcard-financials"):
+            st.markdown(
+                f'<h2 class="drhp-snapshot-block-heading">'
+                f'{_html.escape(SNAPSHOT_BLOCK_HEADING_FINANCIALS)}</h2>',
+                unsafe_allow_html=True,
+            )
+            render_financials_table(record.fields.get("financials"))
 
         # NEW (Phase 4) — Comparison with listed peers, placed directly after Key
         # Financials (UI-SPEC IA block 7 — topically adjacent: "here are its
@@ -301,26 +304,28 @@ def main() -> None:
         if redflag_record is not None and redflag_record.ranked_risks:
             render_idf_risk_list(redflag_record.ranked_risks, redflag_record)
         else:
-            st.markdown('<div class="drhp-snapshot-block">', unsafe_allow_html=True)
+            with st.container(border=True, key="drhpcard-risk-fallback"):
+                st.markdown(
+                    f'<h2 class="drhp-snapshot-block-heading">'
+                    f'{_html.escape(SNAPSHOT_BLOCK_HEADING_RISKS)}</h2>',
+                    unsafe_allow_html=True,
+                )
+                render_risk_block(record.fields.get("risks"))
+
+        with st.container(border=True, key="drhpcard-uop"):
             st.markdown(
                 f'<h2 class="drhp-snapshot-block-heading">'
-                f'{_html.escape(SNAPSHOT_BLOCK_HEADING_RISKS)}</h2>',
+                f'{_html.escape(SNAPSHOT_BLOCK_HEADING_USE_OF_PROCEEDS)}</h2>',
                 unsafe_allow_html=True,
             )
-            render_risk_block(record.fields.get("risks"))
-            st.markdown('</div>', unsafe_allow_html=True)
+            render_split_bar(record.ofs_fresh)
+            render_use_of_proceeds_body(record.fields.get("use_of_proceeds"))
 
-        st.markdown('<div class="drhp-snapshot-block">', unsafe_allow_html=True)
-        st.markdown(
-            f'<h2 class="drhp-snapshot-block-heading">'
-            f'{_html.escape(SNAPSHOT_BLOCK_HEADING_USE_OF_PROCEEDS)}</h2>',
-            unsafe_allow_html=True,
+        render_grounded_block(
+            record.fields.get("promoter"),
+            SNAPSHOT_BLOCK_HEADING_PROMOTER,
+            card_key="promoter",
         )
-        render_split_bar(record.ofs_fresh)
-        render_use_of_proceeds_body(record.fields.get("use_of_proceeds"))
-        st.markdown('</div>', unsafe_allow_html=True)
-
-        render_grounded_block(record.fields.get("promoter"), SNAPSHOT_BLOCK_HEADING_PROMOTER)
 
     # NEW (Phase 4) — Grey-market premium, the LAST read block immediately above
     # the Q&A 2xl divider (UI-SPEC IA block 10, D4-02). Rendered OUTSIDE the
@@ -331,12 +336,12 @@ def main() -> None:
 
     # 2xl gap + divider before the co-located Q&A chat (D2-08).
     st.markdown(
-        '<div style="margin-top: 48px; border-top: 1px solid #E2E8F0;"></div>',
+        '<div style="margin-top: 48px; border-top: 1px solid var(--drhp-border-subtle);"></div>',
         unsafe_allow_html=True,
     )
     render_snapshot_chat(drhp_id)
 
-    st.markdown(render_persistent_footer(), unsafe_allow_html=True)
+    st.markdown(render_site_footer(), unsafe_allow_html=True)
 
 
 main()

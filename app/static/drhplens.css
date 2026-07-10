@@ -5,17 +5,35 @@
  * NEVER inject inline <style> tags from other modules.
  */
 
+/* ── Typefaces: IBM Plex superfamily (theme-safe — font-family only) ────────
+ * Signature: TYPE ENCODES EPISTEMICS — prose in Sans/Serif, every machine/
+ * document fact (numbers, citation chips, page refs, confidence + eval figures)
+ * in Mono. Degrades to system fonts if the CDN is unreachable. */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
 /* ── Custom properties ──────────────────────────────────────────────────── */
 :root {
-  --drhp-accent:             #1E40AF;
-  --drhp-accent-hover:       #1E3A8A;
-  --drhp-text-primary:       #0F172A;
-  --drhp-text-muted:         #475569;
-  --drhp-border-subtle:      #E2E8F0;
-  --drhp-surface-secondary:  #F4F5F7;
-  --drhp-refusal-bg:         #FEF3C7;
-  --drhp-refusal-border:     #D97706;
-  --drhp-refusal-text:       #78350F;
+  /* ── Deep Slate DARK palette (premium research terminal) ─────────────────
+   * Semantic tokens: every surface/text/border derives from these. The dark
+   * values below are kept in sync with .streamlit/config.toml (base="dark").
+   * --drhp-accent stays the test-pinned brand indigo (citation chip bg + focus
+   * rings); --drhp-accent-link is a brighter indigo for accent-as-TEXT (links,
+   * breadcrumbs) which #1E40AF is too dark to serve legibly on a dark ground. */
+  --drhp-accent:             #E0A24E;  /* pinned — chip bg (white text on it), focus rings */
+  --drhp-accent-hover:       #EAB061;  /* brightens on dark (light-mode darkened) */
+  --drhp-accent-link:        #E6AC5C;  /* accent-as-text on dark: links, breadcrumbs */
+  --drhp-bg:                 #16171A;  /* page ink — not pure black (avoids OLED smear) */
+  --drhp-surface:            #1E2024;  /* card / elevated surface (was #FFFFFF) */
+  --drhp-text-primary:       #ECECEA;  /* soft white — low glare (was #0F172A) */
+  --drhp-text-muted:         #9A9BA0;  /* slate-400 (was #475569) */
+  --drhp-border-subtle:      #33363C;  /* hairline on dark (was var(--drhp-border-subtle)) */
+  --drhp-surface-secondary:  #26282D;  /* header / zebra / track (was #F4F5F7) */
+  --drhp-refusal-bg:         #2A2417;  /* dark amber-tinted surface (was #FEF3C7) */
+  --drhp-refusal-border:     #D97706;  /* amber border reads on dark — kept */
+  --drhp-refusal-text:       #FCD9A0;  /* light amber text (was #78350F) */
+  --drhp-font-serif: 'IBM Plex Serif', Georgia, 'Times New Roman', serif;
+  --drhp-font-sans:  'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --drhp-font-mono:  'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   --drhp-space-xs:           4px;
   --drhp-space-sm:           8px;
   --drhp-space-md:           16px;
@@ -23,6 +41,54 @@
   --drhp-space-xl:           32px;
   --drhp-space-2xl:          48px;
   --drhp-space-3xl:          64px;
+}
+
+/* ── Typography layer (font-family ONLY — no backgrounds/colors, theme-safe) ─ */
+.stApp, .stApp * { font-family: var(--drhp-font-sans); }
+
+/* Streamlit renders its icons as Material Symbols LIGATURES (the span's text is
+   literally "keyboard_double_arrow_right", drawn as a glyph by the icon font).
+   The blanket .stApp * rule above would force IBM Plex onto those spans and the
+   ligature text would show as raw words. Restore the icon font on icon elements
+   so chevrons/arrows/close glyphs render correctly. */
+[data-testid="stIconMaterial"],
+span[class*="material-symbols"],
+.material-icons,
+.material-symbols-outlined,
+.material-symbols-rounded {
+  font-family: 'Material Symbols Rounded', 'Material Symbols Outlined',
+               'Material Icons', var(--drhp-font-sans) !important;
+}
+.drhp-hero-display,
+.drhp-refusal-heading,
+.drhp-empty-heading,
+.drhp-metadata-label,
+.drhp-snapshot-block-heading,
+.stApp h1, .stApp h2, .stApp h3 {
+  font-family: var(--drhp-font-serif);
+  letter-spacing: -0.01em;
+}
+.drhp-cite,
+.drhp-metadata-value,
+.drhp-confidence-label,
+.drhp-spec-meter-label,
+.drhp-risk-item-counter,
+.drhp-split-bar-caption,
+.drhp-ipo-card-meta,
+.drhp-snippet-metadata,
+.drhp-provenance-flag,
+.drhp-provenance-legend,
+.drhp-peer-asof,
+.drhp-peer-ipo-tag,
+.drhp-gmp-range-headline,
+.drhp-gmp-source-line,
+.drhp-fin-table thead th,
+.drhp-fin-table td,
+.drhp-peer-table thead th,
+.drhp-peer-table td,
+.drhp-methodology-code {
+  font-family: var(--drhp-font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── Suppress Streamlit default footer ──────────────────────────────────── */
@@ -34,7 +100,7 @@
   font-size: 28px;
   font-weight: 600;
   line-height: 1.2;
-  color: #0F172A;
+  color: var(--drhp-text-primary);
   margin: 0 0 16px 0;
 }
 
@@ -42,7 +108,7 @@
   font-size: 16px;
   font-weight: 400;
   line-height: 1.55;
-  color: #0F172A;
+  color: var(--drhp-text-primary);
   margin: 0 0 32px 0;
 }
 
@@ -50,7 +116,7 @@
   font-size: 16px;
   font-weight: 400;
   line-height: 1.55;
-  color: #0F172A;
+  color: var(--drhp-text-primary);
   margin: 0 0 16px 0;
 }
 
@@ -60,8 +126,8 @@
   font-size: 0.7em;
   vertical-align: super;
   font-weight: 600;
-  color: #FFFFFF;
-  background: #1E40AF;
+  color: #16171A;
+  background: #E0A24E;
   padding: 1px 6px;
   border-radius: 8px;
   cursor: pointer;
@@ -83,27 +149,27 @@
 }
 
 .drhp-cite:hover {
-  background: #1E3A8A;
+  background: #C98A3C;
   text-decoration: underline;
 }
 
 /* UI-SPEC Accessibility §Focus indicators — never outline: none without replacement */
 .drhp-cite:focus-visible {
-  outline: 2px solid #1E40AF;
+  outline: 2px solid #E0A24E;
   outline-offset: 2px;
 }
 
 .drhp-cite:active,
 .drhp-cite[aria-expanded="true"] {
-  background: #1E3A8A;
+  background: #C98A3C;
 }
 
 /* ── Refusal banner ─────────────────────────────────────────────────────── */
 /* No destructive red — refusal posture is honest, not punitive (UI-SPEC §Color) */
 .drhp-refusal {
-  background: #FEF3C7;
-  border-left: 4px solid #D97706;
-  color: #78350F;
+  background: var(--drhp-refusal-bg);
+  border-left: 4px solid var(--drhp-refusal-border);
+  color: var(--drhp-refusal-text);
   padding: 24px 16px;
   border-radius: 8px;
   max-width: 720px;
@@ -114,23 +180,23 @@
   font-weight: 600;
   line-height: 1.3;
   margin: 0 0 16px 0;
-  color: #78350F;
+  color: var(--drhp-refusal-text);
 }
 
 .drhp-refusal-body {
   font-size: 16px;
   font-weight: 400;
   line-height: 1.55;
-  color: #78350F;
+  color: var(--drhp-refusal-text);
   margin: 0 0 16px 0;
 }
 
 /* ── Reformulation suggestion chip ─────────────────────────────────────── */
 /* UI-SPEC Refusal Banner content layout 3 + Mobile touch-target compliance */
 .drhp-suggest {
-  background: #F4F5F7;
-  color: #0F172A;
-  border: 1px solid #E2E8F0;
+  background: var(--drhp-surface-secondary);
+  color: var(--drhp-text-primary);
+  border: 1px solid var(--drhp-border-subtle);
   padding: 8px 16px;
   border-radius: 8px;
   font-size: 14px;
@@ -151,18 +217,18 @@
 .drhp-footer {
   position: sticky;
   bottom: 0;
-  background: #FFFFFF;
-  border-top: 1px solid #E2E8F0;
+  background: var(--drhp-bg);
+  border-top: 1px solid var(--drhp-border-subtle);
   padding: 8px 16px;
   min-height: 56px;
   font-size: 12px;
-  color: #475569;
+  color: var(--drhp-text-muted);
   line-height: 1.5;
   z-index: 50;
 }
 
 .drhp-footer-link {
-  color: #1E40AF;
+  color: var(--drhp-accent-link);
   text-decoration: underline;
 }
 
@@ -171,8 +237,8 @@
 .drhp-disclaimer-per-answer {
   font-size: 12px;
   font-style: italic;
-  color: #475569;
-  border-top: 1px solid #E2E8F0;
+  color: var(--drhp-text-muted);
+  border-top: 1px solid var(--drhp-border-subtle);
   padding-top: 8px;
   margin-top: 16px;
 }
@@ -180,7 +246,7 @@
 /* ── DRHP metadata header ───────────────────────────────────────────────── */
 /* UI-SPEC Information Architecture §2 */
 .drhp-metadata-header {
-  background: #F4F5F7;
+  background: var(--drhp-surface-secondary);
   padding: 24px;
   border-radius: 8px;
   margin-bottom: 24px;
@@ -189,13 +255,13 @@
 .drhp-metadata-label {
   font-size: 16px;
   font-weight: 600;
-  color: #475569;
+  color: var(--drhp-text-muted);
 }
 
 .drhp-metadata-value {
   font-size: 16px;
   font-weight: 600;
-  color: #0F172A;
+  color: var(--drhp-text-primary);
 }
 
 /* ── Content container ──────────────────────────────────────────────────── */
@@ -208,23 +274,23 @@
 .drhp-snippet {
   font-size: 14px;
   font-style: italic;
-  color: #475569;
+  color: var(--drhp-text-muted);
   line-height: 1.6;
-  border-left: 3px solid #E2E8F0;
+  border-left: 3px solid var(--drhp-border-subtle);
   padding-left: 12px;
   margin: 8px 0;
 }
 
 .drhp-snippet-metadata {
   font-size: 12px;
-  color: #475569;
+  color: var(--drhp-text-muted);
   margin-top: 8px;
 }
 
 /* ── Chat input focus ring ──────────────────────────────────────────────── */
 /* UI-SPEC IA §4 chat input on-focus accent ring */
 [data-testid="stChatInput"] textarea:focus {
-  outline: 2px solid #1E40AF;
+  outline: 2px solid #E0A24E;
   outline-offset: 2px;
 }
 
@@ -238,7 +304,7 @@
   font-size: 20px;
   font-weight: 600;
   line-height: 1.3;
-  color: #475569;
+  color: var(--drhp-text-muted);
   margin: 0 0 8px 0;
 }
 
@@ -377,47 +443,63 @@
   margin-top: var(--drhp-space-xl);
 }
 
-.drhp-ipo-card {
-  display: block;
-  background: #FFFFFF;
-  border: 1px solid var(--drhp-border-subtle);
-  border-radius: 8px;
-  padding: var(--drhp-space-lg);
+/* Catalogue IPO card — rendered as an st.markdown <a>. Streamlit's own
+   `.stMarkdown a` link styling (colour, underline, inline) fights the card
+   chrome, so the essential visual props use !important + the higher-specificity
+   `a.drhp-ipo-card` selector. Lifted treatment matches the app's card system. */
+a.drhp-ipo-card {
+  display: block !important;
+  background: var(--drhp-surface) !important;
+  border: 1px solid var(--drhp-border-subtle) !important;
+  border-top-color: rgba(255, 255, 255, 0.10) !important;
+  border-radius: 12px;
+  padding: var(--drhp-space-lg) !important;
   min-height: 88px;
   margin-bottom: var(--drhp-space-md);
-  text-decoration: none;
-  color: inherit;
+  text-decoration: none !important;
+  color: var(--drhp-text-primary) !important;
   cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45),
+              0 16px 32px -20px rgba(0, 0, 0, 0.80);
+  transition: box-shadow 200ms ease, transform 200ms ease, background 200ms ease;
 }
 
-.drhp-ipo-card:hover,
-.drhp-ipo-card:active {
-  background: var(--drhp-surface-secondary);
+a.drhp-ipo-card:hover,
+a.drhp-ipo-card:active {
+  background: var(--drhp-surface-secondary) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5),
+              0 22px 40px -22px rgba(0, 0, 0, 0.85);
+  transform: translateY(-2px);
 }
 
-.drhp-ipo-card:focus-visible {
+a.drhp-ipo-card:focus-visible {
   outline: 2px solid var(--drhp-accent);
   outline-offset: 2px;
 }
 
 .drhp-ipo-card-issuer {
-  font-size: 16px;
+  display: block;
+  font-family: var(--drhp-font-serif);
+  font-size: 18px;
   font-weight: 600;
-  color: var(--drhp-text-primary);
+  letter-spacing: -0.01em;
+  color: var(--drhp-text-primary) !important;
   margin-bottom: var(--drhp-space-sm);
 }
 
 .drhp-ipo-card-sector {
+  display: block;
   font-size: 12px;
   font-weight: 400;
-  color: var(--drhp-text-muted);
+  color: var(--drhp-text-muted) !important;
   margin-bottom: var(--drhp-space-xs);
 }
 
 .drhp-ipo-card-meta {
+  display: block;
   font-size: 12px;
   font-weight: 400;
-  color: var(--drhp-text-muted);
+  color: var(--drhp-text-muted) !important;
 }
 
 .drhp-ipo-card-open-tag {
@@ -437,12 +519,12 @@
 }
 
 .drhp-breadcrumb a {
-  color: var(--drhp-accent);
+  color: var(--drhp-accent-link);
   text-decoration: underline;
 }
 
 .drhp-snapshot-block {
-  background: #FFFFFF;
+  background: var(--drhp-surface);
   border: 1px solid var(--drhp-border-subtle);
   border-radius: 8px;
   padding: var(--drhp-space-lg);
@@ -477,7 +559,7 @@
 
 .drhp-split-bar-ofs {
   background: var(--drhp-accent);
-  color: #FFFFFF;
+  color: #16171A;
   font-size: 12px;
   font-weight: 600;
   display: flex;
@@ -525,7 +607,7 @@
   text-align: left;
   position: sticky;
   left: 0;
-  background: #FFFFFF;
+  background: var(--drhp-surface);
 }
 
 .drhp-fin-table thead th {
@@ -578,7 +660,7 @@
    block chrome mirrors .drhp-snapshot-block; rows are field-row label/value
    pairs separated by a 1px border-subtle rule (not zebra fill, to stay calm). */
 .drhp-redflag-table {
-  background: #FFFFFF;
+  background: var(--drhp-surface);
   border: 1px solid var(--drhp-border-subtle);
   border-radius: 8px;
   padding: var(--drhp-space-lg);
@@ -599,21 +681,31 @@
   border-bottom: none;
 }
 
+/* Field label — a small mono UPPERCASE eyebrow (matches the peer-table header
+   grammar), sitting directly above its value. This gives a clear label→value
+   hierarchy; the old flex row right-aligned the value, which looked broken when
+   the value is a full sentence rather than a short number. */
 .drhp-redflag-label {
-  font-size: 16px;
+  display: block;
+  font-family: var(--drhp-font-mono);
+  font-size: 12px;
   font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   color: var(--drhp-text-muted);
-  flex: 0 0 auto;
+  margin-bottom: var(--drhp-space-xs);
 }
 
 .drhp-redflag-value {
+  display: block;
   font-size: 16px;
   font-weight: 400;
+  line-height: 1.55;
   color: var(--drhp-text-primary);
-  /* Numeric red-flag values align across the 7 stacked rows (UI-SPEC Typography). */
   font-variant-numeric: tabular-nums;
-  text-align: right;
-  flex: 1 1 auto;
+  /* Left-aligned prose, directly under its label (was right-aligned for a
+     numeric spec-sheet layout that the sentence-length values never fit). */
+  text-align: left;
 }
 
 /* Confidence label — Small 12 muted text ONLY. No pill, no fill, no color
@@ -624,6 +716,16 @@
   font-weight: 400;
   color: var(--drhp-text-muted);
   margin-top: var(--drhp-space-xs);
+}
+
+/* Red-flag fields — each keyed st.container groups one label→value→sources→
+   confidence→methodology unit. A hairline top-rule + padding separates units so
+   the card reads as a clean, evenly-rhythmed field list instead of a flat,
+   ungrouped run of text and expander boxes. */
+[class*="st-key-redflag-field-"] {
+  padding-top: var(--drhp-space-md);
+  margin-top: var(--drhp-space-md);
+  border-top: 1px solid var(--drhp-border-subtle);
 }
 
 /* ── Phase 3 — Specificity meter (03-UI-SPEC.md R-2) ─────────────────────── */
@@ -711,19 +813,33 @@
   vertical-align: top;
 }
 
+/* Terminal-grid: faint vertical hairlines between the metric columns so the
+   table reads like a data matrix. Structural only — applied to every metric
+   column equally, encodes no value judgment. The first (company) column is
+   excluded so the row-label stays clean. */
+.drhp-peer-table th:not(:first-child),
+.drhp-peer-table td:not(:first-child) {
+  border-left: 1px solid var(--drhp-border-subtle);
+}
+
 .drhp-peer-table th:first-child,
 .drhp-peer-table td:first-child {
   text-align: left;
   position: sticky;
   left: 0;
-  background: #FFFFFF;
+  background: var(--drhp-surface);
 }
 
 .drhp-peer-table thead th {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--drhp-text-muted);
   background: var(--drhp-surface-secondary);
+  /* Terminal-grid: one 2px indigo rule under the whole header — the single
+     structural accent (applied to all columns equally, never a value signal). */
+  border-bottom: 2px solid var(--drhp-accent);
 }
 
 .drhp-peer-table thead th:first-child {
@@ -737,8 +853,12 @@
 }
 
 .drhp-peer-table td {
-  font-size: 16px;
-  font-weight: 400;
+  /* Terminal-grid: confident, larger tabular numbers — the data is the hero.
+     Size/weight are uniform across every cell, so a low and a high multiple
+     render identically (D4-09 honesty). */
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
   color: var(--drhp-text-primary);
 }
 
@@ -746,15 +866,26 @@
   background: var(--drhp-surface-secondary);
 }
 
-/* The IPO's own row — neutral surface-secondary fill for ORIENTATION only (the
-   same neutral grey as the financials zebra; carries zero verdict weight). The
-   IPO row is found by position (first) + the muted tag, never by colour. The
-   sticky first-child override keeps the pinned name cell filled to match. */
+/* The IPO's own row — the SUBJECT anchor (Terminal grid). An opaque indigo-tinted
+   fill marks WHICH company the page is analysing (Swiggy), so the eye finds it
+   instantly. This is ORIENTATION, applied to the whole row regardless of its
+   multiples — the same "this is the thing in focus" role the indigo accent plays
+   on citation chips. It never says the IPO is cheap/expensive/good/bad (D4-09).
+   The fill is opaque (not rgba) so the sticky pinned name cell stays solid while
+   the metric columns scroll behind it. */
 .drhp-peer-ipo-row th,
 .drhp-peer-ipo-row td,
 .drhp-peer-ipo-row th:first-child,
 .drhp-peer-ipo-row td:first-child {
-  background: var(--drhp-surface-secondary);
+  background: #2A2416;  /* #1E40AF ~14% over the card surface, flattened opaque */
+}
+
+/* 3px indigo left rule on the pinned name cell + brand-weight company name —
+   the visual "you are here" for the subject row. Orientation, not a verdict. */
+.drhp-peer-ipo-row th:first-child,
+.drhp-peer-ipo-row td:first-child {
+  border-left: 3px solid var(--drhp-accent);
+  font-weight: 600;
 }
 
 .drhp-peer-ipo-tag {
@@ -932,4 +1063,371 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ── Lifted-depth card treatment (dark redesign, element 2) ─────────────────
+ * Every snapshot block card is an st.container(border=True, key="drhpcard-…").
+ * The key= stamps a STABLE `st-key-drhpcard-*` class on the same element that
+ * carries the border (emotion hashes are not stable across Streamlit builds, so
+ * we hook the key class, never the hash). A soft ambient shadow lifts the card
+ * off the Deep Slate ink; a faint lighter top edge reads as a subtle bevel.
+ * No colour is added — depth alone carries the premium feel. */
+[class*="st-key-drhpcard-"] {
+  border-radius: 12px !important;
+  border-top-color: rgba(255, 255, 255, 0.10) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45),
+              0 16px 32px -20px rgba(0, 0, 0, 0.80) !important;
+  margin-bottom: var(--drhp-space-xl) !important;
+  transition: box-shadow 200ms ease, transform 200ms ease;
+}
+
+/* A whisper of interactivity on hover — the card lifts a hair further. Kept
+ * tiny (2px) so it never reads as a clickable affordance (these are read
+ * surfaces, not buttons). Suppressed under prefers-reduced-motion above. */
+[class*="st-key-drhpcard-"]:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5),
+              0 22px 40px -22px rgba(0, 0, 0, 0.85) !important;
+  transform: translateY(-2px);
+}
+
+/* ── Chat Q&A turns (dark redesign, element 4) ──────────────────────────────
+ * Streamlit ships a red "face" (user) and an orange "smart_toy" (assistant)
+ * avatar — both clash with Deep Slate + indigo. Recolour to the palette via the
+ * role-specific testids: the DRHPLens answer avatar becomes the brand indigo,
+ * the user avatar a neutral muted slate. The glyph colour is the avatar's font
+ * colour (the icon is a Material ligature). */
+[data-testid="stChatMessageAvatarAssistant"] {
+  background-color: var(--drhp-accent) !important;
+  color: #FFFFFF !important;
+}
+[data-testid="stChatMessageAvatarUser"] {
+  background-color: var(--drhp-surface-secondary) !important;
+  color: var(--drhp-text-muted) !important;
+  border: 1px solid var(--drhp-border-subtle);
+}
+
+/* ── First-use modal (dark redesign, element 5) — elevate + focus ───────────
+ * [data-testid="stDialog"] is Streamlit's full-screen overlay = the scrim; by
+ * default it's a weak bluish 25% wash. Strengthen it to a dark ~55% scrim (with
+ * a whisper of blur) so the page recedes. The panel (div[role="dialog"]) renders
+ * at the PAGE ink colour by default, so it never separates from the page — lift
+ * it to the card surface + a deep shadow, and add a thin indigo top accent rule
+ * as the branded touch. */
+[data-testid="stDialog"] {
+  background: rgba(0, 0, 0, 0.55) !important;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+[data-testid="stDialog"] div[role="dialog"] {
+  background: var(--drhp-surface) !important;
+  border-top: 3px solid var(--drhp-accent) !important;
+  box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.85),
+              0 2px 6px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* ── Hide Streamlit's auto multipage sidebar (dark redesign) ────────────────
+ * The auto-nav lists "app / methodology / snapshot" (raw filenames), exposes
+ * /snapshot with no drhp_id, and is unstyled default chrome. All navigation is
+ * via the IPO cards + breadcrumb/footer links, so the sidebar is removed
+ * entirely along with its collapse control (the "»" toggle). */
+[data-testid="stSidebar"],
+[data-testid="stSidebarNav"],
+[data-testid="stSidebarCollapsedControl"],
+[data-testid="stSidebarCollapseButton"],
+[data-testid="stExpandSidebarButton"],
+[data-testid="collapsedControl"] {
+  display: none !important;
+}
+
+/* Streamlit's own top header/toolbar bar. toolbarMode="minimal" hides its
+   CONTENTS (Deploy button) but leaves an empty bar sitting at top:0 that paints
+   OVER our custom .drhp-nav. Remove it entirely — the DRHPLens nav IS the top bar. */
+[data-testid="stHeader"],
+[data-testid="stToolbar"] {
+  display: none !important;
+}
+
+/* Streamlit stamps an anchor-link icon on every st.markdown heading (the little
+   "#" chain that appears on hover). It looks like a stray embedded link on the
+   premium hero/section headings — remove it. */
+[data-testid="stHeaderActionElements"] {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * PREMIUM CHROME (SaaS level-up) — nav, hero, ambient glow, trust band,
+ * how-it-works, structured footer. Injected as HTML via st.markdown; classes
+ * are .drhp-* prefixed. Built on the Deep Slate palette. Signature = the lens
+ * mark + the ambient indigo "focus glow".
+ * ═════════════════════════════════════════════════════════════════════════ */
+
+/* Give the centered content room to breathe (mockup width) + clear the fixed
+   nav. Streamlit's default centered container is ~730px — too cramped. */
+[data-testid="stMainBlockContainer"] {
+  max-width: 1120px !important;
+  padding-top: 88px !important;
+  padding-left: 40px !important;
+  padding-right: 40px !important;
+}
+
+/* ── Sticky glassmorphic nav ─────────────────────────────────────────────── */
+.drhp-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  height: 64px;
+  background: var(--drhp-bg);
+  border-bottom: 1px solid var(--drhp-border-subtle);
+}
+.drhp-nav-inner {
+  max-width: 1120px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.drhp-brand {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--drhp-font-serif);
+  font-weight: 600; font-size: 19px; letter-spacing: -0.01em;
+  color: var(--drhp-text-primary) !important; text-decoration: none !important;
+}
+.drhp-brand .accent { color: var(--drhp-accent-link) !important; }
+.drhp-lens {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 2px solid var(--drhp-accent-link);
+  position: relative; flex: 0 0 auto;
+  box-shadow: 0 0 12px rgba(224, 162, 78, 0.5);
+}
+.drhp-lens::after {
+  content: ""; position: absolute; inset: 4px; border-radius: 50%;
+  border: 1.5px solid var(--drhp-accent);
+  background: radial-gradient(circle, rgba(224, 162, 78, 0.35), transparent);
+}
+.drhp-nav-links { display: flex; align-items: center; gap: 26px; font-size: 14px; }
+.drhp-nav-links a:not(.drhp-btn) {
+  font-family: var(--drhp-font-mono); font-size: 12px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--drhp-text-muted); text-decoration: none; transition: color 0.2s ease;
+}
+.drhp-nav-links a:not(.drhp-btn):hover { color: var(--drhp-text-primary); }
+.drhp-btn {
+  display: inline-block; font-family: var(--drhp-font-sans);
+  font-size: 14px; font-weight: 600; padding: 10px 20px; border-radius: 4px;
+  cursor: pointer; transition: all 0.2s ease; border: 1px solid transparent;
+  text-decoration: none !important;
+}
+.drhp-nav-links a, .drhp-ft-col a, .drhp-brand { text-decoration: none !important; }
+.drhp-btn-primary { background: var(--drhp-accent); color: #16171A !important; }
+.drhp-btn-primary:hover { background: var(--drhp-accent-hover); }
+.drhp-btn-ghost { background: transparent; border-color: var(--drhp-accent); color: var(--drhp-accent-link) !important; }
+.drhp-btn-ghost:hover { background: rgba(224, 162, 78, 0.10); }
+
+/* ── Hero + ambient "focus glow" signature ───────────────────────────────── */
+.drhp-hero2 { position: relative; text-align: center; padding: 64px 0 52px; }
+.drhp-glow { display: none; position: absolute; border-radius: 50%; filter: blur(90px); pointer-events: none; z-index: 0; }
+.drhp-glow-a {
+  width: 620px; height: 620px; top: -240px; left: 50%; transform: translateX(-45%);
+  background: radial-gradient(circle, #1E40AF 0%, rgba(224, 162, 78, 0) 70%); opacity: 0.5;
+}
+.drhp-glow-b {
+  width: 400px; height: 400px; top: 60px; right: -80px;
+  background: radial-gradient(circle, #3355C8 0%, rgba(224, 162, 78, 0) 70%); opacity: 0.32;
+}
+/* Content above the glow — EXCLUDE the .drhp-glow blobs, or they'd be forced
+   back into flow (position:relative) and inflate the hero by ~1000px. */
+.drhp-hero2 > *:not(.drhp-glow) { position: relative; z-index: 1; }
+.drhp-hero-eyebrow {
+  font-family: var(--drhp-font-mono); font-size: 12px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--drhp-accent-link); margin-bottom: 20px;
+}
+.drhp-hero-title {
+  font-family: var(--drhp-font-serif); font-weight: 600; font-size: 58px;
+  line-height: 1.05; letter-spacing: -0.02em; color: var(--drhp-text-primary);
+  margin: 0 0 20px 0; text-wrap: balance;
+}
+.drhp-hero-title .grad { color: var(--drhp-accent); }
+.drhp-hero-sub {
+  /* inline-block so the parent's text-align:center centres the whole block —
+     Streamlit's default <p> margin rule zeroes `margin:auto`, which was pushing
+     the subhead left of the title. This is immune to that. */
+  display: inline-block;
+  font-size: 19px; color: var(--drhp-text-muted); line-height: 1.6;
+  max-width: 640px; margin: 0 0 30px 0; text-wrap: balance;
+}
+.drhp-hero-cta { display: flex; gap: 14px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+.drhp-hero-cta .drhp-btn { padding: 13px 26px; font-size: 15px; }
+.drhp-hero-trust { font-family: var(--drhp-font-mono); font-size: 12.5px; color: var(--drhp-text-muted); }
+.drhp-hero-trust .dot { color: var(--drhp-accent-link); margin: 0 8px; }
+
+/* ── Trust / stats band (contained) ──────────────────────────────────────── */
+.drhp-band {
+  border: 1px solid var(--drhp-border-subtle); border-radius: 16px;
+  background: var(--drhp-surface);
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  margin: 8px 0 8px 0; overflow: hidden;
+}
+.drhp-stat { text-align: center; padding: 30px 20px; border-right: 1px solid var(--drhp-border-subtle); }
+.drhp-stat:last-child { border-right: none; }
+.drhp-stat-n {
+  font-family: var(--drhp-font-mono); font-weight: 600; font-size: 30px;
+  color: var(--drhp-text-primary); font-variant-numeric: tabular-nums; letter-spacing: -0.01em;
+}
+.drhp-stat-n em { color: var(--drhp-accent-link); font-style: normal; }
+.drhp-stat-l { font-size: 12.5px; color: var(--drhp-text-muted); margin-top: 6px; }
+
+/* ── Section header ──────────────────────────────────────────────────────── */
+.drhp-sec-head { text-align: center; margin: 56px 0 36px 0; }
+.drhp-sec-k {
+  font-family: var(--drhp-font-mono); font-size: 12px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--drhp-accent-link);
+}
+.drhp-sec-h {
+  font-family: var(--drhp-font-serif); font-weight: 600; font-size: 32px;
+  letter-spacing: -0.01em; color: var(--drhp-text-primary); margin-top: 10px;
+}
+
+/* ── How it works ────────────────────────────────────────────────────────── */
+.drhp-hiw { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.drhp-hiw-card {
+  background: var(--drhp-surface); border: 1px solid var(--drhp-border-subtle);
+  border-top-color: rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 26px;
+  box-shadow: 0 16px 32px -20px rgba(0, 0, 0, 0.8);
+}
+.drhp-hiw-ic {
+  width: 42px; height: 42px; border-radius: 11px;
+  background: rgba(224, 162, 78, 0.16); border: 1px solid rgba(224, 162, 78, 0.3);
+  display: flex; align-items: center; justify-content: center; margin-bottom: 16px;
+  color: var(--drhp-accent-link);
+}
+.drhp-hiw-card h3 { font-family: var(--drhp-font-serif); font-size: 19px; font-weight: 600; margin: 0 0 8px 0; color: var(--drhp-text-primary); }
+.drhp-hiw-card p { font-size: 14.5px; color: var(--drhp-text-muted); line-height: 1.6; margin: 0; }
+
+/* ── Catalogue card: sector tag-chip + hover arrow ───────────────────────── */
+.drhp-ipo-card-tag {
+  display: inline-block; font-family: var(--drhp-font-mono); font-size: 11px;
+  color: var(--drhp-text-muted); border: 1px solid var(--drhp-border-subtle);
+  border-radius: 999px; padding: 3px 10px; margin-bottom: 14px;
+}
+.drhp-ipo-card-arrow {
+  position: absolute; top: var(--drhp-space-lg); right: var(--drhp-space-lg);
+  color: var(--drhp-text-muted); transition: color 0.2s ease, transform 0.2s ease;
+  font-family: var(--drhp-font-mono);
+}
+a.drhp-ipo-card { position: relative; }
+a.drhp-ipo-card:hover .drhp-ipo-card-arrow { color: var(--drhp-accent-link); transform: translateX(3px); }
+a.drhp-ipo-card:hover { border-color: rgba(224, 162, 78, 0.4) !important; }
+
+/* ── Structured site footer (contained) ──────────────────────────────────── */
+.drhp-site-footer {
+  border-top: 1px solid var(--drhp-border-subtle); margin-top: 56px;
+  padding-top: 40px;
+}
+.drhp-ft-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 40px; }
+.drhp-ft-tag { font-size: 13.5px; color: var(--drhp-text-muted); line-height: 1.6; max-width: 340px; margin-top: 12px; }
+.drhp-ft-col h5 {
+  font-family: var(--drhp-font-mono); font-size: 11px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--drhp-text-muted); margin: 0 0 14px 0;
+}
+.drhp-ft-col a { display: block; font-size: 14px; color: var(--drhp-text-muted); text-decoration: none; margin-bottom: 10px; transition: color 0.2s ease; }
+.drhp-ft-col a:hover { color: var(--drhp-text-primary); }
+.drhp-ft-legal {
+  border-top: 1px solid var(--drhp-border-subtle); margin-top: 36px; padding: 18px 0 8px 0;
+  display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+  font-size: 12px; color: var(--drhp-text-muted); line-height: 1.6;
+}
+
+/* ── How-it-works page: vertical numbered pipeline ───────────────────────── */
+.drhp-flow { max-width: 760px; margin: 8px auto 0; }
+.drhp-flow-step { display: grid; grid-template-columns: 56px 1fr; gap: 22px; padding-bottom: 36px; position: relative; }
+.drhp-flow-step:last-child { padding-bottom: 0; }
+.drhp-flow-step:not(:last-child)::before {
+  content: ""; position: absolute; left: 27px; top: 56px; bottom: 4px; width: 2px;
+  background: var(--drhp-border-subtle);
+}
+.drhp-flow-num {
+  width: 56px; height: 56px; border-radius: 50%; flex: 0 0 auto;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--drhp-font-mono); font-weight: 600; font-size: 16px;
+  color: var(--drhp-accent-link);
+  background: var(--drhp-surface); border: 1px solid rgba(224, 162, 78, 0.35);
+  box-shadow: 0 0 0 4px rgba(224, 162, 78, 0.08), 0 8px 20px -10px rgba(0, 0, 0, 0.7);
+  position: relative; z-index: 1;
+}
+.drhp-flow-body { padding-top: 6px; }
+.drhp-flow-body h3 { font-family: var(--drhp-font-serif); font-size: 21px; font-weight: 600; color: var(--drhp-text-primary); margin: 0 0 8px 0; }
+.drhp-flow-body p { font-size: 15.5px; color: var(--drhp-text-muted); line-height: 1.65; margin: 0; max-width: 620px; }
+
+/* ── Will / won't principles ─────────────────────────────────────────────── */
+.drhp-principles { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; max-width: 900px; margin: 0 auto; }
+.drhp-principle-card {
+  background: var(--drhp-surface); border: 1px solid var(--drhp-border-subtle);
+  border-top-color: rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 24px 28px;
+  box-shadow: 0 16px 32px -20px rgba(0, 0, 0, 0.8);
+}
+.drhp-principle-card h4 {
+  font-family: var(--drhp-font-mono); font-size: 12px; letter-spacing: 0.1em;
+  text-transform: uppercase; margin: 0 0 12px 0; color: var(--drhp-text-muted);
+}
+.drhp-principle-card ul { list-style: none; margin: 0; padding: 0; }
+.drhp-principle-card li {
+  font-size: 15px; color: var(--drhp-text-primary); line-height: 1.5;
+  padding: 10px 0 10px 26px; position: relative; border-top: 1px solid var(--drhp-border-subtle);
+}
+.drhp-principle-card li:first-child { border-top: none; }
+.drhp-will li::before { content: "+"; position: absolute; left: 0; color: var(--drhp-accent-link); font-family: var(--drhp-font-mono); font-weight: 600; }
+.drhp-wont li::before { content: "\2014"; position: absolute; left: 2px; color: var(--drhp-text-muted); font-family: var(--drhp-font-mono); }
+
+/* ── CTA band ────────────────────────────────────────────────────────────── */
+.drhp-cta-band {
+  position: relative; overflow: hidden; text-align: center; margin: 64px 0 8px;
+  padding: 52px 32px; border-radius: 20px; border: 1px solid var(--drhp-border-subtle);
+  background: var(--drhp-surface-secondary);
+}
+.drhp-cta-band > *:not(.drhp-glow) { position: relative; z-index: 1; }
+.drhp-cta-band h2 { font-family: var(--drhp-font-serif); font-size: 30px; font-weight: 600; color: var(--drhp-text-primary); margin: 0 0 8px 0; }
+.drhp-cta-band p { font-size: 15px; color: var(--drhp-text-muted); margin: 0 0 22px 0; }
+.drhp-cta-band .drhp-btn { padding: 13px 26px; font-size: 15px; }
+
+/* ── Methodology: metrics table, guardrails grid, stack chips ────────────── */
+.drhp-method-note { max-width: 720px; margin: -12px auto 24px; text-align: center; font-size: 14.5px; color: var(--drhp-text-muted); line-height: 1.6; }
+.drhp-metrics-wrap {
+  max-width: 880px; margin: 0 auto; overflow-x: auto;
+  border: 1px solid var(--drhp-border-subtle); border-radius: 16px;
+  box-shadow: 0 16px 32px -20px rgba(0, 0, 0, 0.8);
+}
+.drhp-metrics { width: 100%; border-collapse: collapse; background: var(--drhp-surface); }
+.drhp-metrics thead th {
+  font-family: var(--drhp-font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--drhp-text-muted); text-align: left; padding: 14px 18px;
+  background: var(--drhp-surface-secondary); border-bottom: 2px solid var(--drhp-accent); white-space: nowrap;
+}
+.drhp-metrics td { padding: 14px 18px; border-top: 1px solid var(--drhp-border-subtle); font-size: 14px; vertical-align: top; }
+.drhp-metrics .m-name { font-family: var(--drhp-font-serif); font-size: 15.5px; font-weight: 600; color: var(--drhp-text-primary); white-space: nowrap; }
+.drhp-metrics .m-how { color: var(--drhp-text-muted); }
+.drhp-metrics .m-target { font-family: var(--drhp-font-mono); color: var(--drhp-text-primary); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.drhp-metrics .m-status { font-family: var(--drhp-font-mono); font-size: 12px; color: var(--drhp-accent-link); white-space: nowrap; }
+
+.drhp-guard-grid { grid-template-columns: 1fr 1fr !important; max-width: 880px; margin: 0 auto; }
+
+.drhp-stack { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 780px; margin: 0 auto; }
+.drhp-chip {
+  font-family: var(--drhp-font-mono); font-size: 12.5px; color: var(--drhp-text-primary);
+  background: var(--drhp-surface); border: 1px solid var(--drhp-border-subtle); border-radius: 999px;
+  padding: 7px 14px; transition: border-color 0.2s ease, color 0.2s ease;
+}
+.drhp-chip:hover { border-color: rgba(224, 162, 78, 0.4); color: var(--drhp-accent-link); }
+
+/* ── Mobile ──────────────────────────────────────────────────────────────── */
+@media (max-width: 820px) {
+  [data-testid="stMainBlockContainer"] { padding-left: 20px !important; padding-right: 20px !important; }
+  .drhp-principles, .drhp-guard-grid { grid-template-columns: 1fr !important; }
+  .drhp-cta-band { padding: 40px 20px; }
+  .drhp-nav-inner { padding: 0 20px; }
+  .drhp-nav-links a:not(.drhp-btn) { display: none; }
+  .drhp-hero-title { font-size: 38px; }
+  .drhp-hero-sub { font-size: 17px; }
+  .drhp-band { grid-template-columns: repeat(2, 1fr); }
+  .drhp-stat:nth-child(2) { border-right: none; }
+  .drhp-stat:nth-child(1), .drhp-stat:nth-child(2) { border-bottom: 1px solid var(--drhp-border-subtle); }
+  .drhp-hiw, .drhp-ft-grid { grid-template-columns: 1fr; }
 }

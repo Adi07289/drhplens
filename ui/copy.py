@@ -225,11 +225,12 @@ FIELD_NOT_DISCLOSED_NOTE: str = "Not disclosed in this DRHP."
 FINANCIALS_MISSING_CELL: str = "—"
 """Em dash for a missing financials cell; pair with aria-label='Not disclosed in this DRHP'."""
 
-SNAPSHOT_PRECOMPUTING_HEADING: str = "This snapshot is still being prepared."
+SNAPSHOT_PRECOMPUTING_HEADING: str = "This IPO hasn't been analysed yet."
 
 SNAPSHOT_PRECOMPUTING_BODY_TEMPLATE: str = (
-    "We're reading {issuer}'s DRHP and checking every field against the source. "
-    "This IPO will be ready shortly — you can still ask questions below."
+    "Swiggy Limited is the fully worked example in this demo — its snapshot cites "
+    "every figure back to the DRHP. {issuer} is in the catalogue, but its cited "
+    "snapshot hasn't been generated yet."
 )
 """Issuer-parameterized precomputing-state body. .format(issuer=...)."""
 

@@ -30,7 +30,7 @@ def test_css_file_exists_and_nonempty(css_text: str) -> None:
 
 def test_css_contains_citation_chip_selector(css_text: str) -> None:
     assert ".drhp-cite" in css_text
-    assert "background: #1E40AF" in css_text
+    assert "background: #E0A24E" in css_text
     assert "font-size: 0.7em" in css_text
     assert "vertical-align: super" in css_text
 
@@ -38,7 +38,7 @@ def test_css_contains_citation_chip_selector(css_text: str) -> None:
 # ── Focus ring ───────────────────────────────────────────────────────────────
 
 def test_css_contains_focus_ring_2px_offset(css_text: str) -> None:
-    assert re.search(r"outline:\s*2px\s+solid\s+#1E40AF", css_text), \
+    assert re.search(r"outline:\s*2px\s+solid\s+#E0A24E", css_text), \
         "Focus ring outline not found"
     assert re.search(r"outline-offset:\s*2px", css_text), \
         "outline-offset: 2px not found"
@@ -47,9 +47,16 @@ def test_css_contains_focus_ring_2px_offset(css_text: str) -> None:
 # ── Refusal banner amber, not red ────────────────────────────────────────────
 
 def test_css_contains_refusal_banner_amber_not_red(css_text: str) -> None:
-    assert re.search(r"background:\s*#FEF3C7", css_text), "Refusal bg #FEF3C7 missing"
-    assert "border-left: 4px solid #D97706" in css_text, \
-        "Refusal border #D97706 missing"
+    # Refusal banner is AMBER, never destructive red (UI-SPEC §Color — refusal is
+    # honest, not punitive). In the Deep Slate DARK palette the amber lives in
+    # semantic tokens: a dark amber-tinted surface, the kept amber border #D97706,
+    # and light amber text. The invariant guarded here is amber-not-red, unchanged.
+    assert re.search(r"--drhp-refusal-border:\s*#D97706", css_text), \
+        "Refusal amber border token #D97706 missing"
+    assert "border-left: 4px solid var(--drhp-refusal-border)" in css_text, \
+        "Refusal banner must use the amber refusal-border token"
+    assert "background: var(--drhp-refusal-bg)" in css_text, \
+        "Refusal banner background must go through the amber refusal-bg token"
     assert "#B91C1C" not in css_text, \
         "Destructive red #B91C1C must NOT appear in CSS (UI-SPEC §Color)"
 
@@ -85,14 +92,20 @@ def test_css_contains_44px_touch_target(css_text: str) -> None:
 
 # ── Idempotency ──────────────────────────────────────────────────────────────
 
-def test_load_global_css_is_idempotent() -> None:
+def test_load_global_css_injects_every_run() -> None:
+    # The <style> must be returned on EVERY call so it can be re-emitted each
+    # script run. Streamlit removes elements not produced by the current run, so
+    # a once-only guard dropped the whole stylesheet after the first
+    # st.rerun()/st.stop() (e.g. dismissing the first-use modal), leaving the
+    # catalogue and subsequent pages unstyled.
     from app.util.css_loader import load_global_css
     ss: dict = {}
     r1 = load_global_css(ss)
-    assert r1 is not None, "First call must return CSS string"
-    assert ss.get("_drhp_css_loaded") is True
     r2 = load_global_css(ss)
-    assert r2 is None, "Second call must return None (idempotency)"
+    assert r1 is not None, "First call must return CSS string"
+    assert r2 is not None, "Every call must return CSS (re-injected each run)"
+    assert r1 == r2, "CSS must be identical across runs (stable delta position)"
+    assert r1.startswith("<style>") and r1.endswith("</style>")
 
 
 def test_load_global_css_returns_html_with_style_tag() -> None:

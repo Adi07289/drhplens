@@ -1,0 +1,17 @@
+# DRHPLens theme — "Graphite + Amber" (2-colour, solid). Neutral graphite base +
+# a single warm amber/gold accent. Kept in sync with the --drhp-* tokens in
+# app/static/drhplens.css:
+#   backgroundColor          == --drhp-bg          (#16171A graphite ink)
+#   secondaryBackgroundColor == --drhp-surface     (#1E2024 card surface)
+#   textColor                == --drhp-text-primary (#ECECEA warm off-white)
+#   primaryColor             == --drhp-accent       (#E0A24E amber / gold)
+[theme]
+base = "dark"
+primaryColor = "#E0A24E"
+backgroundColor = "#16171A"
+secondaryBackgroundColor = "#1E2024"
+textColor = "#ECECEA"
+
+# Hide Streamlit's own developer chrome (top-right "Deploy" + ⋮ menu).
+[client]
+toolbarMode = "minimal"

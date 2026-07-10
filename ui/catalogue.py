@@ -75,13 +75,18 @@ def _card_html(ipo: CatalogueIPO) -> str:
 
     href = f"/snapshot?drhp_id={html.escape(ipo.drhp_id, quote=True)}"
 
+    # NOTE: the card rows are <span> (inline) elements, NOT <div> — Streamlit's
+    # markdown HTML sanitizer STRIPS block elements (<div>) nested inside an <a>
+    # inside its <p> wrapper, which collapsed the card to a bare link. Inline
+    # <span>s survive sanitization; .drhp-ipo-card-* set them display:block.
     return (
         f'<a class="drhp-ipo-card" href="{href}" target="_self" '
         f'role="link" tabindex="0" aria-label="{aria_label}">'
+        f'<span class="drhp-ipo-card-arrow">&rarr;</span>'
         f'{open_tag_html}'
-        f'<div class="drhp-ipo-card-issuer">{issuer}</div>'
-        f'<div class="drhp-ipo-card-sector">{sector}</div>'
-        f'<div class="drhp-ipo-card-meta">{meta_line}</div>'
+        f'<span class="drhp-ipo-card-tag">{sector}</span>'
+        f'<span class="drhp-ipo-card-issuer">{issuer}</span>'
+        f'<span class="drhp-ipo-card-meta">{meta_line}</span>'
         f'</a>'
     )
 
