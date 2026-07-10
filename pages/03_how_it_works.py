@@ -62,12 +62,15 @@ _STEPS = [
      "If the prospectus doesn't address something, DRHPLens says so instead of guessing. "
      "No fabricated numbers, and never a buy / sell / subscribe call."),
 ]
-_steps_html = "".join(
-    f'<div class="drhp-flow-step"><div class="drhp-flow-num">{n}</div>'
-    f'<div class="drhp-flow-body"><h3>{t}</h3><p>{d}</p></div></div>'
+_rows_html = "".join(
+    f'<div class="drhp-alt-row">'
+    f'<div class="drhp-alt-text"><div class="drhp-alt-eyebrow">Step {n}</div>'
+    f'<h3>{t}</h3><p>{d}</p></div>'
+    f'<div class="drhp-alt-visual"><div class="drhp-alt-num">{n}</div></div>'
+    f'</div>'
     for n, t, d in _STEPS
 )
-st.markdown(f'<div class="drhp-flow">{_steps_html}</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="drhp-alt">{_rows_html}</div>', unsafe_allow_html=True)
 
 # ── The honesty contract (will / won't) ──────────────────────────────────────
 st.markdown(

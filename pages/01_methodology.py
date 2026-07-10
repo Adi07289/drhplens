@@ -39,7 +39,14 @@ st.markdown(
 
 # ── The retrieval pipeline ───────────────────────────────────────────────────
 st.markdown(render_section_head("Retrieval", "The RAG pipeline"), unsafe_allow_html=True)
-_STAGES = [
+_ARCH = [
+    ("01", "Parse", "Docling · layout-aware · page-anchored chunks"),
+    ("02", "Retrieve", "hybrid · BM25 + bge-m3 · Qdrant"),
+    ("03", "Rerank", "bge-reranker-v2-m3 · top-50 &rarr; top-5"),
+    ("04", "Synthesise", "LLM answers only from retrieved context"),
+    ("05", "Cite-check", "verify each claim's page · drop unsupported"),
+]
+_STAGES_UNUSED = [
     ("01", "Parse &amp; chunk",
      "Docling parses the DRHP layout-aware. Chunks are 512–1024 tokens, page-anchored "
      "(<code>drhp_id · section · page</code>), and never split across a section boundary — "
@@ -57,12 +64,12 @@ _STAGES = [
      "A verification step confirms each claim's cited page actually contains it. Unsupported claims "
      "are dropped, not shown — this is the anti-hallucination gate, not a nice-to-have."),
 ]
-_stages_html = "".join(
-    f'<div class="drhp-flow-step"><div class="drhp-flow-num">{n}</div>'
-    f'<div class="drhp-flow-body"><h3>{t}</h3><p>{d}</p></div></div>'
-    for n, t, d in _STAGES
+_stages_html = '<div class="drhp-arch-arrow">&rarr;</div>'.join(
+    f'<div class="drhp-arch-stage"><div class="s-n">{n}</div>'
+    f'<div class="s-t">{t}</div><div class="s-d">{sd}</div></div>'
+    for n, t, sd in _ARCH
 )
-st.markdown(f'<div class="drhp-flow">{_stages_html}</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="drhp-arch">{_stages_html}</div>', unsafe_allow_html=True)
 
 # ── Evaluation ───────────────────────────────────────────────────────────────
 st.markdown(render_section_head("Evaluation", "Measured, not vibed"), unsafe_allow_html=True)
