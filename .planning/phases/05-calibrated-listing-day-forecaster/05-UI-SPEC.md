@@ -1,11 +1,12 @@
 ---
 phase: 5
 slug: calibrated-listing-day-forecaster
-status: draft
+status: approved
 shadcn_initialized: false
 preset: not-applicable
 extends: [01-UI-SPEC.md, 02-UI-SPEC.md, 03-UI-SPEC.md, 04-UI-SPEC.md]
 created: 2026-07-13
+reviewed_at: 2026-07-13
 ---
 
 # Phase 5 — UI Design Contract: Calibrated Listing-Day Forecaster (interval band · GMP-vs-model gap · always-visible honesty metrics)
@@ -122,7 +123,7 @@ Inherited unchanged (`--drhp-space-*` in `drhplens.css`). No new tokens.
 | 2xl | 48px | (unchanged) the existing major break before the Q&A chat — untouched; the GMP block still owns the last-read slot above it |
 | 3xl | 64px | (unused in Phase 5) |
 
-**Element heights (visual, multiples of 4):** axis track `44px`; interval band `28px`; median tick ~`26px`; GMP marker diamond `12px`. These are visual dimensions, not spacing tokens.
+**Element heights (visual, multiples of 4):** axis track `44px`; interval band `28px`; median tick `24px` (a faint stub, shorter than the band); GMP marker diamond `12px`. These are visual dimensions, not spacing tokens.
 
 **Exceptions:** inherited only — the **"Full model card →" link** carries the **44×44px minimum tap target** (reusing the `.drhp-cite::before` / `.drhp-glossary::before` transparent-enlarger grammar) on mobile. No new exceptions. There are **no expanders** in this section (the metrics strip is always visible, L5-3), so no new expander tap targets are introduced.
 
