@@ -516,24 +516,30 @@ Mirror `tests/unit/test_gmp_isolation.py` in **reverse**, at both boundaries:
 | A7 | Applying the Diebold–Mariano test to per-IPO loss differentials ordered by listing date is an acceptable operationalization | §Diebold–Mariano, Open Questions | MEDIUM — DM assumes a time series of forecast errors; IPO returns are cross-sectional. Defensible but arguable; document the choice in the model card. |
 | A8 | A genuine PIT histogram is derivable from a quantile grid; with only 3 quantiles a reliability curve is the honest substitute | §Calibration diagnostics, Open Questions | MEDIUM — the UI-SPEC literally names "PIT histogram"; may need a small quantile grid (0.05…0.95) as an extra model-card diagnostic |
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+> All four questions were resolved during phase-5 planning; each is annotated inline with the resolving plan.
 
 1. **PIT histogram vs reliability curve (P17, FCAST-05).**
+   - **RESOLVED: 05-10** — the model-card diagnostics build a small quantile grid (0.05…0.95) purely as a card-only PIT/reliability diagnostic (option (a)); the production interval stays 0.1/0.5/0.9 and the card flags that PIT is grid-derived, not from the production interval.
    - What we know: a true PIT needs a predictive CDF; CQR gives 3 quantiles for the production interval. The UI-SPEC names "PIT histogram" explicitly.
    - What's unclear: whether to (a) train a separate quantile grid (0.05,0.1,…,0.95) purely for the PIT/reliability diagnostic, or (b) relabel the artifact a "coverage reliability diagram."
    - Recommendation: do (a) as a model-card-only diagnostic (cheap; a dozen extra quantile fits on the final walk-forward), keep the production interval at 0.1/0.5/0.9. Flag in the model card that PIT is derived from the grid, not the production interval.
 
 2. **Diebold–Mariano on cross-sectional IPO returns (P9).**
+   - **RESOLVED: 05-09 / 05-10** — 05-09 ships the inline DM (ordered by listing date) as the P9 release gate plus a paired Wilcoxon robustness check; 05-10 renders the DM table + Wilcoxon in the model card and states the A7 cross-sectional-DM caveat explicitly.
    - What we know: DM is designed for time-ordered forecast-error series; IPO listing-day returns are a cross-section ordered only by listing date.
    - What's unclear: whether the reviewer audience expects DM specifically or would accept a paired test (Wilcoxon signed-rank / paired t on absolute errors).
    - Recommendation: report DM (ordered by listing date) since ROADMAP/CONTEXT lock it, AND a paired Wilcoxon as a robustness check in the model card. Note the caveat (A7).
 
 3. **CQR variant if N stays small (~200–300).**
+   - **RESOLVED: 05-05** — 05-05 ships split-CQR (`ConformalizedQuantileRegressor`, prefit) as the cleanest displayed=backtested (D5-11) story; `MIN_TRAIN`/`CAL_FRAC` are tuned empirically (D5-09, wired in 05-09), with a model-card sensitivity note reserved if early-window coverage proves unstable.
    - What we know: split-CQR "wastes" ~25% of the pre-T0 pool on calibration each step; CV+/Jackknife+ use data more efficiently.
    - What's unclear: whether split-CQR calibration sets get too thin for the earliest IPOs.
    - Recommendation: ship split-CQR (cleanest D5-11 story); add a model-card sensitivity note comparing coverage under `CrossConformalRegressor` if early-window coverage is unstable. Tune `MIN_TRAIN` / `CAL_FRAC` empirically (D5-09 territory).
 
 4. **Sector taxonomy source (D5-10).**
+   - **RESOLVED: 05-08** — 05-08 derives a coarse sector at feature-selection time and pools every <30-IPO sector into `Other`, feeding the sector-mean baseline (05-09) and the sector feature; no clean single panel field is required.
    - What we know: sector must come from somewhere at T0 (DRHP industry classification, or an exchange/industry mapping).
    - What's unclear: no single clean sector field exists in the current panel schema.
    - Recommendation: derive a coarse sector from the DRHP (Phase 2/3 extraction) or a simple issuer→sector map; pool <30-IPO sectors into `Other`; this is a Slice-3 concern, not a blocker for the thin slice.
