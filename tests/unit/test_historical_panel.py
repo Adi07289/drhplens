@@ -19,6 +19,7 @@ the sample parquet loads, carries the full taxonomy, and includes a NaN row.
 """
 from __future__ import annotations
 
+import datetime as dt
 import math
 from pathlib import Path
 
@@ -231,6 +232,119 @@ def test_sanity_check_excludes_nan_rows_from_the_statistic_but_they_stay_in_pane
 
 def test_baseline_is_the_shah_mehta_maar():
     assert MAAR_BASELINE == pytest.approx(0.0719)
+
+
+# ---------------------------------------------------------------------------
+# 4. Two-source survivorship merge (D5-04 / 05-02) — fetchers monkeypatched,
+#    NO live network. Asserts the withdrawn overlay survives the merge (P3),
+#    dedupe collapses a duplicate issuer, and a NaN-return row is RETAINED.
+# ---------------------------------------------------------------------------
+
+
+def _d(iso: str) -> dt.date:
+    return dt.datetime.strptime(iso, "%Y-%m-%d").date()
+
+
+def _fake_nse_past_issues(from_date, to_date) -> list[dict]:
+    """Source A stand-in (listed core). Includes an issuer that ALSO appears in the
+    withdrawn overlay (to exercise dedupe) — with a real listing price."""
+    return [
+        {  # listed_alive, +8%
+            "issuer": "Listed Core Alpha Ltd",
+            "issue_date": _d("2019-03-01"),
+            "listing_date": _d("2019-03-12"),
+            "issue_price": 100.0,
+            "listing_day_close": 108.0,
+            "status_raw": "listed",
+        },
+        {  # delisted, +4% (a genuine non-survivor in the listed core)
+            "issuer": "Listed Core Gamma Ltd",
+            "issue_date": _d("2018-06-01"),
+            "listing_date": _d("2018-06-15"),
+            "issue_price": 150.0,
+            "listing_day_close": 156.0,
+            "status_raw": "delisted",
+        },
+        {  # collides with a withdrawn-overlay row (same issuer+issue_date), +7%
+            "issuer": "Both Sources Ltd",
+            "issue_date": _d("2020-05-01"),
+            "listing_date": _d("2020-05-14"),
+            "issue_price": 200.0,
+            "listing_day_close": 214.0,
+            "status_raw": "listed",
+        },
+    ]
+
+
+def _fake_sebi_withdrawn() -> list[dict]:
+    """Source B stand-in (the P3 withdrawn/pulled overlay). One overlay-only issuer
+    (must survive) + one that collides with the listed core (must be deduped)."""
+    return [
+        {  # overlay-only: never listed -> withdrawn survives, NaN return, RETAINED
+            "issuer": "Withdrawn Only Ltd",
+            "issue_date": _d("2021-02-01"),
+            "listing_date": None,
+            "issue_price": 120.0,
+            "listing_day_close": None,
+            "status_raw": "withdrawn",
+        },
+        {  # collides with "Both Sources Ltd" — listed core must win (its price kept)
+            "issuer": "Both Sources Ltd",
+            "issue_date": _d("2020-05-01"),
+            "listing_date": None,
+            "issue_price": None,
+            "listing_day_close": None,
+            "status_raw": "withdrawn",
+        },
+    ]
+
+
+def test_two_source_merge_yields_survivorship_panel(monkeypatch):
+    """build_panel merges NSE listed-core (Source A) with the SEBI/withdrawn overlay
+    (Source B); the built panel keeps withdrawn AND a listed/delisted mix (P3)."""
+    from pipelines.historical import build
+
+    monkeypatch.setattr(
+        build._sources, "fetch_nse_past_issues", _fake_nse_past_issues, raising=True
+    )
+    monkeypatch.setattr(
+        build._sources, "fetch_sebi_withdrawn", _fake_sebi_withdrawn, raising=True
+    )
+    # Guard: no live network under pytest — the primary chittorgarh path is retired.
+    monkeypatch.setattr(
+        build._sources,
+        "fetch_chittorgarh_index",
+        lambda: (_ for _ in ()).throw(AssertionError("primary path must not be called")),
+        raising=True,
+    )
+
+    df = build.build_panel(write=False)
+
+    counts = df["status"].value_counts().to_dict()
+    # P3: the withdrawn overlay survives the merge (non-zero withdrawn count).
+    assert counts.get("withdrawn", 0) > 0
+    # A real listed/delisted mix from the listed core — NOT a survivor-only universe.
+    assert counts.get("delisted", 0) > 0
+    assert counts.get("listed_alive", 0) > 0
+
+    # Dedupe by (issuer, issue_date): the issuer present in BOTH sources collapses to
+    # one row, and the listed-core row wins (its listing price is kept, not the
+    # overlay's NaN) — so its return is the +7% listed value, status listed_alive.
+    both = df.loc[df["issuer"] == "Both Sources Ltd"]
+    assert len(both) == 1
+    assert both.iloc[0]["status"] == "listed_alive"
+    assert both.iloc[0]["listing_day_return"] == pytest.approx(0.07)
+
+    # Row count == inputs minus the single dedupe collision only
+    # (3 listed + 2 withdrawn - 1 collision = 4). Nothing dropped for NaN.
+    assert len(df) == 4
+
+    # Replace-with-NaN survivorship: the withdrawn-only IPO is RETAINED as a NaN row.
+    zeta = df.loc[df["issuer"] == "Withdrawn Only Ltd"].iloc[0]
+    assert math.isnan(zeta["listing_day_return"])
+    assert df["listing_day_return"].isna().any()
+    # (The primary chittorgarh path is guarded above — build_panel calling it would
+    #  have raised AssertionError before we got here, proving the D5-04 repoint.)
 
 
 # ---------------------------------------------------------------------------
