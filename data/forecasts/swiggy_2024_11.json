@@ -1,0 +1,35 @@
+{
+  "drhp_id": "swiggy_2024_11",
+  "computed_at": "2026-07-15T00:00:00Z",
+  "model_version": "cqr-xgb-seed-2026.07",
+  "as_of_listing_date": "2024-11-13",
+  "out_of_sample": true,
+  "walk_forward": true,
+  "abstain": false,
+  "abstain_reason": null,
+  "interval": {
+    "low_pct": -4.2,
+    "high_pct": 21.7,
+    "median_pct": 6.1,
+    "width_pts": 25.9
+  },
+  "sector": "Other",
+  "metrics": {
+    "coverage_empirical": 0.783,
+    "mae_pts": 11.4,
+    "backtest_window": "2016-2025",
+    "n": 247,
+    "per_year_rmse": {
+      "2016": 14.1,
+      "2017": 12.8,
+      "2018": 15.6,
+      "2019": 13.2,
+      "2020": 18.9,
+      "2021": 21.4,
+      "2022": 16.7,
+      "2023": 12.1,
+      "2024": 11.9,
+      "2025": 13.5
+    }
+  }
+}
