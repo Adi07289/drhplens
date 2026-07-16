@@ -27,7 +27,9 @@ crawl is the deferred human/network step run at the 04-07 checkpoint.
 from __future__ import annotations
 
 import datetime as _dt
+import json
 import logging
+from pathlib import Path
 from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
@@ -40,6 +42,7 @@ ALLOWED_HOSTS: frozenset[str] = frozenset(
         "www.chittorgarh.com",   # historical IPO index incl. withdrawn/pulled
         "www.sebi.gov.in",       # issuer-side offer-document filings
         "nsearchives.nseindia.com",  # NSE archives (scrape-friendlier subdomain)
+        "www.nseindia.com",      # D5-04: past-issues JSON (listed-core, Source A)
     }
 )
 
@@ -51,6 +54,17 @@ CHITTORGARH_IPO_INDEX = (
 CHITTORGARH_PROSPECTUS_INDEX = (
     "https://www.chittorgarh.com/report/"
     "ipo_prospectus_document_drhp_rhp_pdf/20/"
+)
+
+# D5-04 two-source universe endpoints (all module CONSTANTS — never derived from
+# any argument/user/DRHP input; the SSRF control depends on this).
+#   Source A — listed core (issue price, listing date, symbol).
+NSE_PAST_ISSUES_URL = "https://www.nseindia.com/api/public-past-issues"
+NSE_HOME_URL = "https://www.nseindia.com/"  # cookie-priming page (bot-detection)
+#   Source B — withdrawn/pulled overlay (the P3 survivorship control).
+SEBI_PUBLIC_ISSUES_URL = "https://www.sebi.gov.in/filings/public-issues.html"
+CHITTORGARH_WITHDRAWN_REPORT = (
+    "https://www.chittorgarh.com/report/ipo-drhp-offer-document-withdrawn/202/"
 )
 
 _USER_AGENT = (
@@ -65,6 +79,13 @@ _STATUS_ALIASES: dict[str, str] = {
     "pulled": "withdrawn",
     "cancelled": "withdrawn",
     "cancelled/withdrawn": "withdrawn",
+    # D5-04: SEBI / chittorgarh-withdrawn wording (Source B overlay) -> withdrawn.
+    "withdrawn/lapsed": "withdrawn",
+    "lapsed": "withdrawn",
+    "offer document withdrawn": "withdrawn",
+    "withdrawn offer document": "withdrawn",
+    "draft withdrawn": "withdrawn",
+    "returned": "withdrawn",
     "listed": "listed_alive",
     "active": "listed_alive",
     "delisted": "delisted",
@@ -159,8 +180,16 @@ def _session():  # pragma: no cover - exercised only at the live checkpoint
     return session
 
 
-def _get(url: str, *, timeout: int = 30) -> str:  # pragma: no cover - live only
-    """GET a hard-coded-host URL with backoff; return response text."""
+def _get(
+    url: str, *, params: dict | None = None, timeout: int = 30
+) -> str:  # pragma: no cover - live only
+    """GET a hard-coded-host URL with backoff; return response text.
+
+    `params` are query-string values (dates, page size) forwarded to the request.
+    The fetched HOST always comes from the module-constant `url` and is still
+    checked by `_check_host` (SSRF T-05-02-SSRF) — no host is ever derived from an
+    argument.
+    """
     _check_host(url)
     from tenacity import (
         retry,
@@ -175,11 +204,39 @@ def _get(url: str, *, timeout: int = 30) -> str:  # pragma: no cover - live only
     )
     def _do() -> str:
         session = _session()
-        resp = session.get(url, timeout=timeout)
+        resp = session.get(url, params=params, timeout=timeout)
         resp.raise_for_status()
         return resp.text
 
     return _do()
+
+
+# ---------------------------------------------------------------------------
+# Raw-payload snapshot (A1 defensive posture) — save raw before parsing.
+# ---------------------------------------------------------------------------
+_RAW_SNAPSHOT_DIR = Path(__file__).resolve().parents[2] / "data" / "historical" / "raw"
+
+
+def _save_raw(name: str, payload: object) -> None:  # pragma: no cover - live only
+    """Persist a raw source payload alongside the parsed rows (Assumption A1).
+
+    NSE/SEBI field names are unconfirmed until the first live pull, so snapshot the
+    raw JSON/HTML (timestamped) before parsing — mirroring the existing "save raw
+    HTML" habit. Best-effort: a snapshot failure never aborts a fetch. Never called
+    under the offline unit suite.
+    """
+    try:
+        _RAW_SNAPSHOT_DIR.mkdir(parents=True, exist_ok=True)
+        stamp = _dt.datetime.now().strftime("%Y%m%dT%H%M%SZ")
+        path = _RAW_SNAPSHOT_DIR / f"{name}_{stamp}.raw"
+        if isinstance(payload, (dict, list)):
+            path.write_text(
+                json.dumps(payload, indent=2, default=str), encoding="utf-8"
+            )
+        else:
+            path.write_text(str(payload), encoding="utf-8")
+    except Exception as exc:  # noqa: BLE001 - raw snapshot is best-effort, never fatal
+        logger.warning("raw snapshot for %s failed: %s", name, exc)
 
 
 # ---------------------------------------------------------------------------
@@ -188,12 +245,17 @@ def _get(url: str, *, timeout: int = 30) -> str:  # pragma: no cover - live only
 
 
 def fetch_chittorgarh_index() -> list[dict]:  # pragma: no cover - live only
-    """Fetch + parse chittorgarh's historical mainboard IPO index.
+    """DEMOTED (D5-04): optional enrichment / cross-check only — no longer primary.
+
+    The chittorgarh HTML index migrated to a Next.js app, so `soup.find("table")`
+    returns 0 rows (the 04-07 blocker). `build.py` no longer calls this as the
+    primary listed-core path — Source A is now `fetch_nse_past_issues` (NSE
+    `public-past-issues` JSON) and the P3 withdrawn overlay is `fetch_sebi_withdrawn`.
+    This function is kept as an optional cross-check for a future JSON-API rewrite.
 
     Returns a list of raw row dicts (issuer, issue_date, listing_date,
     issue_price, listing_day_close?, status?) with every field coerced through
-    the typed helpers. Withdrawn/pulled IPOs are INCLUDED — this is the P3
-    survivorship control. Per-row parse failures are logged and the offending
+    the typed helpers. Per-row parse failures are logged and the offending
     field set to None, never dropped.
     """
     from bs4 import BeautifulSoup  # deferred
@@ -228,15 +290,210 @@ def fetch_chittorgarh_index() -> list[dict]:  # pragma: no cover - live only
     return rows
 
 
-def fetch_sebi_offer_documents() -> list[dict]:  # pragma: no cover - live only
-    """Fetch SEBI issuer-side offer-document filings (withdrawals included).
+# ---------------------------------------------------------------------------
+# Source A (D5-04) — listed core: NSE public-past-issues (issue price, listing
+# date, symbol). Repoints the panel off the dead chittorgarh HTML scraper.
+# ---------------------------------------------------------------------------
 
-    Deferred seam. SEBI has no clean API and shifts its HTML; the live crawl at
-    the checkpoint cross-references SEBI filings against the chittorgarh index to
-    catch withdrawn IPOs that never reached a listing feed.
+
+def fetch_nse_past_issues(
+    from_date: _dt.date, to_date: _dt.date
+) -> list[dict]:  # pragma: no cover - live only
+    """Source A (D5-04): the LISTED-CORE universe from NSE ``public-past-issues``.
+
+    Returns raw row dicts (issuer, issue_date, listing_date, issue_price,
+    listing_day_close?, status_raw?) with every parsed field routed through the
+    typed coercers. This is the repoint off the dead chittorgarh HTML scraper.
+
+    Access: NSE blocks bare requests. The maintained ``nse`` library
+    (BennyThadikaran/NseIndiaApi) primes cookies + handles bot-detection and is the
+    PREFERRED path — but it is NOT installed here (gated behind the 05-11
+    human-verify checkpoint, T-05-02-SC), so it is imported lazily and we fall back
+    to a cookie-primed GET on the module-constant JSON endpoint via ``_get()`` (so
+    ``_check_host`` still runs). The raw JSON is snapshotted before parsing (A1).
+    ``from_date``/``to_date`` are passed as query params — no URL is derived from an
+    argument (SSRF T-05-02-SSRF).
     """
-    logger.info("fetch_sebi_offer_documents: deferred to the live checkpoint run")
-    return []
+    payload = _fetch_nse_past_issues_payload(from_date, to_date)
+    _save_raw("nse_past_issues", payload)
+
+    if isinstance(payload, dict):
+        records = payload.get("data") or payload.get("rows") or []
+    else:
+        records = payload or []
+
+    rows: list[dict] = []
+    for rec in records:
+        try:
+            rows.append(_parse_nse_past_issue(rec))
+        except Exception as exc:  # noqa: BLE001 - per-row isolation (T-05-02-VALID)
+            logger.warning("NSE past-issue row parse failed: %s", exc)
+            continue
+    return rows
+
+
+def _fetch_nse_past_issues_payload(
+    from_date: _dt.date, to_date: _dt.date
+) -> object:  # pragma: no cover - live only
+    """Return the raw NSE past-issues payload: prefer the ``nse`` lib, else GET."""
+    try:
+        from nse import NSE  # deferred, optional — gated behind 05-11 (T-05-02-SC)
+    except ImportError:
+        # Hand-rolled fallback: prime NSE cookies on the home page, then hit the
+        # constant JSON endpoint. BOTH hosts are module constants (SSRF-checked).
+        _get(NSE_HOME_URL)  # cookie priming (www.nseindia.com is allow-listed)
+        text = _get(
+            NSE_PAST_ISSUES_URL,
+            params={
+                "from_date": from_date.strftime("%d-%m-%Y"),
+                "to_date": to_date.strftime("%d-%m-%Y"),
+            },
+        )
+        return json.loads(text)
+
+    nse = NSE(download_folder="./.cache")
+    try:
+        return nse.listPastIPO(from_date=from_date, to_date=to_date)
+    finally:
+        try:
+            nse.exit()
+        except Exception:  # noqa: BLE001 - best-effort session cleanup
+            pass
+
+
+def _parse_nse_past_issue(rec: dict) -> dict:  # pragma: no cover - live only
+    """Coerce one NSE past-issues record into a raw panel row (A1: names unconfirmed).
+
+    Field names on the NSE feed are unconfirmed until the first live pull, so probe
+    a few plausible keys per column; a missing value coerces to None (→ NaN, never a
+    fabricated survivor). This is the listed-core feed, so an unknown status defaults
+    to ``listed``.
+    """
+    def pick(*keys: str) -> object:
+        for key in keys:
+            if key in rec and rec[key] not in (None, ""):
+                return rec[key]
+        return None
+
+    issuer = pick("companyName", "company", "symbol", "issuer")
+    return {
+        "issuer": (str(issuer).strip() if issuer is not None else None),
+        "issue_date": coerce_date(pick("issueStartDate", "issue_date")),
+        "listing_date": coerce_date(pick("listingDate", "listing_date")),
+        "issue_price": coerce_price(
+            pick("issuePrice", "finalIssuePrice", "issue_price")
+        ),
+        "listing_day_close": coerce_price(pick("listingPrice", "listing_day_close")),
+        "status_raw": pick("status", "series") or "listed",
+    }
+
+
+# ---------------------------------------------------------------------------
+# Source B (D5-04) — withdrawn/pulled overlay (the P3 survivorship control):
+# SEBI public-issues filings + chittorgarh withdrawn-offer-document report (202).
+# ---------------------------------------------------------------------------
+
+
+def fetch_sebi_withdrawn() -> list[dict]:  # pragma: no cover - live only
+    """Source B (D5-04): the WITHDRAWN/PULLED overlay — the P3 survivorship control.
+
+    Without this overlay the universe is survivor-only and FCAST-03/P3 fails. Merges
+    SEBI's public-issues filings (issuer-side record of documents filed, incl. those
+    that never listed) with chittorgarh's withdrawn-offer-document report (id 202).
+    Every emitted row's ``status`` normalizes to ``withdrawn``. Fetches route through
+    ``_get()`` (constant hosts, SSRF-checked); raw payloads are snapshotted (A1).
+    Per-source failure isolation: one flaky source never empties the overlay.
+    """
+    rows: list[dict] = []
+    # SEBI issuer-side filings (authoritative pre-2025 withdrawn source).
+    try:
+        rows.extend(fetch_sebi_offer_documents())
+    except Exception as exc:  # noqa: BLE001 - per-source isolation
+        logger.warning("SEBI public-issues filings fetch failed: %s", exc)
+    # chittorgarh withdrawn report 202 (curated; newest slice from 2025-04 onward).
+    try:
+        rows.extend(_fetch_chittorgarh_withdrawn())
+    except Exception as exc:  # noqa: BLE001 - per-source isolation
+        logger.warning("chittorgarh withdrawn report fetch failed: %s", exc)
+    # Force the overlay taxonomy: every row here is the withdrawn/pulled control.
+    for row in rows:
+        raw = row.get("status_raw")
+        if raw is None or normalize_status(raw) != "withdrawn":
+            row["status_raw"] = "withdrawn"
+    return rows
+
+
+def fetch_sebi_offer_documents() -> list[dict]:  # pragma: no cover - live only
+    """Fetch SEBI issuer-side public-issues filings (withdrawals included).
+
+    SEBI has no clean API and shifts its HTML; parse tolerantly and save the raw
+    HTML alongside the parsed rows (A1). Feeds the P3 overlay via
+    ``fetch_sebi_withdrawn``. Per-row parse failures are logged, never dropped.
+    """
+    from bs4 import BeautifulSoup  # deferred
+
+    html = _get(SEBI_PUBLIC_ISSUES_URL)
+    _save_raw("sebi_public_issues", html)
+    soup = BeautifulSoup(html, "lxml")
+    rows: list[dict] = []
+    table = soup.find("table")
+    if table is None:
+        logger.warning("SEBI public-issues: no table found; site layout changed?")
+        return rows
+    for tr in table.select("tbody tr"):
+        cells = [td.get_text(strip=True) for td in tr.find_all("td")]
+        if len(cells) < 2:
+            continue
+        try:
+            rows.append(
+                {
+                    "issuer": cells[0] or None,
+                    "issue_date": coerce_date(cells[1]) if len(cells) > 1 else None,
+                    "listing_date": None,
+                    "issue_price": None,
+                    "listing_day_close": None,
+                    "status_raw": cells[-1] if len(cells) > 2 else "withdrawn",
+                }
+            )
+        except Exception as exc:  # noqa: BLE001 - per-row isolation (T-05-02-VALID)
+            logger.warning("SEBI row parse failed: %s", exc)
+            continue
+    return rows
+
+
+def _fetch_chittorgarh_withdrawn() -> list[dict]:  # pragma: no cover - live only
+    """Parse chittorgarh's withdrawn-offer-document report (id 202)."""
+    from bs4 import BeautifulSoup  # deferred
+
+    html = _get(CHITTORGARH_WITHDRAWN_REPORT)
+    _save_raw("chittorgarh_withdrawn_202", html)
+    soup = BeautifulSoup(html, "lxml")
+    rows: list[dict] = []
+    table = soup.find("table")
+    if table is None:
+        logger.warning(
+            "chittorgarh withdrawn report: no table found; site layout changed?"
+        )
+        return rows
+    for tr in table.select("tbody tr"):
+        cells = [td.get_text(strip=True) for td in tr.find_all("td")]
+        if len(cells) < 2:
+            continue
+        try:
+            rows.append(
+                {
+                    "issuer": cells[0] or None,
+                    "issue_date": coerce_date(cells[1]) if len(cells) > 1 else None,
+                    "listing_date": None,
+                    "issue_price": coerce_price(cells[2]) if len(cells) > 2 else None,
+                    "listing_day_close": None,
+                    "status_raw": "withdrawn",
+                }
+            )
+        except Exception as exc:  # noqa: BLE001 - per-row isolation (T-05-02-VALID)
+            logger.warning("chittorgarh withdrawn row parse failed: %s", exc)
+            continue
+    return rows
 
 
 def fetch_listing_day_close(
@@ -286,9 +543,14 @@ def fetch_listing_day_close(
 __all__ = [
     "ALLOWED_HOSTS",
     "CHITTORGARH_IPO_INDEX",
+    "NSE_PAST_ISSUES_URL",
+    "SEBI_PUBLIC_ISSUES_URL",
+    "CHITTORGARH_WITHDRAWN_REPORT",
     "coerce_price",
     "coerce_date",
     "normalize_status",
+    "fetch_nse_past_issues",
+    "fetch_sebi_withdrawn",
     "fetch_chittorgarh_index",
     "fetch_sebi_offer_documents",
     "fetch_listing_day_close",
