@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-07-16T18:11:27.173Z"
+last_updated: "2026-07-16T18:25:24.459Z"
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 36
-  completed_plans: 25
+  completed_plans: 26
   percent: 50
 ---
 
@@ -29,9 +29,9 @@ progress:
 ## Current Position
 
 Phase: 05 (calibrated-listing-day-forecaster) — EXECUTING
-Plan: 2 of 11
+Plan: 3 of 11
 **Status:** Ready to execute
-**Progress:** [███████░░░] 69%
+**Progress:** [███████░░░] 72%
 
 ## Phase Map
 
@@ -129,11 +129,11 @@ Plan: 2 of 11
 
 ### What I Was Doing
 
-Executed Phase 5 Plan 05-01 (Wave 1 foundation) — installed the CLAUDE.md-locked non-LLM modeling stack and laid down the two shared offline assets every later slice consumes. Task 1 `180ba1c` (chore): declared xgboost>=2.0/mapie>=1.4,<2/scikit-learn>=1.5/mlflow>=2.14/matplotlib>=3.8/shap>=0.46 in pyproject and installed them into the .venv — resolved to xgboost 3.2.0, mapie 1.4.1, sklearn 1.9.0, mlflow 3.14.0, matplotlib 3.11.0, shap 0.51.0. RESEARCH A6 conflict materialised via shap→numba (hard-caps numpy<2.4; no numba release supports numpy 2.4) so numpy stepped 2.4.6→2.3.5 (still 2.x, satisfying must_have "pandas 3.0 / numpy 2.x"); pandas KEPT at 3.0.3 (mlflow's pandas<3 is a soft cap — mlflow imports fine); installed Homebrew `libomp` to satisfy xgboost's OpenMP rpath on this Intel macOS venv. Task 2 `5bc6382` (feat): tests/unit/fixtures/forecast_fixtures.py (pure offline deterministic synthetic_panel/synthetic_features/oos_rows), forecast_* pytest fixtures added to tests/unit/conftest.py (existing synthetic_redflag_record re-export preserved), and two hand-seeded data/forecasts/*.json render records (swiggy full-render, hyundai abstain). Suite: 375 passed, 1 pre-existing ignorable embedder failure (sentence-transformers not installed — unrelated to Phase 5).
+Executed Phase 5 Plan 05-02 (Wave 2, data foundation D5-04/D5-05) — repointed the historical universe assembler off the dead chittorgarh HTML scraper onto a survivorship-safe two-source merge, all proven OFFLINE (monkeypatched fetchers, no real network). Task 1 `a415400` (feat): added `www.nseindia.com` to `ALLOWED_HOSTS` (SSRF); `fetch_nse_past_issues` (Source A, listed core — NSE `public-past-issues` via `_get()`→`_check_host`; `nse` lib preferred lazily but optional/gated to 05-11, cookie-primed GET fallback; raw JSON snapshotted per A1) and `fetch_sebi_withdrawn` (Source B, the P3 withdrawn/pulled overlay = SEBI public-issues filings + chittorgarh withdrawn report 202); extended `_STATUS_ALIASES`; `_get` gained query params; demoted `fetch_chittorgarh_index` to optional enrichment (D5-04). Task 2 `c8b75e6` (feat): `build_panel` two-source merge with `_merge_sources` deduping by (issuer, issue_date) (listed-core wins collisions, withdrawn survives overlay-only); non-zero-row guard on the live `build` CLI (Pitfall 7); offline monkeypatched merge test in test_historical_panel.py (asserts non-zero withdrawn + listed/delisted mix, dedupe collapse, NaN-retention) + a nightly live-NSE integration canary (tests/integration/test_nse_past_issues.py, NSE_LIVE_SMOKE-gated, wired into nightly-nse.yml). Suite: 376 passed, 1 pre-existing ignorable embedder failure (sentence-transformers not installed — unrelated).
 
 ### Where to Resume
 
-Phase 5 Wave 1 (05-01) COMPLETE — the modeling stack imports cleanly and the shared synthetic-panel/feature/OOS fixture + the full-render and abstain forecast records are committed. Wave 2+ is unblocked. Next: plan/execute the Wave 2 modeling slices (05-02 feature pipeline, 05-03 ForecastRecord schema + allow-list-gated load_forecast + isolation audit, then CQR/walk-forward/metrics/baselines). Two carry-over items remain from earlier phases and do NOT block Phase 5: (1) the 03-05 live `make release` numeric-gate (human-only) and (2) the 04-07 real historical-panel build (blocked on chittorgarh source rot; fix documented in data/historical/README.md — do it when Wave 2 first needs the real panel; the synthetic fixture unblocks the tests meanwhile).
+Phase 5 Wave 2 data foundation (05-02) COMPLETE — the survivorship-safe two-source universe merge is implemented and offline-proven (FCAST-03/P3 data half); the live crawl stays a DEFERRED seam gated to the 05-11 human-verify checkpoint (needs NSE/SEBI egress and, ideally, the human-verified `nse` library). FCAST-03 remains **Pending** (it spans 5 Phase-5 plans and still needs the walk-forward CV half — do not close it yet). Next: execute the remaining Wave 2+ modeling slices (05-03 ForecastRecord schema + allow-list-gated load_forecast + isolation audit, then 05-04 features / 05-05 CQR+walk-forward / metrics / baselines). Carry-overs that do NOT block Phase 5 code: (1) the 03-05 live `make release` numeric-gate (human-only); (2) the real historical-panel build is now a 05-11 checkpoint step (the 05-01 synthetic fixture unblocks the tests until then); the nightly canary now watches the NSE past-issues endpoint for drift.
 
 ### Files of Record
 
@@ -162,6 +162,7 @@ Phase 5 Wave 1 (05-01) COMPLETE — the modeling stack imports cleanly and the s
 | Phase 04 P03 | 40min | 3 tasks | 8 files |
 | Phase 04 P04 | 20min | 2 tasks | 8 files |
 | Phase 05 P01 | ~40 min | 2 tasks | 6 files |
+| Phase Phase 05 PP02 | ~15 min | 2 tasks tasks | 5 files files |
 
 ## Decisions
 
@@ -181,3 +182,4 @@ Phase 5 Wave 1 (05-01) COMPLETE — the modeling stack imports cleanly and the s
 - [Phase ?]: [Phase 04 / 04-03]: peer multiples ladder screener(s)->yfinance(y)->NSE(n) first-available per cell; 0/None/NaN->missing (P15), yfinance ROE fraction x100 as percent, rapidfuzz name->ticker allow-list keeps SSRF hosts hard-coded; live scrape + DRHP-date extraction deferred (CODE-NOW-DEFER, seed unblocks 04-05)
 - [Phase 05]: numpy stepped 2.4.6->2.3.5 (still 2.x) so shap imports (shap->numba hard-caps numpy<2.4; no numba supports 2.4); pandas KEPT at 3.0.3 (mlflow pandas<3 is soft, imports fine). Resolved: xgboost 3.2.0/mapie 1.4.1/sklearn 1.9.0/mlflow 3.14.0/matplotlib 3.11.0/shap 0.51.0; libomp installed for xgboost OpenMP.
 - [Phase 05]: data/forecasts/{swiggy_2024_11,hyundai_2024_10}.json are hand-seeded ForecastRecords (full-render + abstain) to unblock the render slice offline; regenerated from the real walk-forward run in 05-06/05-11 (Phase 4 GMP CODE-NOW-DEFER seed posture).
+- [Phase 05]: Phase 05 / 05-02: FCAST-03 left Pending — it spans 5 Phase-5 plans and requires walk-forward CV; 05-02 delivers only the survivorship-universe half (NSE past-issues + SEBI/chittorgarh-withdrawn two-source merge, deduped by issuer+issue_date, listed-core wins collisions). chittorgarh HTML scraper demoted from primary (D5-04); nse lib optional/lazy, gated to 05-11.
