@@ -42,7 +42,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Forecast (Calibrated Listing-Day Return)
 
-- [ ] **FCAST-01**: System produces a calibrated listing-day return range with an 80% prediction interval for each covered IPO
+- [x] **FCAST-01**: System produces a calibrated listing-day return range with an 80% prediction interval for each covered IPO
 - [ ] **FCAST-02**: Forecast model uses only features available at T−1 of listing day; explicit `available_at` enforced (no GMP, no subscription-at-close)
 - [ ] **FCAST-03**: Forecast is backtested using walk-forward CV on a historical Indian mainboard IPO universe sourced from SEBI/issuer-side filings (survivorship eliminated; includes withdrawn / delisted)
 - [ ] **FCAST-04**: Forecast page displays empirical interval coverage, MAE, and per-year RMSE from the backtest
@@ -162,7 +162,7 @@ Which phases cover which requirements. Updated by roadmap creation.
 | EXTRACT-03 | Phase 3 | Complete |
 | PEER-01 | Phase 4 | Complete |
 | PEER-02 | Phase 4 | Complete |
-| FCAST-01 | Phase 5 | Pending |
+| FCAST-01 | Phase 5 | Complete |
 | FCAST-02 | Phase 5 | Pending |
 | FCAST-03 | Phase 5 | Pending |
 | FCAST-04 | Phase 5 | Pending |

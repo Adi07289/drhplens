@@ -131,7 +131,7 @@ Plans:
 
 **Wave 1**
 
-- [ ] 05-01-PLAN.md — modeling deps + shared offline fixtures + seed forecast records
+- [x] 05-01-PLAN.md — modeling deps + shared offline fixtures + seed forecast records
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -208,7 +208,7 @@ Plans:
 | 2. Multi-IPO Catalogue + DRHP Snapshot | 5/5 | Complete   | 2026-06-24 |
 | 3. Structured Signal Extraction | 7/7 | Complete   | 2026-07-05 |
 | 4. Historical IPO Dataset + Peer Comparator + GMP | 6/7 | In Progress|  |
-| 5. Calibrated Listing-Day Forecaster | 0/0 | Not started | - |
+| 5. Calibrated Listing-Day Forecaster | 1/11 | In Progress|  |
 | 6. Full Eval Harness + Agentic Polish + Portfolio | 0/0 | Not started | - |
 
 ## Cross-Cutting Invariants

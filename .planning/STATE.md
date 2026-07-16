@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-07-16T07:26:11.762Z"
+last_updated: "2026-07-16T18:11:27.173Z"
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 36
-  completed_plans: 24
+  completed_plans: 25
   percent: 50
 ---
 
@@ -24,14 +24,14 @@ progress:
 
 **Audience:** Indian retail investors (mobile-first); secondary audience is the DS-recruiter reviewing the portfolio piece.
 
-**Current Focus:** Phase 03 — Structured Signal Extraction (Red-Flag Table)
+**Current Focus:** Phase 05 — calibrated-listing-day-forecaster
 
 ## Current Position
 
-Phase: 03 (Structured Signal Extraction (Red-Flag Table)) — CODE WORK COMPLETE (7 of 7 plans)
-Plan: 7 of 7 complete (Wave 5: 03-07 — red-flag table + single IDF risk list + methodology pane wired into pages/02_snapshot.py; Task 3 375px human-verify checkpoint APPROVED)
+Phase: 05 (calibrated-listing-day-forecaster) — EXECUTING
+Plan: 2 of 11
 **Status:** Ready to execute
-**Progress:** [█████████░] 88%
+**Progress:** [███████░░░] 69%
 
 ## Phase Map
 
@@ -129,11 +129,11 @@ Plan: 7 of 7 complete (Wave 5: 03-07 — red-flag table + single IDF risk list +
 
 ### What I Was Doing
 
-Closed out Phase 3 Plan 03-07 (Wave 5) — the Phase 3 UI payoff. The red-flag signals table (7 stacked monochrome rows in canonical order, tabular-nums chip-rendered values, neutral Confidence:{tier} text, honest Not-disclosed rows with confidence omitted, numeric-gate blocked-copy — no red/green, no badges), the SINGLE IDF-ranked risk list with the monochrome specificity meter (superseding the Phase 2 prioritized ordering), and the cached-only Show-your-work methodology pane are wired into pages/02_snapshot.py + ui/snapshot_chat.py, all reading the committed RedFlagRecord cache with zero request-time LLM calls. Task 1 `40df830` (render_redflag_table + render_idf_risk_list in ui/snapshot_blocks.py), Task 2 `5586df9` (page wiring + Q&A pane), Task 3 checkpoint:human-verify (375px mobile visual) — human ran the seeded app and APPROVED. Two live-discovered refinements landed after the plan body: `274a02e` (investor-first two-tier methodology pane — plain-English source verification by default, developer internals behind an off-by-default Show-technical-details toggle) and `c8e301b` (runtime-only fix: red-flag card wrapper switched from a split-div to st.container(border=True) to stop the empty white-bar render, plus unique per-element keys to kill a StreamlitDuplicateElementId crash — both unobservable to the offline executor which cannot run Streamlit). Suite: 303 passed, 1 pre-existing ignorable embedder failure.
+Executed Phase 5 Plan 05-01 (Wave 1 foundation) — installed the CLAUDE.md-locked non-LLM modeling stack and laid down the two shared offline assets every later slice consumes. Task 1 `180ba1c` (chore): declared xgboost>=2.0/mapie>=1.4,<2/scikit-learn>=1.5/mlflow>=2.14/matplotlib>=3.8/shap>=0.46 in pyproject and installed them into the .venv — resolved to xgboost 3.2.0, mapie 1.4.1, sklearn 1.9.0, mlflow 3.14.0, matplotlib 3.11.0, shap 0.51.0. RESEARCH A6 conflict materialised via shap→numba (hard-caps numpy<2.4; no numba release supports numpy 2.4) so numpy stepped 2.4.6→2.3.5 (still 2.x, satisfying must_have "pandas 3.0 / numpy 2.x"); pandas KEPT at 3.0.3 (mlflow's pandas<3 is a soft cap — mlflow imports fine); installed Homebrew `libomp` to satisfy xgboost's OpenMP rpath on this Intel macOS venv. Task 2 `5bc6382` (feat): tests/unit/fixtures/forecast_fixtures.py (pure offline deterministic synthetic_panel/synthetic_features/oos_rows), forecast_* pytest fixtures added to tests/unit/conftest.py (existing synthetic_redflag_record re-export preserved), and two hand-seeded data/forecasts/*.json render records (swiggy full-render, hyundai abstain). Suite: 375 passed, 1 pre-existing ignorable embedder failure (sentence-transformers not installed — unrelated to Phase 5).
 
 ### Where to Resume
 
-Phase 3 CODE WORK IS COMPLETE (7/7 plans). The ONLY outstanding Phase 3 item is human-only and does NOT block code completion: run the 03-05 live `make release` numeric-faithfulness gate against live Qdrant+Gemini with swiggy_2024_11 (numeric gold-set) ingested — confirm it exits non-zero below 0.95 (writing eval/reports/<date>-numeric-gate.md) or prints OK at >=0.95, commit the report, then mark EVAL-03 complete. After that live gate, Phase 3 is fully closed and Phase 4 (Historical IPO Dataset + Peer Comparator + GMP) planning can begin (start with the `jugaad-data` endpoint validation spike).
+Phase 5 Wave 1 (05-01) COMPLETE — the modeling stack imports cleanly and the shared synthetic-panel/feature/OOS fixture + the full-render and abstain forecast records are committed. Wave 2+ is unblocked. Next: plan/execute the Wave 2 modeling slices (05-02 feature pipeline, 05-03 ForecastRecord schema + allow-list-gated load_forecast + isolation audit, then CQR/walk-forward/metrics/baselines). Two carry-over items remain from earlier phases and do NOT block Phase 5: (1) the 03-05 live `make release` numeric-gate (human-only) and (2) the 04-07 real historical-panel build (blocked on chittorgarh source rot; fix documented in data/historical/README.md — do it when Wave 2 first needs the real panel; the synthetic fixture unblocks the tests meanwhile).
 
 ### Files of Record
 
@@ -161,6 +161,7 @@ Phase 3 CODE WORK IS COMPLETE (7/7 plans). The ONLY outstanding Phase 3 item is 
 | Phase 03 P07 | ~40min + human-verify | 3 tasks (Task 3 375px human-verify APPROVED) | 6 files; 303 passed; red-flag table + single IDF list + panes wired into the snapshot page |
 | Phase 04 P03 | 40min | 3 tasks | 8 files |
 | Phase 04 P04 | 20min | 2 tasks | 8 files |
+| Phase 05 P01 | ~40 min | 2 tasks | 6 files |
 
 ## Decisions
 
@@ -178,3 +179,5 @@ Phase 3 CODE WORK IS COMPLETE (7/7 plans). The ONLY outstanding Phase 3 item is 
 - [Phase 03 / 03-07]: Streamlit runtime lesson — a styled card wrapper must be a single st.container(border=True); a div split across two st.markdown calls renders empty (white bar). Every methodology-pane toggle needs a unique per-element key to avoid StreamlitDuplicateElementId. Both were live-only defects surfaced by the human-verify checkpoint (offline executor can't run Streamlit)
 - [Phase ?]: [Phase 04 / 04-03]: PeerCell adds a not_meaningful boolean so a negative/undefined P/E renders NM (value None), distinct from a missing '—' cell; peer_set reuses the {refusal} discriminator codec verbatim from redflag_schema (D4-06 empty-state)
 - [Phase ?]: [Phase 04 / 04-03]: peer multiples ladder screener(s)->yfinance(y)->NSE(n) first-available per cell; 0/None/NaN->missing (P15), yfinance ROE fraction x100 as percent, rapidfuzz name->ticker allow-list keeps SSRF hosts hard-coded; live scrape + DRHP-date extraction deferred (CODE-NOW-DEFER, seed unblocks 04-05)
+- [Phase 05]: numpy stepped 2.4.6->2.3.5 (still 2.x) so shap imports (shap->numba hard-caps numpy<2.4; no numba supports 2.4); pandas KEPT at 3.0.3 (mlflow pandas<3 is soft, imports fine). Resolved: xgboost 3.2.0/mapie 1.4.1/sklearn 1.9.0/mlflow 3.14.0/matplotlib 3.11.0/shap 0.51.0; libomp installed for xgboost OpenMP.
+- [Phase 05]: data/forecasts/{swiggy_2024_11,hyundai_2024_10}.json are hand-seeded ForecastRecords (full-render + abstain) to unblock the render slice offline; regenerated from the real walk-forward run in 05-06/05-11 (Phase 4 GMP CODE-NOW-DEFER seed posture).
