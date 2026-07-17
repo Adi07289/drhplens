@@ -136,7 +136,7 @@ Plans:
 **Wave 2** *(blocked on Wave 1 completion)*
 
 - [x] 05-02-PLAN.md — survivorship-safe two-source universe merge (NSE + SEBI/withdrawn)
-- [ ] 05-03-PLAN.md — ForecastRecord schema + allow-list-gated load_forecast + isolation audit
+- [x] 05-03-PLAN.md — ForecastRecord schema + allow-list-gated load_forecast + isolation audit
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -208,7 +208,7 @@ Plans:
 | 2. Multi-IPO Catalogue + DRHP Snapshot | 5/5 | Complete   | 2026-06-24 |
 | 3. Structured Signal Extraction | 7/7 | Complete   | 2026-07-05 |
 | 4. Historical IPO Dataset + Peer Comparator + GMP | 6/7 | In Progress|  |
-| 5. Calibrated Listing-Day Forecaster | 2/11 | In Progress|  |
+| 5. Calibrated Listing-Day Forecaster | 3/11 | In Progress|  |
 | 6. Full Eval Harness + Agentic Polish + Portfolio | 0/0 | Not started | - |
 
 ## Cross-Cutting Invariants
