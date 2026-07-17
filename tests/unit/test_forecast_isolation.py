@@ -140,6 +140,24 @@ def test_forecast_schema_is_import_light_and_display_isolated() -> None:
         )
 
 
+# The predictor's display-isolation invariant is that it must never IMPORT or
+# CONSUME the GMP display signal — i.e. the pipelines.gmp module, the
+# agent.gmp_schema record, the load_gmp reader, or the data/gmp cache. It is
+# checked against these precise *reference/import* tokens rather than the bare
+# 3-char substring "gmp": pipelines.features (05-04) must NAME "gmp" in its
+# EXCLUDED_FROM_MODEL never-a-feature denylist (FCAST-02 exclusion invariant,
+# T-05-04-EXCL), which is the OPPOSITE of a leak — explicitly barring GMP, not
+# consuming it. A bare-substring scan false-positives on that plan-mandated
+# sentinel; the precise reference tokens below still catch any real GMP import.
+GMP_DISPLAY_REFERENCE = (
+    "pipelines.gmp",  # the GMP display module dotted path
+    "gmp_schema",     # agent.gmp_schema (the GMP display record)
+    "load_gmp",       # the GMP loader
+    "data/gmp",       # the committed GMP cache records
+    "import gmp",     # a bare / `from pipelines import gmp` import
+)
+
+
 @pytest.mark.parametrize(
     "modname",
     [
@@ -149,18 +167,23 @@ def test_forecast_schema_is_import_light_and_display_isolated() -> None:
     ],
 )
 def test_model_and_feature_modules_never_import_display_signal(modname: str) -> None:
-    """Once the model / walk-forward / feature modules land (05-05), their source
-    must reference no display signal — the model never sees it (FCAST-02
-    Direction 2). importorskip keeps this GREEN until the modules exist."""
+    """Once the model / walk-forward / feature modules land, their source must not
+    IMPORT or CONSUME the GMP display signal — the model never sees it (FCAST-02
+    Direction 2). Checked against the precise GMP-display reference/import tokens
+    (not the bare "gmp" substring) so pipelines.features can NAME "gmp" in its
+    EXCLUDED_FROM_MODEL never-a-feature denylist (05-04, T-05-04-EXCL) — an
+    explicit exclusion is the opposite of a leak. importorskip keeps the not-yet-
+    built modules GREEN until they exist."""
     mod = pytest.importorskip(
         modname,
         reason=f"{modname} lands in 05-05; the reverse audit runs once it exists.",
     )
     src = inspect.getsource(mod)
-    assert "gmp" not in src, (
-        f"{modname} must not reference the display signal 'gmp' "
-        f"(FCAST-02 Direction 2: the predictor is isolated from display data)."
-    )
+    for token in GMP_DISPLAY_REFERENCE:
+        assert token not in src, (
+            f"{modname} must not reference the GMP display signal via {token!r} "
+            f"(FCAST-02 Direction 2: the predictor is isolated from display data)."
+        )
 
 
 # ---------------------------------------------------------------------------
