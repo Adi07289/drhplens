@@ -140,7 +140,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 05-04-PLAN.md — issue-structure feature matrix behind the available_at<=T0 leakage gate
+- [x] 05-04-PLAN.md — issue-structure feature matrix behind the available_at<=T0 leakage gate
 - [ ] 05-07-PLAN.md — cache-only forecast render (band + GMP marker + metrics strip + card link)
 
 **Wave 4** *(blocked on Wave 3 completion)*
@@ -208,7 +208,7 @@ Plans:
 | 2. Multi-IPO Catalogue + DRHP Snapshot | 5/5 | Complete   | 2026-06-24 |
 | 3. Structured Signal Extraction | 7/7 | Complete   | 2026-07-05 |
 | 4. Historical IPO Dataset + Peer Comparator + GMP | 6/7 | In Progress|  |
-| 5. Calibrated Listing-Day Forecaster | 3/11 | In Progress|  |
+| 5. Calibrated Listing-Day Forecaster | 4/11 | In Progress|  |
 | 6. Full Eval Harness + Agentic Polish + Portfolio | 0/0 | Not started | - |
 
 ## Cross-Cutting Invariants
