@@ -21,6 +21,7 @@ st.set_page_config(
 from agent.gmp_schema import GmpRecord  # noqa: E402
 from app.util.css_loader import load_global_css  # noqa: E402
 from data.catalogue_loader import is_known_drhp_id, load_catalogue  # noqa: E402
+from pipelines.forecast import load_forecast  # noqa: E402
 from pipelines.gmp import load_gmp  # noqa: E402
 from pipelines.peers import load_peers  # noqa: E402
 from pipelines.redflag import load_redflag  # noqa: E402
@@ -45,6 +46,11 @@ from ui.copy import (  # noqa: E402
     UNKNOWN_DRHP_ID_COPY,
 )
 from ui.chrome import render_nav, render_site_footer  # noqa: E402
+from ui.forecast_block import (  # noqa: E402
+    render_forecast_block,
+    render_forecast_error,
+    render_forecast_not_covered,
+)
 from ui.snapshot_blocks import (  # noqa: E402
     render_financials_table,
     render_gmp_block,
@@ -183,6 +189,43 @@ def _render_gmp_block(gmp_record, gmp_state: str) -> None:
     render_gmp_block(gmp_record)
 
 
+def _issue_price_for(record) -> float | None:
+    """The per-share issue price (₹) for the GMP-implied-return conversion.
+
+    Sourced from the already-loaded snapshot metadata (the Phase 2 header value).
+    The current SnapshotRecord surfaces no structured per-share issue-price field
+    (the metadata field is a cited GroundedAnswer, not a parsed price), so this
+    returns None today — the forecast render then HONESTLY omits the GMP marker +
+    gap line (the band still renders) per the no-gap state, never a fabricated
+    conversion. It becomes a real value once a structured issue price is surfaced
+    (05-06/05-11), with no change needed at the render call site.
+    """
+    return None
+
+
+def _render_forecast_block(
+    forecast_record, forecast_state: str, gmp_record, issue_price: float | None
+) -> None:
+    """Render the forecast section AFTER the peer block, BEFORE ranked-risks (L5-4).
+
+    Mirrors _render_peer_block's error/empty/present fan-out (drhp_id already
+    allow-list-validated at the top of main()): a cache read error renders the
+    inherited amber .drhp-refusal banner (NOT red); a missing cache
+    (FileNotFoundError) renders the honest not-covered note (never a fabricated
+    band or metric); a present record renders the full forecast block — which
+    itself carries the covered+GMP / covered+no-GMP / abstain states. The GMP
+    marker reads ONLY the cached gmp_record + the cached issue price (display-layer
+    conversion; the render imports no model module — FCAST-02).
+    """
+    if forecast_state == "error":
+        render_forecast_error()
+        return
+    if forecast_record is None:
+        render_forecast_not_covered()
+        return
+    render_forecast_block(forecast_record, gmp_record, issue_price)
+
+
 def main() -> None:
     raw_drhp_id = st.query_params.get("drhp_id")
 
@@ -270,6 +313,23 @@ def main() -> None:
         gmp_record = None
         gmp_state = "error"
 
+    # Phase 5 forecast cache read — SAME allow-list guard (drhp_id validated above)
+    # + try/except posture as the peer/GMP reads. Reads ONLY the cached
+    # data/forecasts/<drhp_id>.json (05-03); no model/training call on render, and
+    # this path imports NO model module (FCAST-02 isolation). FileNotFoundError ->
+    # honest not-covered note; any other error -> amber .drhp-refusal (NOT red);
+    # never an unhandled exception (T-05-07-ERR).
+    forecast_record = None
+    forecast_state = "ok"
+    try:
+        forecast_record = load_forecast(drhp_id)
+    except FileNotFoundError:
+        forecast_record = None
+        forecast_state = "missing"
+    except Exception:
+        forecast_record = None
+        forecast_state = "error"
+
     # Red-flag signals block — HIGH on the page (after the metadata header,
     # above-the-fold-adjacent on mobile), before the Phase 2 field blocks.
     _render_redflag_block(redflag_record, redflag_state)
@@ -296,6 +356,15 @@ def main() -> None:
         # Financials (UI-SPEC IA block 7 — topically adjacent: "here are its
         # financials, here is how it compares"). Renders from the cached record.
         _render_peer_block(peer_record, peer_state)
+
+        # NEW (Phase 5) — Listing-day forecast (block 8), inserted DIRECTLY AFTER
+        # the peer block and BEFORE the ranked-risks list (L5-4, the analytical-
+        # narrative climax). Cache-only render over data/forecasts/<drhp_id>.json;
+        # the GMP marker reads the already-loaded gmp_record + the issue price. The
+        # quiet GMP block (block 12) stays the LAST read block, unmoved (D4-02).
+        _render_forecast_block(
+            forecast_record, forecast_state, gmp_record, _issue_price_for(record)
+        )
 
         # SINGLE risk list (UI-SPEC IA reconciliation, L3-4): the IDF-ranked list
         # SUPERSEDES the Phase 2 prioritized ordering. Exactly ONE renders at
