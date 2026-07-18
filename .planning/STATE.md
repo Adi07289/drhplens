@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-07-17T17:17:20.886Z"
+last_updated: "2026-07-18T20:46:02.923Z"
 progress:
   total_phases: 6
   completed_phases: 3
@@ -14,7 +14,7 @@ progress:
 
 # STATE: DRHPLens
 
-**Last Updated:** 2026-07-17
+**Last Updated:** 2026-07-19
 
 ## Project Reference
 
@@ -133,6 +133,8 @@ Executed Phase 5 Plan 05-04 (Wave 3, the leakage-gated feature layer — FCAST-0
 
 ### Where to Resume
 
+**Phase 5 Wave 3 render slice (05-07) COMPLETE** — the phase's HEADLINE user-facing surface is live: `ui/forecast_block.py` renders the calibrated 80% band (width is the message, no point-estimate headline — P21), the muted hollow-diamond GMP-vs-model marker + labeled gap (GMP-03, display-layer conversion), and the always-visible coverage/MAE/per-year-RMSE strip (P17, FCAST-04), wired into `pages/02_snapshot.py` after the peer block and before ranked-risks (L5-4); the quiet GMP block stays last (D4-02). It renders from the 05-01 seed fixtures (real records arrive 05-06/05-11). The 05-03 two-direction isolation audit's forward check against `ui.forecast_block` is now ACTIVE and green (render imports no model module, FCAST-02 Direction-1). UI-03/FCAST-04/GMP-03 render-halves delivered; kept **Pending** in REQUIREMENTS.md until real records land. Remaining Wave-3/4 work: **05-05** (CQR + walk-forward model — will activate the last two importorskip-guarded isolation checks), **05-06** (precompute writer), **05-08** (regime/DRHP/anchor feature families), **05-09/10/11** (model card + checkpoints). Prior:
+
 Phase 5 Wave 3 feature layer (05-04) COMPLETE — the leakage-gated issue-structure feature matrix (`pipelines.features` `FEATURE_SPECS` + `build_features` behind the hard `available_at <= T0` `LeakageError` gate + `leakage_audit`) is in place, offline-green, and consumes the 05-01/05-02 panel+fixture seam. This unblocks **05-05** (CQR + walk-forward: consume `build_features(panel)` for X and `leakage_audit()` for the model card), **05-06** (precompute writer: build features per catalogue IPO), and **05-08** (adds the regime/DRHP/anchor families b/c/d on top of this contract, each with its own `available_at` rule + the anchor leakage audit). **FCAST-02 remains Pending** — 05-04 delivered only the `available_at` feature-leakage half; the render half lands in 05-07 (do not close FCAST-02 yet). FCAST-03 also stays **Pending** (walk-forward CV half still open). Regime/DRHP/anchor feature families (D5-06b/c/d) are DELIBERATELY deferred to 05-08 (D5-05 verified-subset-first) — not built here. The isolation test will auto-execute its real render/model audit once `ui.forecast_block` (05-07) and `pipelines.forecast.model`/`walkforward` (05-05) land (currently `importorskip`-skipped). Carry-overs that do NOT block Phase 5 code: (1) the 03-05 live `make release` numeric-gate (human-only); (2) the real historical-panel build is a 05-11 checkpoint step (the 05-01 synthetic fixture unblocks the tests until then).
 
 ### Files of Record
@@ -165,6 +167,7 @@ Phase 5 Wave 3 feature layer (05-04) COMPLETE — the leakage-gated issue-struct
 | Phase Phase 05 PP02 | ~15 min | 2 tasks tasks | 5 files files |
 | Phase 05 P05-03 | ~20 min | 2 tasks | 4 files |
 | Phase 05 P05-04 | ~8 min | 2 tasks | 4 files |
+| Phase 05 P05-07 | 40 min | 3 tasks | 5 files |
 
 ## Decisions
 
@@ -190,3 +193,6 @@ Phase 5 Wave 3 feature layer (05-04) COMPLETE — the leakage-gated issue-struct
 - [Phase ?]: [Phase 05 / 05-03]: FCAST-02 left Pending — 05-03 delivers the isolation clause + cache seam; the available_at feature-leakage half is 05-04/05-05 and the render half 05-07 (mirrors 05-02 leaving FCAST-03 open). Schema+loader avoid the literal substrings 'shap'/'gmp' in their own source so the token audit stays green ('shape'->'shap' gotcha).
 - [Phase 05]: 05-04: FCAST-02 left Pending — spans 05-03 (isolation) / 05-04 (available_at feature-leakage half) / 05-07 (render half); closing it with the render half unbuilt would be dishonest. Built pipelines.features FEATURE_SPECS (issue-structure-only, D5-06a) + build_features behind a hard available_at <= T0 (issue-open, D5-01) LeakageError gate + leakage_audit; GMP/at-close-subscription excluded by construction (EXCLUDED_FROM_MODEL).
 - [Phase 05]: 05-04: D5-01 reconciliation encoded — T0 = issue-open (issue_date); FCAST-02's literal 'T-1 of listing' superseded by ROADMAP SC-5. lot_size is float64 so a missing value stays NaN. Sharpened the 05-03 isolation Direction-2 proxy from bare 'gmp' substring to precise GMP-display reference tokens so pipelines.features can NAME gmp in EXCLUDED_FROM_MODEL (T-05-04-EXCL) — strengthens, not weakens, the invariant.
+- [Phase 05]: 05-07: The listing-day forecast render (ui/forecast_block.py) is a cache-only Streamlit block wired into pages/02_snapshot.py after the peer block and before the ranked-risks list (L5-4); the quiet GMP block stays the LAST read block (D4-02). Band width is the dominant visual — no point-estimate headline, no green/red, no badge (P21); coverage/MAE/per-year RMSE always visible (P17, FCAST-04). The 05-03 forward isolation audit against ui.forecast_block is now ACTIVE and green (imports no model module, FCAST-02 Direction-1).
+- [Phase 05]: 05-07: GMP-implied return is a display-layer conversion (median cached premium / issue_price * 100) on the same axis as the model band, with the gap printed as a labeled delta (GMP-03); the marker + gap line are honestly OMITTED (band still renders, no-gap note shown) whenever no GMP is reported OR no issue price is available — never a fabricated GMP.
+- [Phase 05]: 05-07: No structured per-share issue price is surfaced by SnapshotRecord yet (metadata is a cited GroundedAnswer, not a parsed price), so the page wiring passes issue_price=None and the GMP marker is honestly omitted today; it lights up unchanged once a real issue price lands (05-06/05-11). UI-03/FCAST-04/GMP-03 render-halves delivered against the 05-01 seed fixtures; kept Pending in REQUIREMENTS.md until the real records land (mirrors 05-03's FCAST-02-pending posture).
