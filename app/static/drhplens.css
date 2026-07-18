@@ -350,6 +350,15 @@ span[class*="material-symbols"],
   .drhp-gmp-range {
     width: 100%;
   }
+  /* Forecast: the three-up stat row stacks to one column; axis-end labels shrink;
+     the per-year RMSE table keeps overflow-x:auto (never stacked cards). */
+  .drhp-forecast-stat-row {
+    grid-template-columns: 1fr;
+    gap: var(--drhp-space-sm);
+  }
+  .drhp-forecast-scale {
+    font-size: 11px;
+  }
 }
 
 /* Mobile L — 375–639px */
@@ -383,6 +392,11 @@ span[class*="material-symbols"],
   /* GMP range strip full-bleed within the block padding; per-source list wraps. */
   .drhp-gmp-range {
     width: 100%;
+  }
+  /* Forecast: stat row stacks 1-up as space allows; RMSE table stays a table. */
+  .drhp-forecast-stat-row {
+    grid-template-columns: 1fr;
+    gap: var(--drhp-space-sm);
   }
 }
 
@@ -1051,6 +1065,269 @@ a.drhp-ipo-card:focus-visible {
   font-weight: 400;
   line-height: 1.5;
   color: var(--drhp-text-muted);
+}
+
+/* ── Phase 5 — Listing-day forecast section (05-UI-SPEC.md §Visuals) ───────── */
+/* The phase's headline surface, EXTENDS Phase 1-4 (restyles nothing). The band
+   WIDTH is the dominant signal; NO point-estimate-as-headline, NO green/red, NO
+   badges (P21). The interval band is the ONLY amber element — a low-opacity calm
+   wash, never an alarm bar. The GMP marker, median tick, 0% rule, and every
+   metric are neutral --drhp-text-muted (NEVER amber). Direction is words +
+   position, never hue. Card chrome comes from st.container(border=True) (never a
+   split div — the Phase 3 white-bar lesson); the plot is ONE self-contained
+   st.markdown with inline left:%. All tokens are the CURRENT dark --drhp-*. */
+.drhp-forecast-block {
+  /* Semantic wrapper; the neutral container border is supplied by
+     st.container(border=True). No accent, no fill on the wrapper. */
+  color: var(--drhp-text-primary);
+}
+
+.drhp-forecast-caption-subline {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--drhp-text-muted);
+  margin-bottom: var(--drhp-space-md);
+}
+
+/* The plot — a single self-contained region (role="img" + aria-label). */
+.drhp-forecast-plot {
+  margin: var(--drhp-space-sm) 0 var(--drhp-space-md) 0;
+}
+
+/* The return axis — a neutral surface-secondary track; markers are absolutely
+   positioned children by inline left:% (D-1). 44px tall, position: relative. */
+.drhp-forecast-axis {
+  position: relative;
+  width: 100%;
+  height: 44px;
+  background: var(--drhp-surface-secondary);
+  border: 1px solid var(--drhp-border-subtle);
+  border-radius: 8px;
+}
+
+/* The 80% interval band — the ONE amber element (L5-1). A low-opacity wash with
+   2px bound-edges so the WIDTH reads as the message. 28px tall, vertically
+   centred, 6px radius, a 4px MIN visual width so a genuinely tiny interval is
+   still visible (the caption always states the true span). */
+.drhp-forecast-band {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 28px;
+  min-width: 4px;
+  background: rgba(224, 162, 78, 0.16);
+  border-left: 2px solid rgba(224, 162, 78, 0.60);
+  border-right: 2px solid rgba(224, 162, 78, 0.60);
+  border-radius: 6px;
+}
+
+/* Median tick — a short, faint, NEUTRAL vertical stub (~60% track height). It
+   marks the point estimate without becoming one (P21). NEVER amber, NEVER bold. */
+.drhp-forecast-median {
+  position: absolute;
+  top: 50%;
+  transform: translate(-1px, -50%);
+  width: 2px;
+  height: 24px;
+  background: var(--drhp-text-muted);
+}
+
+.drhp-forecast-median-label,
+.drhp-forecast-zero-label {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--drhp-text-muted);
+  font-variant-numeric: tabular-nums;
+  margin-top: var(--drhp-space-xs);
+}
+
+/* 0% baseline — a FULL-height 1px neutral rule (unmistakable from the short
+   median tick by height, not hue). */
+.drhp-forecast-zero {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: var(--drhp-text-muted);
+  transform: translateX(-0.5px);
+}
+
+/* GMP marker — a hollow OUTLINED diamond (12px square rotated 45°, transparent
+   fill, 1.5px muted border) on a thin 1px muted stem. NEVER amber, NEVER filled;
+   distinguished from the band by SHAPE, not colour (WCAG 1.4.1). Visually
+   secondary to the band (L5-2). Omitted entirely when no GMP is reported. */
+.drhp-forecast-gmp-stem {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: var(--drhp-text-muted);
+  transform: translateX(-0.5px);
+  opacity: 0.7;
+}
+
+.drhp-forecast-gmp {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  background: transparent;
+  border: 1.5px solid var(--drhp-text-muted);
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+/* Axis-end scale labels — Small muted tabular-nums, space-between. */
+.drhp-forecast-scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--drhp-text-muted);
+  font-variant-numeric: tabular-nums;
+  margin-top: var(--drhp-space-sm);
+}
+
+/* Plain-language caption — the section's REAL headline (words, not a number). */
+.drhp-forecast-caption {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--drhp-text-primary);
+  margin: var(--drhp-space-sm) 0;
+}
+
+/* GMP-vs-model gap line (or the no-GMP note) — Small 12 muted. */
+.drhp-forecast-gap {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--drhp-text-muted);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: var(--drhp-space-md);
+}
+
+/* "How this was tested" strip — a calm surface-secondary panel, ALWAYS visible,
+   never behind an expander (L5-3, FCAST-04). No metric is coloured good/bad. */
+.drhp-forecast-tested {
+  background: var(--drhp-surface-secondary);
+  border: 1px solid var(--drhp-border-subtle);
+  border-radius: 8px;
+  padding: var(--drhp-space-lg);
+  margin-bottom: var(--drhp-space-md);
+}
+
+.drhp-forecast-tested-eyebrow {
+  font-family: var(--drhp-font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--drhp-text-muted);
+  letter-spacing: 0.02em;
+  margin-bottom: var(--drhp-space-md);
+}
+
+/* Three-up stat row. Each value is Body-16 mono tabular-nums weight-400 —
+   deliberately NOT Display, NOT bold: it must not become a headline that competes
+   with the absent point estimate. */
+.drhp-forecast-stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--drhp-space-md);
+  margin-bottom: var(--drhp-space-md);
+}
+
+.drhp-forecast-stat-value {
+  font-family: var(--drhp-font-mono);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--drhp-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.drhp-forecast-stat-label {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--drhp-text-muted);
+  margin-top: var(--drhp-space-xs);
+}
+
+/* Per-year RMSE mini-table — a REAL table (not stacked cards), tabular-nums,
+   muted gridlines; overflow-x:auto keeps it a table at every breakpoint. */
+.drhp-forecast-rmse-wrap {
+  overflow-x: auto;
+  margin-bottom: var(--drhp-space-sm);
+}
+
+.drhp-forecast-rmse-caption {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--drhp-text-muted);
+  margin-bottom: var(--drhp-space-xs);
+}
+
+.drhp-forecast-rmse {
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.drhp-forecast-rmse th,
+.drhp-forecast-rmse td {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--drhp-text-muted);
+  padding: 4px 10px;
+  border: 1px solid var(--drhp-border-subtle);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.drhp-forecast-rmse th:first-child,
+.drhp-forecast-rmse td:first-child {
+  text-align: left;
+}
+
+/* Coverage honesty note — Small muted italic (P17: coverage can miss 80%). */
+.drhp-forecast-note {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--drhp-text-muted);
+  font-style: italic;
+}
+
+/* Model-card link — accent-as-text, the ONE non-band accent use. A 44×44
+   transparent ::before enlarger reuses the .drhp-cite / .drhp-glossary tap-target
+   grammar; inherited accent focus ring. */
+.drhp-forecast-cardlink {
+  position: relative;
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--drhp-accent-link);
+  text-decoration: none;
+  margin-top: var(--drhp-space-sm);
+}
+
+.drhp-forecast-cardlink::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.drhp-forecast-cardlink:hover {
+  text-decoration: underline;
+}
+
+.drhp-forecast-cardlink:focus-visible {
+  outline: 2px solid var(--drhp-accent);
+  outline-offset: 2px;
 }
 
 /* ── Accessibility: prefers-reduced-motion ──────────────────────────────── */

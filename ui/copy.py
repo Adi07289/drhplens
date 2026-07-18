@@ -616,6 +616,128 @@ GMP_ERROR_STATE: str = (
 
 
 # ---------------------------------------------------------------------------
+# Phase 5 — Listing-day forecast section copy (05-UI-SPEC.md §Copywriting
+# Contract). The phase's headline surface: a calibrated 80% listing-day-return
+# BAND (width is the message), a muted GMP-vs-model marker, and an always-visible
+# "How this was tested" honesty strip. Every string VERBATIM from the LOCKED
+# UI-SPEC — descriptive, never prescriptive. NO point-estimate-as-headline (P21),
+# NO green/red, coverage shown honestly (P17). The banned stems (subscri / sell /
+# buy / target / accumulat / recommend / fair value / overvalued / undervalued)
+# appear NOWHERE — notably `target` is avoided by design (the section says
+# "range" / "interval" / "median", never "target"). Each constant is auto-enrolled
+# in the import-time scrubber loop below.
+# ---------------------------------------------------------------------------
+
+# Block heading (Serif 20/600) — L5-4, the mid-page climax, not a headline call.
+FORECAST_BLOCK_HEADING: str = "Listing-day forecast — a calibrated range, not a call."
+
+# Framing sub-line (Small 12 muted) — states the range is GMP-free (FCAST-02).
+FORECAST_FRAMING_SUBLINE: str = (
+    "Calibrated on past Indian IPOs. This range is GMP-free — the grey-market "
+    "premium is shown for context but never feeds the model."
+)
+
+# Plain-language interval caption (Body 16) — the section's REAL headline: the
+# interval in words + the span width in points (L5-1). {low}/{high}/{width} are
+# formatted numeric strings.
+FORECAST_INTERVAL_CAPTION_TEMPLATE: str = (
+    "In 80% of comparable past IPOs, the listing-day return fell between {low}% "
+    "and {high}% — a span of {width} points."
+)
+
+# Median annotation (Small muted) — the point estimate as a quiet note, never a
+# headline (P21). {median} is a formatted numeric string.
+FORECAST_MEDIAN_ANNOTATION_TEMPLATE: str = "Model median {median}%"
+
+# 0% baseline label (Small muted) — the issue-price reference on the return axis.
+FORECAST_ZERO_LABEL: str = "0% (issue price)"
+
+# GMP-vs-model gap line (Small muted) — the labeled delta (L5-2, GMP-03). {gmp}/
+# {delta} are formatted numeric strings; {direction} is one of the two direction
+# words below (above|below). The `sell`/`buy` stems are avoided in the wording.
+FORECAST_GMP_GAP_TEMPLATE: str = (
+    "The grey-market premium implies about {gmp}% — {delta} points {direction} "
+    "the GMP-free model median."
+)
+
+# Direction words for the gap line + the GMP marker aria-label (position stated
+# in WORDS, never conveyed by hue — the no-green/red invariant, WCAG 1.4.1).
+FORECAST_DIRECTION_ABOVE: str = "above"
+FORECAST_DIRECTION_BELOW: str = "below"
+
+# No-GMP note (Small muted) — the COMMON already-listed case: absence shown as
+# absence, never a fabricated GMP.
+FORECAST_NO_GMP_NOTE: str = (
+    "No grey-market premium is being reported, so there is no GMP-versus-model "
+    "gap to show."
+)
+
+# "How this was tested" strip (always visible — L5-3, FCAST-04; nothing collapsed).
+FORECAST_TESTED_EYEBROW: str = "How this was tested"
+FORECAST_COVERAGE_STAT_LABEL: str = "80% interval coverage (empirical, held-out)"
+FORECAST_MAE_STAT_LABEL: str = "Mean absolute error"
+FORECAST_BACKTEST_STAT_LABEL: str = "Walk-forward backtest"
+FORECAST_RMSE_TABLE_CAPTION: str = "Per-year RMSE (points)"
+
+# Per-year RMSE table column headers (real <th scope="col"> — SR-navigable, a11y).
+FORECAST_RMSE_TH_YEAR: str = "Year"
+FORECAST_RMSE_TH_RMSE: str = "RMSE"
+
+# Coverage honesty note (Small muted italic) — coverage is empirical on held-out
+# data and may miss 80%; the real number is shown, never a rounded fiction (P17).
+FORECAST_COVERAGE_HONESTY_NOTE: str = (
+    "Coverage is measured on held-out IPOs the model never trained on. It can "
+    "miss 80% — we show the real number, not a rounded one."
+)
+
+# Model-card link (the one explicit affordance) — points to /methodology (FCAST-05).
+FORECAST_MODEL_CARD_LINK: str = "Full model card →"
+
+# Empty states — not-covered (no forecast) + model-abstains (insufficient history).
+FORECAST_EMPTY_NOT_COVERED: str = (
+    "No calibrated listing-day forecast is available for this IPO yet."
+)
+FORECAST_EMPTY_ABSTAIN: str = (
+    "There isn't enough comparable history to calibrate an honest range for this "
+    "IPO, so no forecast is shown."
+)
+
+# Error state — inherited amber .drhp-refusal posture (NOT red).
+FORECAST_ERROR_STATE: str = (
+    "This couldn't load for this IPO right now. It's a free-tier infrastructure "
+    "hiccup, not a problem with the prospectus. Try again in a minute."
+)
+
+# Partial-metrics cell — a genuinely unavailable metric renders the em-dash with
+# an aria-label; never a fabricated number, never a hidden row (FCAST-04).
+FORECAST_METRIC_NA: str = "—"
+FORECAST_METRIC_NA_ARIA: str = "Not available"
+
+# Band aria-label (role="img") — the interval stated in WORDS so it is never
+# conveyed by band tint / width alone (WCAG 1.4.1). All fields formatted numerics.
+FORECAST_BAND_ARIA_TEMPLATE: str = (
+    "80% prediction interval for the listing-day return, from {low}% to {high}%; "
+    "model median {median}%; interval width {width} points. Zero percent marks "
+    "the issue price."
+)
+
+# GMP marker aria-label — the gap stated in words + points, never by marker
+# position / colour alone (WCAG 1.4.1). {direction} is a direction word above.
+FORECAST_GMP_ARIA_TEMPLATE: str = (
+    "Grey-market-premium-implied listing-day return {gmp}%, {delta} points "
+    "{direction} the model median."
+)
+
+# GMP-implied-return conversion provenance (native `title=` hover on the marker):
+# the ₹ basis of the display-layer gmp_premium/issue_price*100 conversion, routed
+# through ui/format_inr (the ONE ₹ formatter). Kept off the visible % chrome — an
+# honesty/transparency detail only. {premium}/{issue_price} are format_inr strings.
+FORECAST_GMP_BASIS_TITLE_TEMPLATE: str = (
+    "Implied from a grey-market premium of {premium} on an issue price of "
+    "{issue_price}."
+)
+
+# ---------------------------------------------------------------------------
 # TRUST-03 anchor: import-time scrubber assertion.
 # Any future copy edit that introduces a banned token will raise AssertionError
 # here at import time, before any HTTP request is served.
@@ -657,6 +779,19 @@ _SAMPLE_FORMAT_VALUES = {
     "high": "₹52",
     "source": "Aggregator A",
     "value": "₹47",
+    # Phase 5 forecast placeholders (returns in %, errors in points).
+    "width": "25.9",
+    "median": "6.1",
+    "gmp": "4.7",
+    "delta": "9",
+    "direction": "above",
+    "coverage": "78.3",
+    "mae": "11.4",
+    "year": "2024",
+    "rmse": "13.5",
+    "window": "2016-2025",
+    "premium": "₹47",
+    "issue_price": "₹390",
 }
 
 
