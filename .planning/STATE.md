@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-07-18T20:46:02.923Z"
+last_updated: "2026-07-18T21:58:25.000Z"
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 36
-  completed_plans: 28
+  completed_plans: 29
   percent: 50
 ---
 
@@ -29,9 +29,9 @@ progress:
 ## Current Position
 
 Phase: 05 (calibrated-listing-day-forecaster) — EXECUTING
-Plan: 5 of 11
-**Status:** Ready to execute
-**Progress:** [████████░░] 78%
+Plan: 05-05 complete (Wave 4 — the modeling keystone) → next 05-06 (metrics + precompute CLI)
+**Status:** Ready to execute 05-06
+**Progress:** [████████░░] 82%
 
 ## Phase Map
 
@@ -129,9 +129,15 @@ Plan: 5 of 11
 
 ### What I Was Doing
 
+Executed Phase 5 Plan 05-05 (Wave 4 — the MODELING KEYSTONE: XGBoost-quantile + MAPIE CQR + as-of-T0 walk-forward + R²>0.5 alarm; D5-03 / D5-11 / FCAST-01 / FCAST-03). Task 1 `533b292` (feat): `pipelines/forecast/model.py` — `make_quantile_models` fits three XGBRegressor(objective="reg:quantileerror", tree_method="hist") at quantile_alpha 0.1/0.9/0.5 returned in MAPIE PREFIT list order `[lower, upper, median]`; `fit_cqr` -> `ConformalizedQuantileRegressor(estimator=models, confidence_level=0.8, prefit=True)` + `.conformalize(X_cal, y_cal)`; `predict_band(cqr, X)` -> `(median, low, high)` unpacking `predict_interval` (intervals (n,2,1)) with a non-crossing rearrangement so high>=low always (D5-03 adaptive width preserved). xgboost/mapie imported lazily inside the functions (module load offline); the prefit-only anti-pattern documented. `tests/unit/test_cqr_interval.py` (4 tests): adaptive-width interval + high>=low + model order/objective + subprocess lazy-import proof. Task 2 `eee4f80` (feat): `pipelines/forecast/walkforward.py` — `walk_forward(panel, X, *, min_train=60, cal_frac=0.25, params=None)` iterates scorable IPOs by listing_date; `pool = {listing_date < ipo.issue_date}` (T0=issue-open, D5-01); splits at `pool.listing_date.quantile(1-cal_frac)` into older proper-train / newer calibration (disjoint, both < T0_i); fits + conformalizes + predicts ONE OOS band per IPO (displayed=backtested, D5-11); `insufficient_history` abstain below min_train OR below MIN_CAL(=10, the tail-quantile floor for the 80% interval); per-fold provenance columns (t0/pool_max/train_max/cal_min/n_train/n_cal). `r2_leakage_alarm(oos)` -> `(r2, flag|None)`, fires when OOS median R²>0.5 (P4), sklearn imported lazily. `tests/unit/test_walkforward_no_lookahead.py` (6 tests): per-fold pool_max<T0 + disjoint cal>train proof, insufficient_history abstain, R² alarm fires-on-leak/quiet-on-honest, lazy-import proof. Suite: 429 passed / 0 skipped / 1 pre-existing ignorable embedder failure (sentence-transformers not installed — unrelated); the 05-03 reverse isolation audit's model.py + walkforward.py cases are now ACTIVE (no longer importorskip-skipped) and green. FCAST-01/FCAST-03 left Pending (offline-fixture proof only; real-panel records land 05-06/05-11).
+
+### (prior) What I Was Doing
+
 Executed Phase 5 Plan 05-04 (Wave 3, the leakage-gated feature layer — FCAST-02 / D5-01 / D5-08) — built the thin issue-structure-only feature matrix (D5-06a) from the survivorship panel behind a hard `available_at <= T0` (issue-open) gate. Task 1 `b60d2da` (feat): `pipelines/features/__init__.py` — the frozen `FEATURE_SPECS` contract mirroring the historical `PANEL_COLUMNS`/`PANEL_DTYPES`/`STATUS_VALUES` grammar: five D5-06a features (`issue_size_cr`, `price_band_width_pct`, `ofs_fraction`, `promoter_dilution_pct`, `lot_size`) each → `(float64, filing_date)`; `FEATURE_COLUMNS`/`FEATURE_DTYPES`/`FEATURE_AVAILABLE_AT`; `T0_RULE`/`T0_COLUMN` (T0 = issue-open, D5-01 supersedes FCAST-02's literal 'T-1 of listing'); `EXCLUDED_FROM_MODEL`/`EXCLUDED_SUBSTRINGS` naming GMP + at-close subscription + listing-day as never-features. Task 2 `681acdd` (feat): `pipelines/features/build.py` — `build_features(panel) -> (X, available_at)` deriving each feature (replace-with-NaN; `lot_size` float64 so missing stays NaN), resolving each feature's `available_at` per row (per-feature override → `filing_date` → `available_at` stamp → `issue_date` anchor), and ASSERTING `available_at <= issue_date` (T0) for every feature/row — raising `LeakageError` (names feature+issuer) on violation; `leakage_audit(panel)` emits the per-feature `<= T0 ✓` model-card record (data-verified via `build_features`); an exclusion guard bars any GMP/subscription/listing-day token as a built column. `tests/unit/test_features_available_at.py` (11 tests: post-T0 raises, equal-to-T0 boundary passes, NaN retained/row kept, audit, exclusion). Deviation: sharpened the 05-03 isolation Direction-2 proxy in `tests/unit/test_forecast_isolation.py` from the bare `"gmp"` substring to precise GMP-display reference tokens so `pipelines.features` can NAME `gmp` in `EXCLUDED_FROM_MODEL` (T-05-04-EXCL) — strengthens, not weakens, the invariant. Suite: 402 passed / 3 skipped / 1 pre-existing ignorable embedder failure (sentence-transformers not installed — unrelated); the `pipelines.features` isolation case now runs+passes (was importorskip-skipped).
 
 ### Where to Resume
+
+**Phase 5 Wave 4 modeling keystone (05-05) COMPLETE** — the honesty core is built and offline-green: `pipelines/forecast/model.py` (prefit XGBoost-quantile + MAPIE CQR adaptive-width 80% interval, D5-03) and `pipelines/forecast/walkforward.py` (expanding-window as-of-T0 loop -> one lookahead-free OOS band per IPO = displayed=backtested, D5-11; `insufficient_history` abstain; `r2_leakage_alarm` P4 gate). The 05-03 two-direction isolation audit is now FULLY ACTIVE and green (model.py + walkforward.py import no display signal). Proven OFFLINE against the 05-01 synthetic fixtures only — **next: 05-06** consumes `walk_forward` + `build_features` to compute the GLOBAL coverage/MAE/per-year-RMSE metrics and precompute the per-IPO `data/forecasts/<id>.json` records; the real live-panel fit is the 05-11 checkpoint. FCAST-01/FCAST-03 stay **Pending** (offline-fixture proof only). Prior context:
 
 **Phase 5 Wave 3 render slice (05-07) COMPLETE** — the phase's HEADLINE user-facing surface is live: `ui/forecast_block.py` renders the calibrated 80% band (width is the message, no point-estimate headline — P21), the muted hollow-diamond GMP-vs-model marker + labeled gap (GMP-03, display-layer conversion), and the always-visible coverage/MAE/per-year-RMSE strip (P17, FCAST-04), wired into `pages/02_snapshot.py` after the peer block and before ranked-risks (L5-4); the quiet GMP block stays last (D4-02). It renders from the 05-01 seed fixtures (real records arrive 05-06/05-11). The 05-03 two-direction isolation audit's forward check against `ui.forecast_block` is now ACTIVE and green (render imports no model module, FCAST-02 Direction-1). UI-03/FCAST-04/GMP-03 render-halves delivered; kept **Pending** in REQUIREMENTS.md until real records land. Remaining Wave-3/4 work: **05-05** (CQR + walk-forward model — will activate the last two importorskip-guarded isolation checks), **05-06** (precompute writer), **05-08** (regime/DRHP/anchor feature families), **05-09/10/11** (model card + checkpoints). Prior:
 
@@ -168,6 +174,7 @@ Phase 5 Wave 3 feature layer (05-04) COMPLETE — the leakage-gated issue-struct
 | Phase 05 P05-03 | ~20 min | 2 tasks | 4 files |
 | Phase 05 P05-04 | ~8 min | 2 tasks | 4 files |
 | Phase 05 P05-07 | 40 min | 3 tasks | 5 files |
+| Phase 05 P05-05 | ~8 min | 2 tasks | 4 files; 429 passed / 0 skipped / 1 pre-existing embedder fail; reverse isolation audit fully active |
 
 ## Decisions
 
@@ -196,3 +203,7 @@ Phase 5 Wave 3 feature layer (05-04) COMPLETE — the leakage-gated issue-struct
 - [Phase 05]: 05-07: The listing-day forecast render (ui/forecast_block.py) is a cache-only Streamlit block wired into pages/02_snapshot.py after the peer block and before the ranked-risks list (L5-4); the quiet GMP block stays the LAST read block (D4-02). Band width is the dominant visual — no point-estimate headline, no green/red, no badge (P21); coverage/MAE/per-year RMSE always visible (P17, FCAST-04). The 05-03 forward isolation audit against ui.forecast_block is now ACTIVE and green (imports no model module, FCAST-02 Direction-1).
 - [Phase 05]: 05-07: GMP-implied return is a display-layer conversion (median cached premium / issue_price * 100) on the same axis as the model band, with the gap printed as a labeled delta (GMP-03); the marker + gap line are honestly OMITTED (band still renders, no-gap note shown) whenever no GMP is reported OR no issue price is available — never a fabricated GMP.
 - [Phase 05]: 05-07: No structured per-share issue price is surfaced by SnapshotRecord yet (metadata is a cited GroundedAnswer, not a parsed price), so the page wiring passes issue_price=None and the GMP marker is honestly omitted today; it lights up unchanged once a real issue price lands (05-06/05-11). UI-03/FCAST-04/GMP-03 render-halves delivered against the 05-01 seed fixtures; kept Pending in REQUIREMENTS.md until the real records land (mirrors 05-03's FCAST-02-pending posture).
+- [Phase 05]: 05-05: The modeling keystone. pipelines/forecast/model.py — make_quantile_models -> [lower(0.1), upper(0.9), median(0.5)] reg:quantileerror (MAPIE PREFIT list order, NOT ascending); fit_cqr -> ConformalizedQuantileRegressor(confidence_level=0.8, prefit=True) + conformalize; predict_band -> (median, low, high). MAPIE 1.4.1 API (ConformalizedQuantileRegressor + conformalize + predict_interval) matches the plan/RESEARCH exactly — no downgrade needed. xgboost/mapie imported lazily inside functions (module load stays offline; the import-light loader __init__ stays clean).
+- [Phase 05]: 05-05: predict_band applies a non-crossing REARRANGEMENT (per-row low=min/high=max of the two conformalized bounds; Chernozhukov+ 2010) so high>=low holds even when small-N XGBoost quantile models cross (MAPIE logs "ill-sorted") — the D5-03 adaptive width is preserved (Rule 2 correctness add; the RESEARCH sketch's raw intervals[:,0,0]/[:,1,0] can invert on tiny samples).
+- [Phase 05]: 05-05: walk_forward(panel, X) is expanding-window as-of-T0 (D5-11): pool = {listing_date < ipo.issue_date} (T0=issue-open, D5-01); older proper-train / newer calibration split at pool.listing_date.quantile(1-cal_frac); one OOS band per IPO = displayed band = backtested band. Added a MIN_CAL guard (= ceil(2/(1-confidence_level)) = 10 for the 80% interval): MAPIE needs n_cal>=10 to estimate the tail conformity quantile, so a too-thin calibration slice ABSTAINS (insufficient_history) rather than crashing (Rule 3 blocking fix). Per-fold provenance columns (t0/pool_max/train_max/cal_min/n_train/n_cal) make the no-lookahead property auditable by the test against walk_forward's REAL selection.
+- [Phase 05]: 05-05: r2_leakage_alarm(oos) -> (r2, flag|None) fires when OOS median R²>0.5 (P4), mirroring validate.sanity_check_median's posture; sklearn r2_score imported lazily so the walkforward module import stays offline. FCAST-01/FCAST-03 left PENDING (not marked complete) — the interval/walk-forward is proven OFFLINE on the 05-01 synthetic fixtures only; per-IPO records over the real ~200-300-row panel land in 05-06/05-11, so closing them now would be dishonest (mirrors 05-02/03/04 leaving reqs Pending). The 05-03 reverse isolation audit is now FULLY ACTIVE (model.py + walkforward.py no longer importorskip-skipped) and green — the predictor imports no display signal.
