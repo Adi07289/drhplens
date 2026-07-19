@@ -279,6 +279,116 @@ def wilcoxon_robustness(e_model: Any, e_base: Any) -> float:
     return float(p)
 
 
+# ---------------------------------------------------------------------------
+# The P9 release gate (four-baseline DM + R²>0.5 leakage alarm)
+# ---------------------------------------------------------------------------
+def release_gate(
+    oos_df: pd.DataFrame,
+    panel: pd.DataFrame,
+    *,
+    alpha: float = DM_ALPHA,
+    min_n: int = SECTOR_MIN_N,
+) -> dict[str, Any]:
+    """Compose the P9 release verdict: four-baseline DM + the R²>0.5 leakage alarm.
+
+    Scores the four baselines as-of-T0, DM-tests the model's absolute errors
+    against each, runs ``r2_leakage_alarm`` on the OOS median, and returns a
+    plain-data verdict the 05-10 model card embeds verbatim.
+
+    The gate FAILS (``passed=False``) when the R²>0.5 leakage alarm fires (a
+    T0-violating feature likely slipped in, P4/P9) OR when ANY baseline
+    SIGNIFICANTLY beats the model (baseline loss significantly lower at ``p<alpha``).
+    Otherwise it PASSES — and when the model does NOT significantly outperform a
+    baseline (the honest low-R² pre-apply case, D5-01) it appends an explicit "does
+    not significantly outperform" note rather than p-hacking to cross the gate.
+
+    Args:
+        oos_df: the walk-forward OOS frame (``actual``/``median``/``t0``/``abstain``).
+        panel: the historical panel the baselines are scored from (same as-of-T0).
+        alpha: the DM significance threshold (0.05).
+        min_n: the D5-10 sector-pooling threshold.
+
+    Returns:
+        ``{"passed": bool, "r2": float, "r2_alarm": str | None,
+           "per_baseline": {name: {"dm_stat", "p_value", "wilcoxon_p",
+                                    "model_beats_sig", "baseline_beats_model_sig",
+                                    "n"}},
+           "n_scored": int, "notes": [str, ...]}``.
+    """
+    from pipelines.forecast.walkforward import r2_leakage_alarm  # import-light sibling
+
+    scored = score_baselines(panel, oos_df, min_n=min_n)
+    r2, r2_alarm = r2_leakage_alarm(oos_df)
+
+    e_model_all = scored["actual"] - scored["model_pred"]
+
+    per_baseline: dict[str, dict[str, Any]] = {}
+    any_baseline_beats = False
+    for name in BASELINE_NAMES:
+        e_base_all = scored["actual"] - scored[f"{name}_pred"]
+        mask = e_model_all.notna() & e_base_all.notna()
+        em = e_model_all[mask].to_numpy()
+        eb = e_base_all[mask].to_numpy()
+
+        if em.size < 2:
+            dm_stat, p_value = float("nan"), float("nan")
+        else:
+            dm_stat, p_value = dm_test(em, eb)
+        wilcox_p = wilcoxon_robustness(em, eb) if em.size >= 1 else float("nan")
+
+        sig = dm_stat == dm_stat and p_value == p_value and p_value < alpha  # not NaN
+        model_beats_sig = bool(sig and dm_stat < 0)
+        baseline_beats_model_sig = bool(sig and dm_stat > 0)
+        if baseline_beats_model_sig:
+            any_baseline_beats = True
+
+        per_baseline[name] = {
+            "dm_stat": dm_stat,
+            "p_value": p_value,
+            "wilcoxon_p": wilcox_p,
+            "model_beats_sig": model_beats_sig,
+            "baseline_beats_model_sig": baseline_beats_model_sig,
+            "n": int(em.size),
+        }
+
+    passed = (r2_alarm is None) and (not any_baseline_beats)
+
+    notes: list[str] = []
+    if r2_alarm is not None:
+        notes.append(
+            f"RELEASE GATE FAILED (leakage): {r2_alarm}"
+        )
+    if any_baseline_beats:
+        beaten_by = [
+            n for n, d in per_baseline.items() if d["baseline_beats_model_sig"]
+        ]
+        notes.append(
+            "RELEASE GATE FAILED (baseline beats model): the naive baseline(s) "
+            f"{beaten_by} significantly beat the model (Diebold–Mariano p<{alpha} in "
+            "the baseline's favor). The model adds nothing over a naive rule on this "
+            "evaluation — do NOT ship it and do NOT p-hack features to force a pass."
+        )
+
+    not_beaten = [n for n, d in per_baseline.items() if not d["model_beats_sig"]]
+    if not_beaten:
+        notes.append(
+            "The model does not significantly outperform the following baseline(s) at "
+            f"p<{alpha}: {not_beaten}. For a pre-apply, no-demand forecast this humble "
+            "result is EXPECTED (D5-01) — a low R² is a feature, not a bug. The model "
+            "card states this plainly; no features/folds/tests were tuned to cross the "
+            "gate."
+        )
+
+    return {
+        "passed": passed,
+        "r2": r2,
+        "r2_alarm": r2_alarm,
+        "per_baseline": per_baseline,
+        "n_scored": int(len(scored)),
+        "notes": notes,
+    }
+
+
 __all__ = [
     "BASELINE_NAMES",
     "TRAILING_N",
@@ -288,4 +398,5 @@ __all__ = [
     "score_baselines",
     "dm_test",
     "wilcoxon_robustness",
+    "release_gate",
 ]
