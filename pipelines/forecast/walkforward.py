@@ -28,12 +28,27 @@ LISTING DATE into an older *proper-train* slice and a newer *calibration* slice:
 Both stay strictly before T0_i; they are disjoint by construction. We never
 KFold/shuffle (CLAUDE.md "What NOT to Use": shuffled CV leaks future IPOs).
 
-Abstention (D5-09, honesty)
----------------------------
-An IPO with fewer than ``min_train`` prior listings (or one whose pre-T0 pool
-cannot be split into a non-empty proper-train slice and a calibration slice of at
-least ``MIN_CAL`` rows) gets an ABSTAIN row (``abstain=True,
-abstain_reason="insufficient_history"``) and NO band — never a fabricated interval.
+Abstention (D5-09, honesty) — three first-class reasons
+-------------------------------------------------------
+An abstain row carries ``abstain=True`` + an ``abstain_reason`` and NO band — never
+a fabricated interval. The three reasons map 1:1 to the ForecastRecord enum
+(``insufficient_history`` | ``out_of_support`` | ``interval_too_wide``):
+
+  * ``insufficient_history`` — fewer than ``min_train`` prior listings, OR a pre-T0
+    pool that cannot be split into a non-empty proper-train slice and a calibration
+    slice of at least ``MIN_CAL`` rows. Always on.
+  * ``out_of_support`` (D5-09 extrapolation half) — when ``check_support=True``, the
+    target IPO's feature vector falls outside the proper-train ``[q01, q99]`` support
+    (``pipelines.features.select.is_out_of_support``): the model would be
+    extrapolating, so it declines rather than fabricate a band.
+  * ``interval_too_wide`` (D5-09 width half) — when a width guard is set
+    (``max_width`` absolute, and/or ``width_iqr_mult`` × the training-return IQR), a
+    calibrated 80% band wider than the guard conveys nothing useful, so it abstains.
+
+The two D5-09 guards are OPT-IN (defaults: ``check_support=False``,
+``max_width=None``, ``width_iqr_mult=None``) so the default call is behaviourally
+identical to the pre-D5-09 loop. Their thresholds are tuned empirically on the live
+panel (Open Q3, 05-11); firing untuned guards on synthetic data would be arbitrary.
 
 R²>0.5 leakage alarm (P4)
 -------------------------
@@ -138,12 +153,47 @@ def _abstain_row(
     }
 
 
+def _iqr(values: np.ndarray) -> float:
+    """Inter-quartile range (q75 - q25) of a 1-D array, ignoring NaN."""
+    v = np.asarray(values, dtype=float)
+    v = v[~np.isnan(v)]
+    if v.size == 0:
+        return float("nan")
+    q75, q25 = np.percentile(v, [75.0, 25.0])
+    return float(q75 - q25)
+
+
+def _width_guard(
+    max_width: float | None,
+    width_iqr_mult: float | None,
+    train_returns: np.ndarray,
+) -> float | None:
+    """The effective interval-width guard (D5-09), or None when no guard is set.
+
+    Combines the two tunable forms — an absolute ``max_width`` and an
+    IQR-relative ``width_iqr_mult`` × the proper-train return IQR — taking the
+    TIGHTER (min) of whichever is provided. Returns None when neither is set (the
+    guard is disabled and no IPO abstains ``interval_too_wide``).
+    """
+    guards: list[float] = []
+    if max_width is not None:
+        guards.append(float(max_width))
+    if width_iqr_mult is not None:
+        iqr = _iqr(train_returns)
+        if iqr == iqr:  # not NaN
+            guards.append(float(width_iqr_mult) * iqr)
+    return min(guards) if guards else None
+
+
 def walk_forward(
     panel: pd.DataFrame,
     X: pd.DataFrame,
     *,
     min_train: int = MIN_TRAIN_DEFAULT,
     cal_frac: float = CAL_FRAC_DEFAULT,
+    check_support: bool = False,
+    max_width: float | None = None,
+    width_iqr_mult: float | None = None,
     params: dict | None = None,
 ) -> pd.DataFrame:
     """Run the expanding-window as-of-T0 walk-forward, one OOS band per IPO.
@@ -158,6 +208,17 @@ def walk_forward(
             An ``available_at`` stamp column, if present, is dropped before fitting.
         min_train: abstain until at least this many prior listings exist (D5-09).
         cal_frac: newest fraction of the pre-T0 pool used as the calibration slice.
+        check_support: when True, abstain ``out_of_support`` (D5-09) if the target
+            IPO's feature vector falls outside the proper-train ``[q01, q99]`` support
+            (``pipelines.features.select.is_out_of_support``). Default off (untuned
+            until the live panel, Open Q3) — the default call is unchanged.
+        max_width: an absolute interval-width guard (native return units); a
+            calibrated 80% band wider than this abstains ``interval_too_wide`` (D5-09).
+            None disables the absolute guard.
+        width_iqr_mult: an IQR-relative width guard — abstain ``interval_too_wide``
+            when the band is wider than ``width_iqr_mult`` × the proper-train return
+            IQR (the plan's "derived from the training-return IQR" form). None disables
+            it. When both width guards are set the TIGHTER one applies.
         params: optional XGBoost overrides forwarded to ``make_quantile_models``.
 
     Returns:
@@ -237,11 +298,52 @@ def walk_forward(
             )
             continue
 
+        # D5-09 out_of_support (extrapolation half): the target IPO's feature vector
+        # lies outside the proper-train [q01, q99] support -> abstain rather than let
+        # the model extrapolate a band beyond its data (opt-in; tuned at 05-11).
+        if check_support:
+            from pipelines.features.select import (  # lazy: breaks select<->walkforward cycle
+                is_out_of_support,
+                training_support,
+            )
+
+            support = training_support(feat.loc[tr.index])
+            if is_out_of_support(feat.loc[idx], support):
+                rows_out.append(
+                    _abstain_row(
+                        drhp_id=drhp_id,
+                        issuer=issuer,
+                        actual=actual,
+                        listing_year=listing_year,
+                        t0=t0,
+                        reason="out_of_support",
+                    )
+                )
+                continue
+
         models = make_quantile_models(
             feat.loc[tr.index], tr["listing_day_return"], params
         )
         cqr = fit_cqr(models, feat.loc[cal.index], cal["listing_day_return"])
         median, low, high = predict_band(cqr, feat.loc[[idx]])
+
+        # D5-09 interval_too_wide (width half): a calibrated 80% band wider than the
+        # guard conveys nothing useful -> abstain rather than render a useless band.
+        guard = _width_guard(
+            max_width, width_iqr_mult, tr["listing_day_return"].to_numpy()
+        )
+        if guard is not None and float(high[0] - low[0]) > guard:
+            rows_out.append(
+                _abstain_row(
+                    drhp_id=drhp_id,
+                    issuer=issuer,
+                    actual=actual,
+                    listing_year=listing_year,
+                    t0=t0,
+                    reason="interval_too_wide",
+                )
+            )
+            continue
 
         rows_out.append(
             {
