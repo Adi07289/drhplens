@@ -157,7 +157,7 @@ Plans:
 
 **Wave 7** *(blocked on Wave 6 completion)*
 
-- [ ] 05-09-PLAN.md — four baselines + inline Diebold-Mariano + P9 release gate + D5-09 abstention
+- [x] 05-09-PLAN.md — four baselines + inline Diebold-Mariano + P9 release gate + D5-09 abstention
 
 **Wave 8** *(blocked on Wave 7 completion)*
 
@@ -208,7 +208,7 @@ Plans:
 | 2. Multi-IPO Catalogue + DRHP Snapshot | 5/5 | Complete   | 2026-06-24 |
 | 3. Structured Signal Extraction | 7/7 | Complete   | 2026-07-05 |
 | 4. Historical IPO Dataset + Peer Comparator + GMP | 6/7 | In Progress|  |
-| 5. Calibrated Listing-Day Forecaster | 8/11 | In Progress|  |
+| 5. Calibrated Listing-Day Forecaster | 9/11 | In Progress|  |
 | 6. Full Eval Harness + Agentic Polish + Portfolio | 0/0 | Not started | - |
 
 ## Cross-Cutting Invariants
