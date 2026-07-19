@@ -149,7 +149,7 @@ Plans:
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
-- [ ] 05-06-PLAN.md — global coverage/MAE/per-year-RMSE metrics + per-IPO record precompute CLI
+- [x] 05-06-PLAN.md — global coverage/MAE/per-year-RMSE metrics + per-IPO record precompute CLI
 
 **Wave 6** *(blocked on Wave 5 completion)*
 
@@ -208,7 +208,7 @@ Plans:
 | 2. Multi-IPO Catalogue + DRHP Snapshot | 5/5 | Complete   | 2026-06-24 |
 | 3. Structured Signal Extraction | 7/7 | Complete   | 2026-07-05 |
 | 4. Historical IPO Dataset + Peer Comparator + GMP | 6/7 | In Progress|  |
-| 5. Calibrated Listing-Day Forecaster | 5/11 | In Progress|  |
+| 5. Calibrated Listing-Day Forecaster | 6/11 | In Progress|  |
 | 6. Full Eval Harness + Agentic Polish + Portfolio | 0/0 | Not started | - |
 
 ## Cross-Cutting Invariants
