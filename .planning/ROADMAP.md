@@ -153,7 +153,7 @@ Plans:
 
 **Wave 6** *(blocked on Wave 5 completion)*
 
-- [ ] 05-08-PLAN.md — expanded feature families (regime/DRHP/anchor) + anchor leakage audit + sector pooling + lean selection
+- [x] 05-08-PLAN.md — expanded feature families (regime/DRHP/anchor) + anchor leakage audit + sector pooling + lean selection
 
 **Wave 7** *(blocked on Wave 6 completion)*
 
@@ -208,7 +208,7 @@ Plans:
 | 2. Multi-IPO Catalogue + DRHP Snapshot | 5/5 | Complete   | 2026-06-24 |
 | 3. Structured Signal Extraction | 7/7 | Complete   | 2026-07-05 |
 | 4. Historical IPO Dataset + Peer Comparator + GMP | 6/7 | In Progress|  |
-| 5. Calibrated Listing-Day Forecaster | 6/11 | In Progress|  |
+| 5. Calibrated Listing-Day Forecaster | 8/11 | In Progress|  |
 | 6. Full Eval Harness + Agentic Polish + Portfolio | 0/0 | Not started | - |
 
 ## Cross-Cutting Invariants
