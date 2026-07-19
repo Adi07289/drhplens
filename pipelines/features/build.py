@@ -40,6 +40,7 @@ from typing import Any
 import pandas as pd
 
 from pipelines.features import (
+    AVAILABLE_AT_PREOPEN,
     EXCLUDED_FROM_MODEL,
     EXCLUDED_SUBSTRINGS,
     FEATURE_AVAILABLE_AT,
@@ -98,17 +99,34 @@ def _assert_no_excluded_columns(columns: list[str]) -> None:
 
 
 def _resolve_available_at(panel: pd.DataFrame, feature: str) -> pd.Series:
-    """Resolve the per-row ``available_at`` datetime for one feature.
+    """Resolve the per-row ``available_at`` datetime for one feature (rule-aware).
 
-    Priority: per-feature override column ``f"{feature}__available_at"`` ->
-    shared ``filing_date`` column -> shared ``available_at`` stamp (the 05-01
-    ``synthetic_features`` fixture) -> the panel's ``issue_date`` (T0 anchor).
+    A per-feature override column ``f"{feature}__available_at"`` ALWAYS wins (used
+    by the leakage tests to craft a post-T0 stamp). Otherwise the feature's
+    ``FEATURE_AVAILABLE_AT`` rule decides:
+
+      * ``AVAILABLE_AT_PREOPEN`` (regime family b + anchor family d) -> the pre-open
+        (T0-1 EOD) snapshot = ``issue_date - 1 day`` (strictly < T0). Regime = the
+        NIFTY/VIX/pipeline snapshot taken the evening before issue open; anchor =
+        the allocation disclosed T0-1. This is the honest, data-true stamp for a
+        pre-open feature — never the shared issue-structure stamp.
+      * else (filing rule, family a + c) -> shared ``filing_date`` column ->
+        shared ``available_at`` stamp (the 05-01 ``synthetic_features`` fixture) ->
+        the panel's ``issue_date`` (the conservative T0 anchor).
+
     Coerced to ``datetime64[ns]`` (an uncoercible/missing stamp becomes ``NaT``).
     """
     override = f"{feature}__available_at"
     if override in panel.columns:
-        source = panel[override]
-    elif "filing_date" in panel.columns:
+        return pd.to_datetime(panel[override], errors="coerce")
+
+    rule = FEATURE_AVAILABLE_AT.get(feature)
+    if rule == AVAILABLE_AT_PREOPEN:
+        # Pre-open (T0-1 EOD) snapshot — strictly the day before issue open.
+        t0 = pd.to_datetime(panel[T0_COLUMN], errors="coerce")
+        return t0 - pd.Timedelta(days=1)
+
+    if "filing_date" in panel.columns:
         source = panel["filing_date"]
     elif "available_at" in panel.columns:
         source = panel["available_at"]

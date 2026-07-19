@@ -540,12 +540,124 @@ def fetch_listing_day_close(
     return None
 
 
+# ---------------------------------------------------------------------------
+# Market-regime fetchers (D5-06b) — LIVE-DEFERRED seams (offline at import).
+# ---------------------------------------------------------------------------
+# These mirror ``fetch_listing_day_close`` exactly: a jugaad-data → yfinance → None
+# fallback where every client is imported LAZILY inside the function, so importing
+# this module (and the whole unit suite) stays fully offline — the real crawl is the
+# deferred 05-11 checkpoint. Both are ``# pragma: no cover - live only``.
+#
+# The index identifiers below are module CONSTANTS — no URL/symbol is ever derived
+# from an argument (SSRF T-05-08-SSRF); jugaad-data / yfinance manage their own hosts
+# internally (same posture as ``fetch_listing_day_close``, no bare ``requests.get``).
+#
+# LEAKAGE (D5-08): callers snapshot NIFTY momentum / India-VIX as-of the pre-open
+# (T0−1 EOD) day, so the regime features derived from these fetchers stay
+# ``available_at <= T0`` — never a T0+ value. A miss returns ``None`` (→ NaN,
+# RETAINED), never a fabricated level.
+NIFTY_INDEX_SYMBOL = "NIFTY 50"       # jugaad-data index symbol (NIFTY momentum src)
+INDIA_VIX_SYMBOL = "INDIA VIX"        # jugaad-data index symbol (India-VIX level)
+NIFTY_YF_TICKER = "^NSEI"             # yfinance fallback ticker for NIFTY 50
+INDIA_VIX_YF_TICKER = "^INDIAVIX"     # yfinance fallback ticker for India VIX
+
+
+def fetch_nifty_history(
+    end_date: _dt.date,
+):  # pragma: no cover - live only
+    """NIFTY 50 EOD close history up to ``end_date`` (jugaad-data → yfinance → None).
+
+    Returns a DataFrame of NIFTY 50 daily closes for roughly the trailing ~13
+    months ending at ``end_date`` (enough to compute 3M/6M momentum), or ``None``
+    when neither source has data (→ the derived momentum features become NaN,
+    RETAINED — never a fabricated return). Callers pass ``end_date = T0−1`` so the
+    momentum snapshot is strictly pre-open (D5-08, ``available_at <= T0``).
+
+    jugaad-data ``index_df`` is the primary source (per CLAUDE.md — the NIFTY
+    momentum source), imported lazily; ``yfinance`` ``^NSEI`` is the fallback. No
+    URL/symbol is derived from ``end_date`` (SSRF T-05-08-SSRF).
+    """
+    from_date = end_date - _dt.timedelta(days=400)  # > 6 months of trading history
+    # Primary: jugaad-data NSE index history.
+    try:
+        from jugaad_data.nse import index_df  # deferred — keeps import offline
+
+        df = index_df(
+            symbol=NIFTY_INDEX_SYMBOL, from_date=from_date, to_date=end_date
+        )
+        if df is not None and not df.empty:
+            return df
+    except Exception as exc:  # noqa: BLE001 - fall through to yfinance
+        logger.info("jugaad-data NIFTY history miss: %s", exc)
+
+    # Fallback: yfinance ^NSEI.
+    try:
+        import yfinance as yf  # deferred
+
+        hist = yf.Ticker(NIFTY_YF_TICKER).history(
+            start=from_date, end=end_date + _dt.timedelta(days=1)
+        )
+        if hist is not None and not hist.empty:
+            return hist
+    except Exception as exc:  # noqa: BLE001 - honest miss => None
+        logger.info("yfinance NIFTY history miss: %s", exc)
+
+    return None
+
+
+def fetch_india_vix(
+    as_of: _dt.date,
+) -> float | None:  # pragma: no cover - live only
+    """India-VIX level as-of ``as_of`` (jugaad-data → yfinance → None).
+
+    Returns the most-recent India-VIX close at or before ``as_of`` as a float, or
+    ``None`` (→ NaN, RETAINED) when neither source has the level — never a
+    fabricated value. Callers pass ``as_of = T0−1`` so the level is strictly
+    pre-open (D5-08, ``available_at <= T0``).
+
+    jugaad-data ``index_df`` is primary (lazy import), ``yfinance`` ``^INDIAVIX``
+    the fallback; no symbol/URL is derived from ``as_of`` (SSRF T-05-08-SSRF).
+    """
+    from_date = as_of - _dt.timedelta(days=10)  # a short window to find the last close
+    # Primary: jugaad-data NSE index history.
+    try:
+        from jugaad_data.nse import index_df  # deferred
+
+        df = index_df(
+            symbol=INDIA_VIX_SYMBOL, from_date=from_date, to_date=as_of
+        )
+        if df is not None and not df.empty and "CLOSE" in df.columns:
+            close = coerce_price(df.iloc[-1]["CLOSE"])
+            if close is not None:
+                return close
+    except Exception as exc:  # noqa: BLE001 - fall through to yfinance
+        logger.info("jugaad-data India VIX miss: %s", exc)
+
+    # Fallback: yfinance ^INDIAVIX.
+    try:
+        import yfinance as yf  # deferred
+
+        hist = yf.Ticker(INDIA_VIX_YF_TICKER).history(
+            start=from_date, end=as_of + _dt.timedelta(days=1)
+        )
+        if hist is not None and not hist.empty and "Close" in hist.columns:
+            close = coerce_price(float(hist.iloc[-1]["Close"]))
+            if close is not None:
+                return close
+    except Exception as exc:  # noqa: BLE001 - honest miss => None
+        logger.info("yfinance India VIX miss: %s", exc)
+
+    return None
+
+
 __all__ = [
     "ALLOWED_HOSTS",
     "CHITTORGARH_IPO_INDEX",
     "NSE_PAST_ISSUES_URL",
     "SEBI_PUBLIC_ISSUES_URL",
     "CHITTORGARH_WITHDRAWN_REPORT",
+    "NIFTY_INDEX_SYMBOL",
+    "INDIA_VIX_SYMBOL",
     "coerce_price",
     "coerce_date",
     "normalize_status",
@@ -554,4 +666,6 @@ __all__ = [
     "fetch_chittorgarh_index",
     "fetch_sebi_offer_documents",
     "fetch_listing_day_close",
+    "fetch_nifty_history",
+    "fetch_india_vix",
 ]

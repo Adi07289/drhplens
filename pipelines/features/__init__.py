@@ -16,21 +16,36 @@ ROADMAP SC-5 T0-issue-open definition is canonical (note the reconciliation).
 A feature whose ``available_at`` resolves *after* T0 is look-ahead leakage and the
 builder RAISES (see ``build.build_features`` / ``build.LeakageError``).
 
-Thin slice (D5-06a — issue-structure only)
-------------------------------------------
-This module owns **only** family (a) of RESEARCH §Pattern 3: the issue-structure
-features, every one of which is disclosed in the DRHP/RHP by its filing date and
-is therefore ``available_at <= T0`` by construction:
+Candidate pool — four families (D5-06, 05-08)
+---------------------------------------------
+This module owns the FULL candidate feature pool of RESEARCH §Pattern 3, each
+feature stamped with a verified ``available_at <= T0`` rule:
 
-  * ``issue_size_cr``          — total issue size, ₹ crore
-  * ``price_band_width_pct``   — (band_high − band_low) / band_low, %
-  * ``ofs_fraction``           — offer-for-sale share of the issue (0..1)
-  * ``promoter_dilution_pct``  — promoter holding reduction at the issue, %
-  * ``lot_size``               — bid-lot size / minimum-investment proxy
+  * **(a) Issue structure** (``AVAILABLE_AT_FILING``, DRHP/RHP filing date ≤ T0):
+    ``issue_size_cr``, ``price_band_width_pct``, ``ofs_fraction``,
+    ``promoter_dilution_pct``, ``lot_size``.
+  * **(b) Market regime** (``AVAILABLE_AT_PREOPEN``, T0−1 EOD snapshot ≤ T0):
+    ``nifty_mom_3m``, ``nifty_mom_6m`` (NIFTY trailing 3M/6M return %),
+    ``india_vix`` (level), ``ipo_pipeline_density`` (count of recent PRIOR
+    listings, panel-derived), ``trailing_listing_gain`` (mean listing-day return
+    of the trailing-N PRIOR listings, panel-derived). Turns P6 regime-shift
+    blindness into signal.
+  * **(c) DRHP-derived** (``AVAILABLE_AT_FILING``, prospectus filing date ≤ T0):
+    Phase-2 financials (``revenue_growth``, ``ebitda_margin``, ``roe``,
+    ``debt_to_equity``) + Phase-3 NLP extraction (``red_flag_count``,
+    ``rpt_intensity``, ``use_of_proceeds_mix``, ``promoter_holding_pct``) — the
+    "NLP fused INTO the model" narrative. Read allow-list-gated from
+    ``data/snapshots`` / ``data/redflag``.
+  * **(d) Anchor demand** (``AVAILABLE_AT_PREOPEN``, anchor allocation disclosed
+    T0−1 ≤ T0 — BORDERLINE, audited): ``anchor_book_cr``,
+    ``anchor_investor_quality``, ``anchor_lockin_frac``. The ONE legitimate T0
+    demand proxy; read ONLY the pre-open allocation (``anchor_leakage_audit``,
+    D5-08). Post-open QIB/NII/RII subscription is EXCLUDED by construction.
 
-Regime (b), DRHP-derived (c) and anchor-demand (d) feature families are
-DELIBERATELY DEFERRED to 05-08 (D5-05 verified-subset-first) so the end-to-end
-model chain can land first. Do NOT add them here.
+The wide pool is curated to a LEAN ~8–15 production set in
+``pipelines/features/select.py`` (``SELECTED_FEATURES``, D5-07). Families (b)/(c)/(d)
+were deliberately deferred out of the 05-04 thin slice (D5-05 verified-subset-first)
+and land here in 05-08 on top of the same contract + leakage gate.
 
 Honesty invariants
 -------------------
@@ -72,27 +87,58 @@ T0_RULE: str = (
 # ---------------------------------------------------------------------------
 # available_at rule tokens (RESEARCH §Pattern 3 family column)
 # ---------------------------------------------------------------------------
-# Family (a) issue-structure features are all disclosed at the DRHP/RHP filing
-# date, which is on or before issue open (<= T0). This is the ONLY rule this thin
-# slice uses; the regime / anchor rule tokens (T0-1 EOD snapshot, pre-open anchor
-# allocation) land with families (b)/(d) in 05-08.
+# Family (a) issue-structure and (c) DRHP-derived features are all disclosed at
+# the DRHP/RHP filing date, which is on or before issue open (<= T0).
 AVAILABLE_AT_FILING: str = "filing_date"
 
+# Family (b) market-regime and (d) anchor-demand features resolve to the pre-open
+# (T0-1 EOD) snapshot — the day before issue open — so they are strictly < T0
+# (hence <= T0). Regime = the NIFTY/VIX/pipeline snapshot taken the evening before
+# issue open; anchor = the anchor allocation disclosed T0-1 (D5-08 BORDERLINE).
+# Never a T0+ value (that would be look-ahead leakage).
+AVAILABLE_AT_PREOPEN: str = "preopen_snapshot"
+
 # ---------------------------------------------------------------------------
-# Feature contract (issue-structure only, D5-06a) — declaration only
+# Feature contract (four candidate families, D5-06) — declaration only
 # ---------------------------------------------------------------------------
 # Ordered mapping: feature name -> (dtype, available_at rule). Mirrors the
 # PANEL_COLUMNS/PANEL_DTYPES/STATUS_VALUES contract grammar in
 # pipelines/historical/__init__.py. dtypes are all float64 so a missing value is
-# NaN-retained (replace-with-NaN honesty) — including lot_size (int would swallow
-# the NaN and fabricate a value).
+# NaN-retained (replace-with-NaN honesty) — including lot_size and any count (int
+# would swallow the NaN and fabricate a value).
+#
+# Family (a) issue-structure (05-04) + family (b) market-regime (05-08). Families
+# (c) DRHP-derived + (d) anchor-demand are appended below.
 FEATURE_SPECS: dict[str, tuple[str, str]] = {
+    # (a) issue structure — DRHP/RHP filing date <= T0
     "issue_size_cr": ("float64", AVAILABLE_AT_FILING),
     "price_band_width_pct": ("float64", AVAILABLE_AT_FILING),
     "ofs_fraction": ("float64", AVAILABLE_AT_FILING),
     "promoter_dilution_pct": ("float64", AVAILABLE_AT_FILING),
     "lot_size": ("float64", AVAILABLE_AT_FILING),
+    # (b) market regime (D5-06b, P6) — T0-1 EOD snapshot <= T0
+    "nifty_mom_3m": ("float64", AVAILABLE_AT_PREOPEN),
+    "nifty_mom_6m": ("float64", AVAILABLE_AT_PREOPEN),
+    "india_vix": ("float64", AVAILABLE_AT_PREOPEN),
+    "ipo_pipeline_density": ("float64", AVAILABLE_AT_PREOPEN),
+    "trailing_listing_gain": ("float64", AVAILABLE_AT_PREOPEN),
 }
+
+# Ordered feature-name groups per family (for the leakage audit + build wiring).
+ISSUE_STRUCTURE_FEATURES: tuple[str, ...] = (
+    "issue_size_cr",
+    "price_band_width_pct",
+    "ofs_fraction",
+    "promoter_dilution_pct",
+    "lot_size",
+)
+REGIME_FEATURES: tuple[str, ...] = (
+    "nifty_mom_3m",
+    "nifty_mom_6m",
+    "india_vix",
+    "ipo_pipeline_density",
+    "trailing_listing_gain",
+)
 
 # The ordered feature names (the analog of PANEL_COLUMNS).
 FEATURE_COLUMNS: tuple[str, ...] = tuple(FEATURE_SPECS.keys())
@@ -136,10 +182,13 @@ __all__ = [
     "T0_COLUMN",
     "T0_RULE",
     "AVAILABLE_AT_FILING",
+    "AVAILABLE_AT_PREOPEN",
     "FEATURE_SPECS",
     "FEATURE_COLUMNS",
     "FEATURE_DTYPES",
     "FEATURE_AVAILABLE_AT",
+    "ISSUE_STRUCTURE_FEATURES",
+    "REGIME_FEATURES",
     "EXCLUDED_FROM_MODEL",
     "EXCLUDED_SUBSTRINGS",
 ]
