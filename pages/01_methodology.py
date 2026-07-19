@@ -6,6 +6,10 @@ data-science reviewer — the RAG architecture, the evaluation plan + metrics, t
 honesty guardrails, and the stack. Phase 6 (LAND-01) wires the LIVE eval numbers
 and the failure gallery in; today the targets/gates and status are shown honestly.
 """
+import html
+import json
+from pathlib import Path
+
 import streamlit as st
 
 st.set_page_config(
@@ -97,6 +101,162 @@ st.markdown(
     f'<tbody>{_rows_html}</tbody></table></div>',
     unsafe_allow_html=True,
 )
+
+# ── Forecaster model card ────────────────────────────────────────────────────
+# The destination of the snapshot forecast block's "Full model card →" link (UI-03,
+# FCAST-05). RENDER-ONLY isolation (T-05-10-ISO): this section reads the committed
+# model_card/ artifacts (card_data.json + the calibration/PIT/SHAP PNGs) and imports
+# NO xgboost / mapie / sklearn / shap / model-training module — it never touches the
+# model pipeline (mirrors the 05-07 forecast-block cache-only posture). Every
+# card-derived string is HTML-escaped before interpolation (T-05-10-XSS).
+st.markdown(
+    render_section_head("Forecaster", "The listing-day model card"),
+    unsafe_allow_html=True,
+)
+_MODEL_CARD_DIR = Path(__file__).resolve().parents[1] / "model_card"
+_card_data_path = _MODEL_CARD_DIR / "card_data.json"
+
+
+def _mc_num(value, nd: int = 3) -> str:
+    """Format a card number honestly; NaN / non-numeric renders as an em-dash."""
+    try:
+        num = float(value)
+    except (TypeError, ValueError):
+        return "—"
+    return "—" if num != num else f"{num:.{nd}f}"
+
+
+if not _card_data_path.is_file():
+    st.markdown(
+        '<p class="drhp-method-note drhp-not-disclosed">'
+        "The forecaster model card has not been generated yet.</p>",
+        unsafe_allow_html=True,
+    )
+else:
+    _card = json.loads(_card_data_path.read_text(encoding="utf-8"))
+
+    if _card.get("seed"):
+        st.markdown(
+            '<p class="drhp-method-note">Seed / not-yet-regenerated: these numbers are '
+            "assembled from the current seed artifacts so the card renders offline. "
+            "They regenerate from the live walk-forward at the Phase 5 live build — "
+            "seed numbers are never shown as live results.</p>",
+            unsafe_allow_html=True,
+        )
+
+    # Held-out coverage / MAE / R²-alarm status (the real numbers, P17).
+    _r2_line = (
+        "R² leakage alarm FIRED — see the card."
+        if _card.get("r2_alarm")
+        else f"Out-of-sample median R² = {_mc_num(_card.get('r2'))} ≤ 0.5 — no leakage "
+        "alarm (a humble R² is expected for a pre-apply, no-demand model)."
+    )
+    st.markdown(
+        '<p class="drhp-method-note">Held-out 80% interval coverage '
+        f"<strong>{_mc_num(_card.get('coverage'))}</strong> · mean absolute error "
+        f"<strong>{_mc_num(_card.get('mae_pts'), 2)}</strong> points over "
+        f"{html.escape(str(_card.get('n_scored', '—')))} scored IPOs. "
+        f"{html.escape(_r2_line)}</p>",
+        unsafe_allow_html=True,
+    )
+
+    # Committed diagnostic plots: calibration reliability, PIT histogram, SHAP.
+    for _fname, _cap in (
+        ("calibration.png",
+         "Reliability diagram — nominal vs empirical coverage (held-out)."),
+        ("pit.png",
+         "PIT histogram — grid-derived; a flat histogram means calibrated."),
+        ("shap.png",
+         "Feature importance over the lean feature set."),
+    ):
+        _plot_path = _MODEL_CARD_DIR / _fname
+        if _plot_path.is_file():
+            st.image(str(_plot_path), caption=_cap, use_container_width=True)
+
+    # Four baselines + Diebold–Mariano table with the P9 release-gate verdict.
+    _gate = "PASS" if _card.get("gate_passed") else "FAIL"
+    _dm_rows = "".join(
+        f'<tr><td class="m-name">{html.escape(str(b.get("name", "")))}</td>'
+        f'<td class="m-target">{_mc_num(b.get("dm_stat"))}</td>'
+        f'<td class="m-target">{_mc_num(b.get("p_value"))}</td>'
+        f'<td class="m-status">{html.escape(str(b.get("verdict", "")))}</td></tr>'
+        for b in _card.get("baselines", [])
+    )
+    st.markdown(
+        '<p class="drhp-method-note">Four naive baselines under the identical '
+        "as-of-T0 protocol, tested with Diebold–Mariano (Harvey-corrected). "
+        f"<strong>P9 release gate: {_gate}.</strong></p>"
+        '<div class="drhp-metrics-wrap"><table class="drhp-metrics">'
+        "<thead><tr><th>Baseline</th><th>DM stat</th><th>p-value</th>"
+        "<th>Verdict</th></tr></thead>"
+        f"<tbody>{_dm_rows}</tbody></table></div>",
+        unsafe_allow_html=True,
+    )
+
+    # available_at ≤ T0 leakage audit (the lean feature list) + the anchor pre-open
+    # audit (D5-08).
+    _leak_rows = "".join(
+        f'<tr><td class="m-name">{html.escape(str(r.get("feature", "")))}</td>'
+        f'<td class="m-how">{html.escape(str(r.get("family", "")))}</td>'
+        f'<td class="m-target">{html.escape(str(r.get("available_at_rule", "")))}</td>'
+        f'<td class="m-status">{html.escape(str(r.get("verdict", "")))}</td></tr>'
+        for r in _card.get("leakage_audit", [])
+    )
+    st.markdown(
+        '<p class="drhp-method-note">Every feature carries a verified '
+        "<code>available_at ≤ T0</code> stamp — the leakage gate that keeps the model "
+        "honest (FCAST-02).</p>"
+        '<div class="drhp-metrics-wrap"><table class="drhp-metrics">'
+        "<thead><tr><th>Feature</th><th>Family</th><th>available_at</th>"
+        "<th>Verdict</th></tr></thead>"
+        f"<tbody>{_leak_rows}</tbody></table></div>",
+        unsafe_allow_html=True,
+    )
+
+    _anchor_rows = "".join(
+        f'<tr><td class="m-name">{html.escape(str(r.get("feature", "")))}</td>'
+        f'<td class="m-how">{html.escape(str(r.get("source_field", "")))}</td>'
+        f'<td class="m-target">{html.escape(str(r.get("disclosure_timestamp", "")))}</td>'
+        f'<td class="m-status">{html.escape(str(r.get("verdict", "")))}</td></tr>'
+        for r in _card.get("anchor_audit", [])
+    )
+    st.markdown(
+        '<p class="drhp-method-note">Anchor pre-open leakage audit (D5-08): only the '
+        "pre-open anchor allocation (disclosed T0−1) may be read — post-open book-build "
+        "demand can never be a feature.</p>"
+        '<div class="drhp-metrics-wrap"><table class="drhp-metrics">'
+        "<thead><tr><th>Anchor feature</th><th>Pre-open source</th><th>Disclosed</th>"
+        "<th>Verdict</th></tr></thead>"
+        f"<tbody>{_anchor_rows}</tbody></table></div>",
+        unsafe_allow_html=True,
+    )
+
+    # N-per-sector thinness report (D5-10).
+    _sector_rows = "".join(
+        f'<tr><td class="m-name">{html.escape(str(_sector))}</td>'
+        f'<td class="m-target">{html.escape(str(_n))}</td></tr>'
+        for _sector, _n in sorted(_card.get("n_per_sector", {}).items())
+    )
+    st.markdown(
+        '<p class="drhp-method-note">N per sector (D5-10): thin sectors are pooled into '
+        "<code>Other</code> so a small slice never becomes a noise-prone single value; "
+        "the original counts stay visible.</p>"
+        '<div class="drhp-metrics-wrap"><table class="drhp-metrics">'
+        "<thead><tr><th>Sector</th><th>N</th></tr></thead>"
+        f"<tbody>{_sector_rows}</tbody></table></div>",
+        unsafe_allow_html=True,
+    )
+
+    # Known limitations — the honest D5-01 grid (low R² is a feature, not a bug).
+    _lim_cards = "".join(
+        f'<div class="drhp-hiw-card"><h3>{html.escape(str(_lim.get("title", "")))}</h3>'
+        f'<p>{html.escape(str(_lim.get("body", "")))}</p></div>'
+        for _lim in _card.get("limitations", [])
+    )
+    st.markdown(
+        f'<div class="drhp-hiw drhp-guard-grid">{_lim_cards}</div>',
+        unsafe_allow_html=True,
+    )
 
 # ── Honesty guardrails ───────────────────────────────────────────────────────
 st.markdown(render_section_head("Guardrails", "Safe by design"), unsafe_allow_html=True)
