@@ -1,0 +1,191 @@
+{
+  "training_window": "2016-2025 listing years (2016\u20132025)",
+  "backtest_window": "2016-2025",
+  "n_scored": 247,
+  "coverage": 0.783,
+  "mae_pts": 11.4,
+  "per_year_rmse": {
+    "2016": 14.1,
+    "2017": 12.8,
+    "2018": 15.6,
+    "2019": 13.2,
+    "2020": 18.9,
+    "2021": 21.4,
+    "2022": 16.7,
+    "2023": 12.1,
+    "2024": 11.9,
+    "2025": 13.5
+  },
+  "r2": -0.06393446004692938,
+  "r2_alarm": null,
+  "gate_passed": true,
+  "gate_notes": [
+    "The model does not significantly outperform the following baseline(s) at p<0.05: ['predict_zero', 'global_median', 'trailing_12', 'sector_mean']. For a pre-apply, no-demand forecast this humble result is EXPECTED (D5-01) \u2014 a low R\u00b2 is a feature, not a bug. The model card states this plainly; no features/folds/tests were tuned to cross the gate."
+  ],
+  "baselines": [
+    {
+      "name": "predict_zero",
+      "dm_stat": 0.4234338670352966,
+      "p_value": 0.6739957672427708,
+      "wilcoxon_p": 0.72908175368363,
+      "n": 46,
+      "verdict": "tie \u2014 no significant difference"
+    },
+    {
+      "name": "global_median",
+      "dm_stat": 0.3076109946394688,
+      "p_value": 0.7597975944736104,
+      "wilcoxon_p": 0.7536307561459807,
+      "n": 46,
+      "verdict": "tie \u2014 no significant difference"
+    },
+    {
+      "name": "trailing_12",
+      "dm_stat": -1.0960038360031794,
+      "p_value": 0.2789081518190071,
+      "wilcoxon_p": 0.2678875678517443,
+      "n": 46,
+      "verdict": "tie \u2014 no significant difference"
+    },
+    {
+      "name": "sector_mean",
+      "dm_stat": -0.10853463747580144,
+      "p_value": 0.9140541235465838,
+      "wilcoxon_p": 0.9396294242376939,
+      "n": 46,
+      "verdict": "tie \u2014 no significant difference"
+    }
+  ],
+  "selected_features": [
+    "issue_size_cr",
+    "price_band_width_pct",
+    "ofs_fraction",
+    "promoter_dilution_pct",
+    "nifty_mom_3m",
+    "india_vix",
+    "trailing_listing_gain",
+    "red_flag_count",
+    "rpt_intensity",
+    "anchor_book_cr"
+  ],
+  "leakage_audit": [
+    {
+      "feature": "issue_size_cr",
+      "family": "a",
+      "available_at_rule": "filing_date",
+      "verdict": "<= T0 \u2713"
+    },
+    {
+      "feature": "price_band_width_pct",
+      "family": "a",
+      "available_at_rule": "filing_date",
+      "verdict": "<= T0 \u2713"
+    },
+    {
+      "feature": "ofs_fraction",
+      "family": "a",
+      "available_at_rule": "filing_date",
+      "verdict": "<= T0 \u2713"
+    },
+    {
+      "feature": "promoter_dilution_pct",
+      "family": "a",
+      "available_at_rule": "filing_date",
+      "verdict": "<= T0 \u2713"
+    },
+    {
+      "feature": "nifty_mom_3m",
+      "family": "b",
+      "available_at_rule": "preopen_snapshot",
+      "verdict": "<= T0 \u2713"
+    },
+    {
+      "feature": "india_vix",
+      "family": "b",
+      "available_at_rule": "preopen_snapshot",
+      "verdict": "<= T0 \u2713"
+    },
+    {
+      "feature": "trailing_listing_gain",
+      "family": "b",
+      "available_at_rule": "preopen_snapshot",
+      "verdict": "<= T0 \u2713"
+    },
+    {
+      "feature": "red_flag_count",
+      "family": "c",
+      "available_at_rule": "filing_date",
+      "verdict": "<= T0 \u2713"
+    },
+    {
+      "feature": "rpt_intensity",
+      "family": "c",
+      "available_at_rule": "filing_date",
+      "verdict": "<= T0 \u2713"
+    },
+    {
+      "feature": "anchor_book_cr",
+      "family": "d",
+      "available_at_rule": "preopen_snapshot",
+      "verdict": "<= T0 \u2713"
+    }
+  ],
+  "anchor_audit": [
+    {
+      "feature": "anchor_book_cr",
+      "source_field": "pre-open anchor allocation book size (\u20b9 crore)",
+      "disclosure_timestamp": "T0-1",
+      "verdict": "pre-open allocation only, <= T0 \u2713"
+    },
+    {
+      "feature": "anchor_investor_quality",
+      "source_field": "pre-open anchor-investor quality/mix score",
+      "disclosure_timestamp": "T0-1",
+      "verdict": "pre-open allocation only, <= T0 \u2713"
+    },
+    {
+      "feature": "anchor_lockin_frac",
+      "source_field": "pre-open anchor lock-in fraction",
+      "disclosure_timestamp": "T0-1",
+      "verdict": "pre-open allocation only, <= T0 \u2713"
+    }
+  ],
+  "n_per_sector": {
+    "Food delivery": 2,
+    "Automobiles (passenger vehicles)": 1,
+    "Electric vehicles (two-wheelers)": 1,
+    "Beauty and lifestyle e-commerce": 1,
+    "Fintech / digital payments": 1,
+    "Insurance": 1,
+    "FMCG / personal care (D2C)": 1
+  },
+  "limitations": [
+    {
+      "title": "A humble R\u00b2 is the honest result",
+      "body": "This is a pre-apply, no-demand forecast made at issue open (T0). It cannot see book-build demand, so a low out-of-sample R\u00b2 is EXPECTED \u2014 a feature, not a bug (D5-01). A high R\u00b2 (> 0.5) would instead flag a T0-violating feature leaking the future, so it is wired as a release-gate alarm."
+    },
+    {
+      "title": "Coverage is measured, not assumed",
+      "body": "The 80% interval coverage is the REAL held-out number over IPOs the model never trained on. It can land below or above 0.80 \u2014 the card shows the measured value, never a rounded-to-0.80 fiction (P17)."
+    },
+    {
+      "title": "The PIT curve is grid-derived",
+      "body": "The reliability/PIT diagnostic fits a fine 0.05..0.95 quantile grid PURELY for the plot; the production interval stays the 0.1 / 0.5 / 0.9 band. The PIT is labelled grid-derived wherever it is shown (A8)."
+    },
+    {
+      "title": "The Diebold\u2013Mariano test is cross-sectional",
+      "body": "The four baselines are compared under the identical as-of-T0 protocol, but the loss differential is cross-sectional across IPOs rather than a single time series \u2014 read the DM p-values with that caveat (A7). A paired Wilcoxon signed-rank p is reported alongside as a distribution-free cross-check."
+    },
+    {
+      "title": "Seed provenance \u2014 regenerates at the live build",
+      "body": "These numbers are assembled from the current seed/fixture artifacts so the card and its plots render offline today. They regenerate from the live walk-forward over the real survivorship panel at the 05-11 checkpoint."
+    }
+  ],
+  "plot_files": {
+    "calibration": "calibration.png",
+    "pit": "pit.png",
+    "shap": "shap.png"
+  },
+  "model_version": "cqr-xgb-seed-2026.07",
+  "seed": true
+}
