@@ -3,18 +3,18 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-07-19T13:55:19Z"
+last_updated: "2026-07-20T00:00:00Z"
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 36
-  completed_plans: 33
-  percent: 92
+  completed_plans: 34
+  percent: 94
 ---
 
 # STATE: DRHPLens
 
-**Last Updated:** 2026-07-19
+**Last Updated:** 2026-07-20
 
 ## Project Reference
 
@@ -29,9 +29,9 @@ progress:
 ## Current Position
 
 Phase: 05 (calibrated-listing-day-forecaster) — EXECUTING
-Plan: 05-09 complete (Wave 7 — four baselines + inline Diebold–Mariano + P9 release gate + D5-09 abstention) → next 05-10 (model card) / 05-11 (live build)
-**Status:** Ready to execute the next Wave 8 plan (05-10)
-**Progress:** [█████████░] 92%
+Plan: 05-10 complete (Wave 8 — committed model card: calibration/PIT/SHAP PNGs + MODEL_CARD.md assembled from computed inputs + the /methodology model-card render, all seed/CODE-NOW-DEFER) → next 05-11 (live build + on-device human-verify checkpoint)
+**Status:** Ready to execute 05-11 (the live walk-forward run that regenerates the real records + card + PNGs and runs the P9 gate on the real panel)
+**Progress:** [█████████░] 94%
 
 ## Phase Map
 
@@ -79,6 +79,14 @@ Plan: 05-09 complete (Wave 7 — four baselines + inline Diebold–Mariano + P9 
 - ANCHOR_COPY D-07 byte-for-byte in compliance/disclaimer_text.py — single source of truth
 - Import-time scrubber assertion in ui/copy.py is the TRUST-03 anchor (fails fast on banned-token regressions in our own copy)
 - REFUSAL_BANNED_TOKEN_COPY reworded to avoid "recommendation" which the scrubber correctly blocked
+
+### Key Decisions (from Wave 8 — 05-10 model card)
+
+- Diagnostic PLOTS (calibration / PIT / SHAP) import matplotlib/shap LAZILY + force the Agg headless backend, so `diagnostics.py` module import stays offline; `global_metrics` (05-06) left byte-identical
+- The reliability/PIT diagnostic derives a fine 0.05..0.95 quantile grid from the committed 0.1/0.5/0.9 band via a Gaussian working σ (A8) — PURELY for the plot; the production interval is unchanged, and the plot is labelled grid-derived. The calibration annotation uses the REAL held-out coverage (`global_metrics`, never 0.80-rounded, P17)
+- MODEL_CARD.md is assembled from COMPUTED inputs (seed forecast-record metrics + a live walk-forward release_gate DM table + static leakage/anchor audits + real catalogue n-per-sector), never hand-narrated; a prominent SEED / NOT-YET-REGENERATED banner makes CODE-NOW-DEFER explicit (regenerates at 05-11)
+- `card.py` writes BOTH `model_card/MODEL_CARD.md` and `model_card/card_data.json`; the render-only `/methodology` page reads the JSON + PNGs (T-05-10-ISO) so it imports NO xgboost/mapie/sklearn/shap/model module. The `shap.png` filename reference is import-audited (not bare-substring) — the documented `shape`→`shap` gotcha
+- Seed P9 gate PASSES honestly on the synthetic fixture (R²=-0.064 ≤ 0.5; no baseline significantly beats the model — the D5-01 "does not significantly outperform" humble case), not p-hacked
 
 ### Cross-Cutting Invariants (from PITFALLS.md)
 

@@ -161,7 +161,7 @@ Plans:
 
 **Wave 8** *(blocked on Wave 7 completion)*
 
-- [ ] 05-10-PLAN.md — calibration plot + PIT histogram + SHAP + MODEL_CARD.md + /methodology render
+- [x] 05-10-PLAN.md — calibration plot + PIT histogram + SHAP + MODEL_CARD.md + /methodology render
 
 **Wave 9** *(blocked on Wave 8 completion)*
 
