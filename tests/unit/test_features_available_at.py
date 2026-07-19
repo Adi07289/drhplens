@@ -62,7 +62,15 @@ def _enriched_panel(n: int = 40, seed: int = 0) -> pd.DataFrame:
 
 
 def test_build_features_returns_exactly_feature_columns_bare_panel():
-    """A bare panel (no feature columns) still builds: all-NaN X, columns correct."""
+    """A bare panel builds exactly FEATURE_COLUMNS; sourceless families stay NaN.
+
+    A bare synthetic panel has no issue-structure feature columns, no drhp_id (no
+    DRHP cache), no anchor columns, and the live-deferred nifty/vix fetchers have
+    written nothing — so every family (a)/(c)/(d) value + nifty/vix is NaN-retained
+    (never fabricated 0). The two PANEL-DERIVED regime features
+    (ipo_pipeline_density / trailing_listing_gain) ARE computed from the panel's
+    prior listings, so they are legitimately not-all-NaN.
+    """
     panel = synthetic_panel(n=30, seed=3)
     x, avail = build_features(panel)
 
@@ -75,8 +83,33 @@ def test_build_features_returns_exactly_feature_columns_bare_panel():
     assert "gmp" not in x.columns
     assert not any("subscri" in c for c in x.columns)
     assert not any("listing_day" in c for c in x.columns)
-    # a bare panel has no feature values -> every value NaN-retained (never 0)
-    assert x.isna().all().all()
+
+    # sourceless families are NaN-retained (never fabricated 0): issue-structure (a),
+    # the fetch-based regime features, DRHP-derived (c), and anchor (d).
+    sourceless = [
+        "issue_size_cr",
+        "price_band_width_pct",
+        "ofs_fraction",
+        "promoter_dilution_pct",
+        "lot_size",
+        "nifty_mom_3m",
+        "nifty_mom_6m",
+        "india_vix",
+        "revenue_growth",
+        "ebitda_margin",
+        "roe",
+        "debt_to_equity",
+        "red_flag_count",
+        "rpt_intensity",
+        "use_of_proceeds_mix",
+        "promoter_holding_pct",
+        "anchor_book_cr",
+        "anchor_investor_quality",
+        "anchor_lockin_frac",
+    ]
+    assert x[sourceless].isna().all().all()
+    # the panel-derived regime features are computed (density is an honest count).
+    assert x["ipo_pipeline_density"].notna().any()
 
 
 def test_build_features_enriched_panel_values_and_t0_gate():

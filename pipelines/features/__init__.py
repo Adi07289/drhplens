@@ -122,6 +122,19 @@ FEATURE_SPECS: dict[str, tuple[str, str]] = {
     "india_vix": ("float64", AVAILABLE_AT_PREOPEN),
     "ipo_pipeline_density": ("float64", AVAILABLE_AT_PREOPEN),
     "trailing_listing_gain": ("float64", AVAILABLE_AT_PREOPEN),
+    # (c) DRHP-derived (D5-06c) — prospectus filing date <= T0 (Phase 2 + Phase 3)
+    "revenue_growth": ("float64", AVAILABLE_AT_FILING),
+    "ebitda_margin": ("float64", AVAILABLE_AT_FILING),
+    "roe": ("float64", AVAILABLE_AT_FILING),
+    "debt_to_equity": ("float64", AVAILABLE_AT_FILING),
+    "red_flag_count": ("float64", AVAILABLE_AT_FILING),
+    "rpt_intensity": ("float64", AVAILABLE_AT_FILING),
+    "use_of_proceeds_mix": ("float64", AVAILABLE_AT_FILING),
+    "promoter_holding_pct": ("float64", AVAILABLE_AT_FILING),
+    # (d) anchor-investor demand (D5-06d, D5-08 BORDERLINE) — pre-open T0-1 <= T0
+    "anchor_book_cr": ("float64", AVAILABLE_AT_PREOPEN),
+    "anchor_investor_quality": ("float64", AVAILABLE_AT_PREOPEN),
+    "anchor_lockin_frac": ("float64", AVAILABLE_AT_PREOPEN),
 }
 
 # Ordered feature-name groups per family (for the leakage audit + build wiring).
@@ -139,6 +152,31 @@ REGIME_FEATURES: tuple[str, ...] = (
     "ipo_pipeline_density",
     "trailing_listing_gain",
 )
+# (c) DRHP-derived: Phase-2 financials (numeric) + Phase-3 NLP extraction.
+DRHP_FEATURES: tuple[str, ...] = (
+    "revenue_growth",
+    "ebitda_margin",
+    "roe",
+    "debt_to_equity",
+    "red_flag_count",
+    "rpt_intensity",
+    "use_of_proceeds_mix",
+    "promoter_holding_pct",
+)
+# (d) anchor-investor demand — the pre-open allocation ONLY (D5-08 audited).
+ANCHOR_FEATURES: tuple[str, ...] = (
+    "anchor_book_cr",
+    "anchor_investor_quality",
+    "anchor_lockin_frac",
+)
+
+# feature -> family letter ("a"/"b"/"c"/"d"), for the leakage audit + build wiring.
+FEATURE_FAMILY: dict[str, str] = {
+    **{name: "a" for name in ISSUE_STRUCTURE_FEATURES},
+    **{name: "b" for name in REGIME_FEATURES},
+    **{name: "c" for name in DRHP_FEATURES},
+    **{name: "d" for name in ANCHOR_FEATURES},
+}
 
 # The ordered feature names (the analog of PANEL_COLUMNS).
 FEATURE_COLUMNS: tuple[str, ...] = tuple(FEATURE_SPECS.keys())
@@ -161,6 +199,12 @@ FEATURE_AVAILABLE_AT: dict[str, str] = {
 # EXCLUDED BY CONSTRUCTION: they are either post-T0 (subscription closes after
 # issue open; listing-day price is the target) or compliance-barred/circular (GMP).
 # The builder asserts none of these tokens is ever a built column.
+#
+# D5-08 (anchor leakage audit): the anchor-demand family (d) reads ONLY the
+# PRE-OPEN anchor allocation (disclosed T0-1). The POST-OPEN QIB/NII/RII
+# subscription multiples that close AFTER issue open are named here so the builder
+# can assert they never appear as a built column — ``anchor_leakage_audit`` asserts
+# the same. GMP and final subscription remain excluded by construction.
 EXCLUDED_FROM_MODEL: frozenset[str] = frozenset(
     {
         "gmp",                    # grey-market premium — compliance-barred + circular
@@ -189,6 +233,9 @@ __all__ = [
     "FEATURE_AVAILABLE_AT",
     "ISSUE_STRUCTURE_FEATURES",
     "REGIME_FEATURES",
+    "DRHP_FEATURES",
+    "ANCHOR_FEATURES",
+    "FEATURE_FAMILY",
     "EXCLUDED_FROM_MODEL",
     "EXCLUDED_SUBSTRINGS",
 ]
