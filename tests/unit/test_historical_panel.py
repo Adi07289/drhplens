@@ -33,6 +33,7 @@ from pipelines.historical import (
     coerce_panel,
     compute_listing_day_return,
 )
+from pipelines.historical import sources as _S
 from pipelines.historical.validate import (
     BAND_UPPER,
     MAAR_BASELINE,
@@ -381,3 +382,155 @@ def test_committed_sample_csv_mirror_matches_parquet_rows():
     pq_df = coerce_panel(pd.read_parquet(_SAMPLE_PARQUET))
     assert len(csv_df) == len(pq_df)
     assert set(csv_df["status"].unique()) == set(pq_df["status"].unique())
+
+
+# ---------------------------------------------------------------------------
+# 5. Live-source contract fixes (05-11) — confirmed at the live pull, proven
+#    OFFLINE here (canned payloads / monkeypatched fetchers, no network):
+#      - coerce_date handles the DD-Mon-YYYY shape both live sources use
+#      - the NSE parser maps the CONFIRMED keys (ipoStartDate) and keeps `symbol`
+#      - the chittorgarh withdrawn overlay is parsed from the webnodejs JSON API
+#      - build_panel enriches the listing-day close (the previously-unwired target)
+# ---------------------------------------------------------------------------
+
+
+def test_coerce_date_parses_dd_mon_yyyy_from_both_live_sources():
+    # NSE past-issues DD-MON-YYYY (uppercase) + chittorgarh DD-Mon-YYYY.
+    assert _S.coerce_date("14-JUL-2026") == dt.date(2026, 7, 14)
+    assert _S.coerce_date("19-Aug-2024") == dt.date(2024, 8, 19)
+    assert _S.coerce_date("01-May-2025") == dt.date(2025, 5, 1)
+    # Still None on junk (never fabricated).
+    assert _S.coerce_date("-") is None
+    assert _S.coerce_date("not a date") is None
+
+
+def test_parse_nse_past_issue_maps_confirmed_keys_and_keeps_symbol():
+    row = _S._parse_nse_past_issue(
+        {
+            "company": "Example Foods Limited",
+            "symbol": "EXFOODS",
+            "htmSym": "exfoods",
+            "ipoStartDate": "05-AUG-2024",
+            "listingDate": "12-AUG-2024",
+            "issuePrice": "240",
+            "priceRange": "Rs.230 to Rs.240",
+            "securityType": "EQ",
+        }
+    )
+    assert row["issuer"] == "Example Foods Limited"
+    assert row["symbol"] == "EXFOODS"  # threaded for listing-day-close enrichment
+    assert row["issue_date"] == dt.date(2024, 8, 5)  # ipoStartDate — NOT None
+    assert row["listing_date"] == dt.date(2024, 8, 12)
+    assert row["issue_price"] == pytest.approx(240.0)
+    # A not-yet-priced upcoming row: issuePrice/listingDate "-" => None (never faked).
+    upcoming = _S._parse_nse_past_issue(
+        {
+            "company": "Upcoming Ltd",
+            "symbol": "UPC",
+            "ipoStartDate": "14-JUL-2026",
+            "listingDate": "-",
+            "issuePrice": "-",
+        }
+    )
+    assert upcoming["issue_date"] == dt.date(2026, 7, 14)
+    assert upcoming["listing_date"] is None
+    assert upcoming["issue_price"] is None
+
+
+_CHITTORGARH_202_PAYLOAD = {
+    "msg": 1,
+    "reportTableData": [
+        {
+            "Company": (
+                '<a href="https://www.chittorgarh.com/ipo/ecom-express-ipo/2235/" '
+                'title="Ecom Express Ltd. IPO Offer Document Withdrawn">'
+                "Ecom Express Ltd. </a>"
+            ),
+            "Offer Type": "IPO",
+            "Offer Document Filed with SEBI": "19-Aug-2024",
+            "Offer Document Withdrawn": "01-May-2025",
+        },
+        {
+            "Company": '<a href="/ipo/foo/1/">Foo Industries Ltd</a>',
+            "Offer Type": "IPO",
+            "Offer Document Filed with SEBI": "03-Feb-2023",
+        },
+    ],
+}
+
+
+def test_parse_chittorgarh_withdrawn_payload_extracts_issuer_and_marks_withdrawn():
+    rows = _S.parse_chittorgarh_withdrawn_payload(_CHITTORGARH_202_PAYLOAD)
+    assert len(rows) == 2
+    assert rows[0]["issuer"] == "Ecom Express Ltd."  # from the HTML anchor text
+    assert rows[0]["issue_date"] == dt.date(2024, 8, 19)  # DD-Mon-YYYY parsed
+    assert all(r["status_raw"] == "withdrawn" for r in rows)
+    # Empty / non-dict payloads yield no rows (never fabricated).
+    assert _S.parse_chittorgarh_withdrawn_payload({}) == []
+    assert _S.parse_chittorgarh_withdrawn_payload(None) == []
+
+
+def test_recent_fy_end_years_are_contiguous_indian_fys():
+    yrs = _S._recent_fy_end_years(back=5)
+    assert len(yrs) == 5
+    assert yrs == sorted(yrs)
+    assert yrs[-1] - yrs[0] == 4
+
+
+def test_fetch_chittorgarh_withdrawn_dedupes_across_fys(monkeypatch):
+    import json as _json
+
+    # Same payload for every FY -> the two issuers must collapse (dedupe), not
+    # multiply by the number of financial years iterated.
+    monkeypatch.setattr(
+        _S, "_get", lambda url, **kw: _json.dumps(_CHITTORGARH_202_PAYLOAD), raising=True
+    )
+    monkeypatch.setattr(_S, "_save_raw", lambda *a, **k: None, raising=True)
+    rows = _S._fetch_chittorgarh_withdrawn()
+    assert {r["issuer"] for r in rows} == {"Ecom Express Ltd.", "Foo Industries Ltd"}
+    assert all(r["status_raw"] == "withdrawn" for r in rows)
+
+
+def test_build_panel_enriches_listing_closes_into_the_target(monkeypatch):
+    """The 05-11 fix: NSE past-issues carries no listing close, so build_panel must
+    enrich it per symbol — otherwise listing_day_return is all-NaN and the
+    walk-forward has zero scorable rows."""
+    from pipelines.historical import build
+
+    def _nse(from_date, to_date):
+        return [
+            {
+                "issuer": "Enrich Me Ltd",
+                "symbol": "ENRICH",
+                "issue_date": _d("2023-05-01"),
+                "listing_date": _d("2023-05-10"),
+                "issue_price": 100.0,
+                "listing_day_close": None,
+                "status_raw": "listed",
+            },
+            {
+                "issuer": "No Symbol Ltd",
+                "symbol": None,  # can't be enriched -> stays NaN (retained)
+                "issue_date": _d("2023-06-01"),
+                "listing_date": _d("2023-06-10"),
+                "issue_price": 50.0,
+                "listing_day_close": None,
+                "status_raw": "listed",
+            },
+        ]
+
+    closes = {"ENRICH": 115.0}  # +15%; unknown symbols => None (miss, retained NaN)
+    monkeypatch.setattr(build._sources, "fetch_nse_past_issues", _nse, raising=True)
+    monkeypatch.setattr(build._sources, "fetch_sebi_withdrawn", lambda: [], raising=True)
+    monkeypatch.setattr(
+        build._sources, "fetch_listing_day_close",
+        lambda sym, d: closes.get(sym), raising=True,
+    )
+
+    df = build.build_panel(write=False)
+    enrich = df.loc[df["issuer"] == "Enrich Me Ltd"].iloc[0]
+    assert enrich["listing_day_close"] == pytest.approx(115.0)
+    assert enrich["listing_day_return"] == pytest.approx(0.15)  # target now KNOWN
+    # The symbol-less row can't be enriched -> stays NaN (retained, never fabricated).
+    nosym = df.loc[df["issuer"] == "No Symbol Ltd"].iloc[0]
+    assert math.isnan(nosym["listing_day_return"])

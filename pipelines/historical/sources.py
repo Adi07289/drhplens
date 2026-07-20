@@ -43,6 +43,7 @@ ALLOWED_HOSTS: frozenset[str] = frozenset(
         "www.sebi.gov.in",       # issuer-side offer-document filings
         "nsearchives.nseindia.com",  # NSE archives (scrape-friendlier subdomain)
         "www.nseindia.com",      # D5-04: past-issues JSON (listed-core, Source A)
+        "webnodejs.chittorgarh.com",  # 05-11: chittorgarh JSON API (withdrawn report 202)
     }
 )
 
@@ -65,6 +66,12 @@ NSE_HOME_URL = "https://www.nseindia.com/"  # cookie-priming page (bot-detection
 SEBI_PUBLIC_ISSUES_URL = "https://www.sebi.gov.in/filings/public-issues.html"
 CHITTORGARH_WITHDRAWN_REPORT = (
     "https://www.chittorgarh.com/report/ipo-drhp-offer-document-withdrawn/202/"
+)
+# 05-11 (live-confirmed): the withdrawn HTML report migrated to a JS app
+# (soup.find("table") -> None, the 04-07 blocker). Its data is served by the
+# webnodejs JSON API; path = data-read/{report}/{page}/{size}/{fyEnd}/{FY}/0/0.
+CHITTORGARH_WITHDRAWN_API = (
+    "https://webnodejs.chittorgarh.com/cloud/report/data-read/202"
 )
 
 _USER_AGENT = (
@@ -133,7 +140,13 @@ def coerce_date(raw: object) -> _dt.date | None:
     s = str(raw).strip()
     if not s or s in {"-", "—", "NA", "N/A"}:
         return None
-    for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%d %b %Y", "%d %B %Y", "%b %d, %Y"):
+    # "%d-%b-%Y"/"%d-%B-%Y" cover the DD-Mon-YYYY shape both live sources use
+    # (NSE past-issues "14-JUL-2026"; chittorgarh withdrawn "19-Aug-2024") —
+    # confirmed at the 05-11 live pull. strptime %b/%B is case-insensitive.
+    for fmt in (
+        "%Y-%m-%d", "%d-%m-%Y", "%d %b %Y", "%d %B %Y", "%b %d, %Y",
+        "%d-%b-%Y", "%d-%B-%Y",
+    ):
         try:
             return _dt.datetime.strptime(s, fmt).date()
         except ValueError:
@@ -181,14 +194,19 @@ def _session():  # pragma: no cover - exercised only at the live checkpoint
 
 
 def _get(
-    url: str, *, params: dict | None = None, timeout: int = 30
+    url: str,
+    *,
+    params: dict | None = None,
+    headers: dict | None = None,
+    timeout: int = 30,
 ) -> str:  # pragma: no cover - live only
     """GET a hard-coded-host URL with backoff; return response text.
 
     `params` are query-string values (dates, page size) forwarded to the request.
-    The fetched HOST always comes from the module-constant `url` and is still
-    checked by `_check_host` (SSRF T-05-02-SSRF) — no host is ever derived from an
-    argument.
+    `headers` are merged over the session defaults (e.g. a `Referer`/`Accept` the
+    chittorgarh JSON API expects). The fetched HOST always comes from the
+    module-constant `url` and is still checked by `_check_host` (SSRF
+    T-05-02-SSRF) — no host is ever derived from an argument.
     """
     _check_host(url)
     from tenacity import (
@@ -204,7 +222,7 @@ def _get(
     )
     def _do() -> str:
         session = _session()
-        resp = session.get(url, params=params, timeout=timeout)
+        resp = session.get(url, params=params, headers=headers, timeout=timeout)
         resp.raise_for_status()
         return resp.text
 
@@ -362,12 +380,16 @@ def _fetch_nse_past_issues_payload(
 
 
 def _parse_nse_past_issue(rec: dict) -> dict:  # pragma: no cover - live only
-    """Coerce one NSE past-issues record into a raw panel row (A1: names unconfirmed).
+    """Coerce one NSE ``public-past-issues`` record into a raw panel row.
 
-    Field names on the NSE feed are unconfirmed until the first live pull, so probe
-    a few plausible keys per column; a missing value coerces to None (→ NaN, never a
-    fabricated survivor). This is the listed-core feed, so an unknown status defaults
-    to ``listed``.
+    Field names CONFIRMED at the 05-11 live pull — the real keys are
+    ``company``/``ipoStartDate``/``listingDate``/``issuePrice``/``symbol``
+    (dates are DD-MON-YYYY, e.g. "14-JUL-2026"; ``issuePrice`` may be "-" for a
+    not-yet-priced upcoming issue). Legacy guesses are kept as trailing fallbacks.
+    ``symbol`` is threaded through so ``build._enrich_listing_closes`` can fetch the
+    listing-day close (the target). A missing value coerces to None (→ NaN, never a
+    fabricated survivor); this is the listed-core feed, so an unknown status
+    defaults to ``listed``.
     """
     def pick(*keys: str) -> object:
         for key in keys:
@@ -375,10 +397,12 @@ def _parse_nse_past_issue(rec: dict) -> dict:  # pragma: no cover - live only
                 return rec[key]
         return None
 
-    issuer = pick("companyName", "company", "symbol", "issuer")
+    issuer = pick("company", "companyName", "issuer")
+    symbol = pick("symbol", "htmSym")
     return {
         "issuer": (str(issuer).strip() if issuer is not None else None),
-        "issue_date": coerce_date(pick("issueStartDate", "issue_date")),
+        "symbol": (str(symbol).strip() if symbol is not None else None),
+        "issue_date": coerce_date(pick("ipoStartDate", "issueStartDate", "issue_date")),
         "listing_date": coerce_date(pick("listingDate", "listing_date")),
         "issue_price": coerce_price(
             pick("issuePrice", "finalIssuePrice", "issue_price")
@@ -461,31 +485,44 @@ def fetch_sebi_offer_documents() -> list[dict]:  # pragma: no cover - live only
     return rows
 
 
-def _fetch_chittorgarh_withdrawn() -> list[dict]:  # pragma: no cover - live only
-    """Parse chittorgarh's withdrawn-offer-document report (id 202)."""
+def _recent_fy_end_years(back: int = 11) -> list[int]:
+    """The END years of the last ``back`` Indian financial years (Apr–Mar).
+
+    The FY ending in year ``E`` covers Apr(E-1)…Mar(E); chittorgarh's report path
+    takes ``{E}/{E-1}-{EE}`` (e.g. 2026 / "2025-26"). Kept a pure date helper so
+    it is unit-testable offline.
+    """
+    today = _dt.date.today()
+    cur_end = today.year + 1 if today.month >= 4 else today.year
+    return list(range(cur_end - back + 1, cur_end + 1))
+
+
+def parse_chittorgarh_withdrawn_payload(payload: object) -> list[dict]:
+    """Parse ONE chittorgarh webnodejs report-202 JSON payload into raw rows.
+
+    Pure/offline (no network) so the JSON contract can be unit-tested. Each record
+    carries ``Company`` as an HTML anchor (issuer text) and ``Offer Document Filed
+    with SEBI`` as the DD-Mon-YYYY issue date. Every emitted row is ``withdrawn``.
+    Per-row isolation: a malformed record is skipped, never fabricated.
+    """
     from bs4 import BeautifulSoup  # deferred
 
-    html = _get(CHITTORGARH_WITHDRAWN_REPORT)
-    _save_raw("chittorgarh_withdrawn_202", html)
-    soup = BeautifulSoup(html, "lxml")
+    records = []
+    if isinstance(payload, dict):
+        records = payload.get("reportTableData") or []
     rows: list[dict] = []
-    table = soup.find("table")
-    if table is None:
-        logger.warning(
-            "chittorgarh withdrawn report: no table found; site layout changed?"
-        )
-        return rows
-    for tr in table.select("tbody tr"):
-        cells = [td.get_text(strip=True) for td in tr.find_all("td")]
-        if len(cells) < 2:
-            continue
+    for rec in records:
         try:
+            issuer = (
+                BeautifulSoup(rec.get("Company") or "", "lxml").get_text(strip=True)
+                or None
+            )
             rows.append(
                 {
-                    "issuer": cells[0] or None,
-                    "issue_date": coerce_date(cells[1]) if len(cells) > 1 else None,
+                    "issuer": issuer,
+                    "issue_date": coerce_date(rec.get("Offer Document Filed with SEBI")),
                     "listing_date": None,
-                    "issue_price": coerce_price(cells[2]) if len(cells) > 2 else None,
+                    "issue_price": None,
                     "listing_day_close": None,
                     "status_raw": "withdrawn",
                 }
@@ -493,6 +530,40 @@ def _fetch_chittorgarh_withdrawn() -> list[dict]:  # pragma: no cover - live onl
         except Exception as exc:  # noqa: BLE001 - per-row isolation (T-05-02-VALID)
             logger.warning("chittorgarh withdrawn row parse failed: %s", exc)
             continue
+    return rows
+
+
+def _fetch_chittorgarh_withdrawn() -> list[dict]:  # pragma: no cover - live only
+    """Withdrawn/pulled overlay from chittorgarh's webnodejs JSON API (report 202).
+
+    The legacy HTML report migrated to a JS app (``soup.find("table")`` → None, the
+    04-07 blocker); repointed to the JSON endpoint confirmed at the 05-11 live
+    checkpoint. Iterates recent financial years and dedupes by (issuer, issue_date)
+    — small per-FY counts, so a single page (size 50) covers each FY. Host is
+    SSRF-checked via ``_get``; raw payloads are snapshotted (A1); per-FY failure
+    isolation keeps one bad year from emptying the overlay.
+    """
+    headers = {
+        "Referer": "https://www.chittorgarh.com/",
+        "Accept": "application/json, text/plain, */*",
+    }
+    seen: set[tuple] = set()
+    rows: list[dict] = []
+    for end_year in _recent_fy_end_years():
+        fy = f"{end_year - 1}-{str(end_year)[-2:]}"
+        url = f"{CHITTORGARH_WITHDRAWN_API}/1/50/{end_year}/{fy}/0/0"
+        try:
+            payload = json.loads(_get(url, headers=headers))
+        except Exception as exc:  # noqa: BLE001 - per-FY isolation
+            logger.warning("chittorgarh withdrawn FY%s fetch failed: %s", fy, exc)
+            continue
+        _save_raw(f"chittorgarh_withdrawn_202_{fy}", payload)
+        for row in parse_chittorgarh_withdrawn_payload(payload):
+            key = ((row["issuer"] or "").strip().lower(), row["issue_date"])
+            if row["issuer"] is None or key in seen:
+                continue
+            seen.add(key)
+            rows.append(row)
     return rows
 
 
@@ -656,11 +727,13 @@ __all__ = [
     "NSE_PAST_ISSUES_URL",
     "SEBI_PUBLIC_ISSUES_URL",
     "CHITTORGARH_WITHDRAWN_REPORT",
+    "CHITTORGARH_WITHDRAWN_API",
     "NIFTY_INDEX_SYMBOL",
     "INDIA_VIX_SYMBOL",
     "coerce_price",
     "coerce_date",
     "normalize_status",
+    "parse_chittorgarh_withdrawn_payload",
     "fetch_nse_past_issues",
     "fetch_sebi_withdrawn",
     "fetch_chittorgarh_index",
