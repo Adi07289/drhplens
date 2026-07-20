@@ -57,15 +57,18 @@ dependencies = [
     # native quantile loss (reg:quantileerror, 2.0+); mapie 1.x conformal
     # (ConformalizedQuantileRegressor); sklearn 1.5+ estimators/metrics; mlflow
     # 2.x local experiment tracking; matplotlib for calibration plots; shap for
-    # the model-card feature attributions. The NSE-scraper lib (gated behind a
-    # human-verify checkpoint in 05-11) and the Diebold-Mariano PyPI package
-    # (05-09 inlines a ~15-line DM test instead) are intentionally NOT declared.
+    # the model-card feature attributions. The Diebold-Mariano PyPI package
+    # (05-09 inlines a ~15-line DM test instead) is intentionally NOT declared.
+    # nse (NseIndiaApi): approved at the 05-11 blocking-human legitimacy
+    # checkpoint (Sigstore-attested, PyPI Trusted Publishing, GPL-3.0,
+    # github.com/BennyThadikaran/NseIndiaApi) — powers the live Source-A crawl.
     "xgboost>=2.0",
     "mapie>=1.4,<2",
     "scikit-learn>=1.5",
     "mlflow>=2.14",
     "matplotlib>=3.8",
     "shap>=0.46",
+    "nse>=3.1",
 ]
 
 [project.optional-dependencies]
