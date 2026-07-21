@@ -19,6 +19,14 @@ from pathlib import Path
 import typer
 from rich.console import Console
 
+# Load .env for the CLI so QDRANT_URL / QDRANT_API_KEY / GEMINI_API_KEY are present
+# when this entry point runs standalone (the library layer reads them from os.environ
+# but does not load .env itself). Guarded so a missing python-dotenv never breaks import.
+try:  # pragma: no cover - trivial import guard
+    from dotenv import load_dotenv as _load_dotenv
+except ImportError:  # pragma: no cover
+    _load_dotenv = None
+
 # Re-export everything Phase 1 tests import directly from this module.
 from pipelines.ingest import (  # noqa: F401
     CHUNK_ABSOLUTE_MIN,
@@ -186,6 +194,8 @@ def all(
 
     Delegates to pipelines.ingest.ingest_drhp under the hood.
     """
+    if _load_dotenv is not None:
+        _load_dotenv()  # populate QDRANT_URL / QDRANT_API_KEY / GEMINI_API_KEY from .env
     console.rule("[bold blue]DRHPLens DRHP Ingestion Pipeline (Swiggy)[/bold blue]")
     report = ingest_drhp(
         drhp_id=DRHP_ID,

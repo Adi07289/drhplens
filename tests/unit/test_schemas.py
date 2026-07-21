@@ -126,13 +126,13 @@ def test_claim_accepts_multiple_sources() -> None:
 def test_retrieved_chunk_ref_span_offsets_valid_tuple() -> None:
     """span_offsets=(0, 100) is accepted."""
     ref = _make_valid_ref(span_offsets=(0, 100))
-    assert ref.span_offsets == (0, 100)
+    assert ref.span_offsets == [0, 100]  # list[int] (Gemini structured-output compat)
 
 
 def test_retrieved_chunk_ref_span_offsets_equal_is_valid() -> None:
     """span_offsets=(50, 50) is accepted (zero-length span)."""
     ref = _make_valid_ref(span_offsets=(50, 50))
-    assert ref.span_offsets == (50, 50)
+    assert ref.span_offsets == [50, 50]
 
 
 def test_retrieved_chunk_ref_span_offsets_inverted_rejected() -> None:

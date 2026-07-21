@@ -26,8 +26,14 @@ dependencies = [
     # Vector store
     "qdrant-client>=1.18,<2",
     # Embeddings + reranker
+    # sentence-transformers/FlagEmbedding = the torch-based bge-m3 embedder + bge-reranker
+    # (the Linux/production path). On Intel macOS torch 2.2.2 is incompatible with NumPy 2.x,
+    # so tools/embedder.py + tools/reranker.py run fastembed (ONNX, no torch) instead.
     "sentence-transformers>=3",
     "FlagEmbedding",
+    "fastembed>=0.8",
+    # Gemini SDK: the agent nodes import `from google import genai` directly.
+    "google-genai>=1.0",
     # Structured LLM outputs
     "instructor>=1.15,<2",
     # Schemas + validation

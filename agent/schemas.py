@@ -39,24 +39,27 @@ class RetrievedChunkRef(BaseModel):
         default=None,
         description="Verbatim text snippet from the chunk that supports the claim; None if not extracted",
     )
-    span_offsets: tuple[int, int] | None = Field(
+    span_offsets: list[int] | None = Field(
         default=None,
-        description="(start_char, end_char) within chunk_text that supports the claim; None if not extracted",
+        description="[start_char, end_char] within chunk_text that supports the claim; None if not extracted",
     )
 
     @field_validator("span_offsets")
     @classmethod
     def span_offsets_start_lte_end(
-        cls, v: tuple[int, int] | None
-    ) -> tuple[int, int] | None:
-        """Reject inverted spans (start > end).
+        cls, v: list[int] | None
+    ) -> list[int] | None:
+        """Reject malformed spans (wrong length or start > end).
 
         STRIDE T-1-02: a corrupted span with start > end would produce a negative-length
         window in the cite-check algorithm, potentially leaking out-of-bounds content.
-        Reject at schema validation time.
+        Reject at schema validation time. (list[int], not tuple, because Google GenAI's
+        structured-output schema rejects fixed-length tuples / prefixItems.)
         """
         if v is None:
             return v
+        if len(v) != 2:
+            raise ValueError(f"span_offsets must have exactly 2 elements, got {len(v)}")
         start, end = v
         if start > end:
             raise ValueError(
@@ -101,9 +104,9 @@ class Claim(BaseModel):
         ...,
         description="Verbatim text from the source that supports this claim",
     )
-    span_offsets: tuple[int, int] = Field(
+    span_offsets: list[int] = Field(
         ...,
-        description="(start_char, end_char) in the source chunk text",
+        description="[start_char, end_char] in the source chunk text",
     )
     sources: list[RetrievedChunkRef] = Field(
         ...,
@@ -113,8 +116,13 @@ class Claim(BaseModel):
 
     @field_validator("span_offsets")
     @classmethod
-    def span_offsets_start_lte_end(cls, v: tuple[int, int]) -> tuple[int, int]:
-        """Reject inverted spans (start > end). See STRIDE T-1-02."""
+    def span_offsets_start_lte_end(cls, v: list[int]) -> list[int]:
+        """Reject malformed spans (wrong length or start > end). See STRIDE T-1-02.
+
+        list[int], not tuple, because Google GenAI structured output rejects tuples.
+        """
+        if len(v) != 2:
+            raise ValueError(f"span_offsets must have exactly 2 elements, got {len(v)}")
         start, end = v
         if start > end:
             raise ValueError(

@@ -83,7 +83,7 @@ def _get_llm_client():
         )
 
     genai_client = genai.Client(api_key=api_key)
-    return instructor.from_genai(genai_client, mode=instructor.Mode.GENAI_JSON)
+    return instructor.from_genai(genai_client, mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS)
 
 
 # ---------------------------------------------------------------------------
@@ -126,7 +126,7 @@ def _call_llm(question: str) -> SubQuestions:
     client = _get_llm_client()
     system_prompt = _load_system_prompt()
     result = client.chat.completions.create(
-        model="gemini-2.5-flash",
+        model="gemini-3.1-flash-lite",
         response_model=SubQuestions,
         messages=[
             {"role": "system", "content": system_prompt},

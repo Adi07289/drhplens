@@ -89,7 +89,7 @@ def get_llm_client():
         )
 
     genai_client = genai.Client(api_key=api_key)
-    return instructor.from_genai(genai_client, mode=instructor.Mode.GENAI_JSON)
+    return instructor.from_genai(genai_client, mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS)
 
 
 # ---------------------------------------------------------------------------
@@ -167,18 +167,21 @@ def _call_llm_with_retry(state: GraphState) -> GroundedAnswer:
     user_message = _build_user_message(state)
 
     try:
-        import instructor
+        from instructor.core.exceptions import InstructorRetryException
         result = client.chat.completions.create(
-            model="gemini-2.5-flash",
+            model="gemini-3.1-flash-lite",
             response_model=GroundedAnswer,
             max_retries=3,
+            # Fold the system prompt into the user message: instructor's GenAI
+            # provider rejects Jinja markers ({{claim_id}}) in SYSTEM messages, but
+            # allows them (passed through literally, since no context= is supplied)
+            # in USER messages. The {{claim_id}} placeholder contract is preserved.
             messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_message},
+                {"role": "user", "content": f"{system_prompt}\n\n{user_message}"},
             ],
         )
         return result
-    except instructor.exceptions.InstructorRetryException:
+    except InstructorRetryException:
         raise  # Let tenacity handle it, or bubble to run() for graceful refusal
 
 

@@ -81,7 +81,7 @@ def test_snapshot_cache_round_trips_grounded_answer() -> None:
     assert restored_ga.answer_prose == ga.answer_prose
     assert len(restored_ga.claims) == 1
     assert restored_ga.claims[0].claim_id == "c_abc123"
-    assert restored_ga.claims[0].span_offsets == (0, 38)
+    assert restored_ga.claims[0].span_offsets == [0, 38]
     assert restored_ga.claims[0].sources[0].chunk_id == "chunk_001"
 
 

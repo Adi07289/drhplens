@@ -687,10 +687,12 @@ def embed_chunks(chunks: list[ChunkPayload]) -> list[list[float]]:
     texts = [c.chunk_text for c in chunks]
     total = len(texts)
 
-    console.print(f"  Embedding {total} chunks (batch_size=4, ~3 sec/batch on CPU)...")
+    # batch_size=64 suits the fastembed/ONNX backend (the old batch_size=4 was
+    # tuned for torch/bge-m3 on a 2vCPU box); larger batches cut Python-loop overhead.
+    console.print(f"  Embedding {total} chunks (batch_size=64, ONNX CPU)...")
 
     start = time.time()
-    vectors = embed_batch(texts, batch_size=4)
+    vectors = embed_batch(texts, batch_size=64)
     elapsed = time.time() - start
 
     console.print(

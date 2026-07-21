@@ -26,7 +26,9 @@ from qdrant_client.http import models as rest
 # ---------------------------------------------------------------------------
 
 COLLECTION_NAME: str = "drhp_chunks"
-EMBEDDING_DIM: int = 1024  # bge-m3 output dimension
+# MUST match tools.embedder.EMBEDDING_DIM (BAAI/bge-small-en-v1.5 = 384; the fastembed
+# swap replaced bge-m3/1024 — see tools/embedder.py). Change both together + re-ingest.
+EMBEDDING_DIM: int = 384
 
 # ---------------------------------------------------------------------------
 # ChunkPayload — the payload schema written by the pipeline and read by Wave 3.
@@ -156,7 +158,7 @@ def upsert_chunks(payloads: list[ChunkPayload], vectors: list[list[float]]) -> N
 
     Args:
         payloads: list of ChunkPayload dataclasses
-        vectors: list of 1024-float embedding vectors, parallel to payloads
+        vectors: list of EMBEDDING_DIM-float embedding vectors, parallel to payloads
     """
     if len(payloads) != len(vectors):
         raise ValueError(
@@ -231,7 +233,7 @@ def search(
     Uses query_points() API (qdrant-client >= 1.7; replaces deprecated search()).
 
     Args:
-        query_vector: 1024-float bge-m3 query embedding
+        query_vector: EMBEDDING_DIM-float query embedding (bge-small-en-v1.5)
         drhp_id: Filter to chunks from this specific DRHP (e.g. "swiggy_2024_11")
         limit: Max results to return (default 50 for reranker input)
     """
@@ -275,7 +277,7 @@ def search_relaxed(
     Uses query_points() API (qdrant-client >= 1.7; replaces deprecated search()).
 
     Args:
-        query_vector: 1024-float bge-m3 query embedding
+        query_vector: EMBEDDING_DIM-float query embedding (bge-small-en-v1.5)
         drhp_id: Filter to chunks from this DRHP
         limit: Max results (default 20; smaller than strict search)
     """
