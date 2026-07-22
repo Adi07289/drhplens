@@ -126,7 +126,7 @@ def _call_llm(question: str) -> SubQuestions:
     client = _get_llm_client()
     system_prompt = _load_system_prompt()
     result = client.chat.completions.create(
-        model="gemini-3.1-flash-lite",
+        model="gemini-3.5-flash",
         response_model=SubQuestions,
         messages=[
             {"role": "system", "content": system_prompt},

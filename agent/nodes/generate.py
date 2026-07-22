@@ -169,7 +169,7 @@ def _call_llm_with_retry(state: GraphState) -> GroundedAnswer:
     try:
         from instructor.core.exceptions import InstructorRetryException
         result = client.chat.completions.create(
-            model="gemini-3.1-flash-lite",
+            model="gemini-3.5-flash",
             response_model=GroundedAnswer,
             max_retries=3,
             # Fold the system prompt into the user message: instructor's GenAI

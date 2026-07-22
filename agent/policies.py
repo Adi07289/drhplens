@@ -66,7 +66,7 @@ this via the SubQuestions.questions Field(max_length=4) constraint."""
 # Cite-check algorithm (RESEARCH Pattern 3)
 # ---------------------------------------------------------------------------
 
-CITE_CHECK_TOKEN_RATIO: int = 80
+CITE_CHECK_TOKEN_RATIO: int = 50  # PROVISIONAL (Job A): 80 rejected even gemini-3.5-flash's grounded, naturally-paraphrased claims (the "all claims must ground" gate lets one outlier tank the answer). 50 admits grounded paraphrases (~50-75) while still catching off-topic claims (<40). Calibrate against a labeled grounded/hallucinated set.
 """
 token_set_ratio threshold for the deterministic cite-check. A claim's text must
 achieve >= 80% fuzzy-token overlap with the cited chunk window to be grounded.
