@@ -190,7 +190,13 @@ def invoke_with_tracing(state: dict, question: str) -> dict:
     Returns:
         Final GraphState dict from GRAPH.invoke().
     """
+    # GRAPH is compiled with a MemorySaver checkpointer, which REQUIRES a
+    # thread_id in config["configurable"] on every invoke — without it the graph
+    # crashes (this silently zeroed the numeric-faithfulness eval). A fresh
+    # thread_id per call keeps each run isolated.
+    import uuid
+    config: dict = {"configurable": {"thread_id": f"run-{uuid.uuid4()}"}}
     callbacks = build_callbacks_for_run(question)
     if callbacks:
-        return GRAPH.invoke(state, config={"callbacks": callbacks})
-    return GRAPH.invoke(state)
+        config["callbacks"] = callbacks
+    return GRAPH.invoke(state, config=config)
