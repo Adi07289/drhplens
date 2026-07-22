@@ -123,17 +123,25 @@ def _is_likely_single_clause(question: str) -> bool:
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=4))
 def _call_llm(question: str) -> SubQuestions:
     """Tenacity-retried LLM call. Separate function for testability."""
+    from agent.policies import GEMINI_MODELS
+
     client = _get_llm_client()
     system_prompt = _load_system_prompt()
-    result = client.chat.completions.create(
-        model="gemini-3.5-flash",
-        response_model=SubQuestions,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": question},
-        ],
-    )
-    return result
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": question},
+    ]
+    # Try each model in order; a 503 on the primary falls through to the fallback.
+    last_exc: Exception | None = None
+    for model in GEMINI_MODELS:
+        try:
+            return client.chat.completions.create(
+                model=model, response_model=SubQuestions, messages=messages
+            )
+        except Exception as exc:  # noqa: BLE001 - fall through to the next model
+            last_exc = exc
+            continue
+    raise last_exc if last_exc is not None else RuntimeError("no decompose model available")
 
 
 def run(state: GraphState) -> GraphState:

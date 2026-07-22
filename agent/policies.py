@@ -66,7 +66,13 @@ this via the SubQuestions.questions Field(max_length=4) constraint."""
 # Cite-check algorithm (RESEARCH Pattern 3)
 # ---------------------------------------------------------------------------
 
-CITE_CHECK_TOKEN_RATIO: int = 50  # PROVISIONAL (Job A): 80 rejected even gemini-3.5-flash's grounded, naturally-paraphrased claims (the "all claims must ground" gate lets one outlier tank the answer). 50 admits grounded paraphrases (~50-75) while still catching off-topic claims (<40). Calibrate against a labeled grounded/hallucinated set.
+# Gemini generation models, tried in order (primary first). gemini-3.5-flash grounds
+# more faithfully but intermittently 503s under load; gemini-3.1-flash-lite is reliably
+# available. The LLM nodes fall through this list so a 503 degrades to a working model
+# instead of a refusal.
+GEMINI_MODELS: tuple[str, ...] = ("gemini-3.5-flash", "gemini-3.1-flash-lite")
+
+CITE_CHECK_TOKEN_RATIO: int = 52  # Calibrated via scripts/calibrate_cite_check.py: on a labeled grounded/hallucinated set the classes separate cleanly (grounded 60-78, hallucinated 35-46); 52 is the gap midpoint — max grounded recall while staying above every hallucination. Was 80, which rejected even gemini-3.5-flash's legitimately-grounded paraphrases.
 """
 token_set_ratio threshold for the deterministic cite-check. A claim's text must
 achieve >= 80% fuzzy-token overlap with the cited chunk window to be grounded.
