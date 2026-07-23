@@ -12,8 +12,10 @@ from __future__ import annotations
 import inspect
 
 import pytest
+from rapidfuzz import fuzz
 
 from agent.nodes.cite_check import cite_check, _normalize
+from agent.policies import CITE_CHECK_TOKEN_RATIO
 from agent.schemas import Claim, GroundedAnswer, RetrievedChunkRef
 
 
@@ -170,3 +172,99 @@ def test_chunk_id_missing_from_retrieval_set_fails_check():
     all_grounded, failures = cite_check(answer, retrieved)
     assert all_grounded is False
     assert any("not in retrieved set" in f for f in failures)
+
+
+# ---------------------------------------------------------------------------
+# EVAL-03 / Job 2 — numeric grounding must not be gated behind prose overlap.
+#
+# A concise numeric answer legitimately shares few tokens with a dense financial
+# window (the DRHP states figures in millions; the answer is one short sentence),
+# so the prose fuzzy gate false-rejects a genuinely-grounded number. The numeric
+# reconciliation antibody must decide numeric claims; the prose gate remains the
+# sole antibody for purely-qualitative claims.
+# ---------------------------------------------------------------------------
+
+# A long, dense financial window: contains the target magnitude in MILLIONS but
+# shares almost no other tokens with a short crore-denominated claim, so the
+# prose token_set_ratio lands well below CITE_CHECK_TOKEN_RATIO.
+_DENSE_MILLIONS_WINDOW = (
+    "The following selected financial information has been derived from the "
+    "restated consolidated summary statements and should be read together with "
+    "the auditor's examination report and the notes appended thereto: "
+    "112,473.90 as tabulated across the respective reporting periods presented "
+    "herein, subject to rounding and reclassification under applicable Indian "
+    "accounting standards and the relevant regulatory disclosure requirements."
+)
+
+
+def test_numeric_claim_grounds_despite_low_prose_overlap():
+    """The Job-2 fix (live failure mode): the DRHP states figures in millions, so
+    the agent emits a concise millions-denominated sentence that shares almost no
+    tokens with the dense window — the number matches, but the prose gate alone
+    would false-reject it. It must ground on the numeric match."""
+    claim_text = "Revenue from operations was ₹112,473.90 million"
+    # Precondition: the prose gate alone would reject this (documents the scenario).
+    ratio = fuzz.token_set_ratio(_normalize(claim_text), _normalize(_DENSE_MILLIONS_WINDOW))
+    assert ratio < CITE_CHECK_TOKEN_RATIO, (
+        f"test scenario invalid: prose ratio {ratio} should be below the gate "
+        f"{CITE_CHECK_TOKEN_RATIO}"
+    )
+    answer = _make_answer([
+        _make_claim(text=claim_text, span_offsets=(0, len(_DENSE_MILLIONS_WINDOW)))
+    ])
+    retrieved = {"chunk_001": _DENSE_MILLIONS_WINDOW}
+    all_grounded, failures = cite_check(answer, retrieved)
+    assert all_grounded is True, failures
+
+
+def test_numeric_claim_crore_vs_million_window_grounds_low_prose():
+    """Unit reconciliation must also survive the decouple: a crore-denominated
+    claim grounds against the same magnitude written in millions even when prose
+    overlap is below the gate (11,247.39 crore == 112,473.90 million)."""
+    window = (
+        "Set forth below are selected line items derived from the restated "
+        "consolidated statement of profit and loss, all amounts stated in "
+        "112,473.90 million unless otherwise indicated, prepared under the "
+        "applicable recognition and measurement principles and reviewed by the "
+        "statutory auditors as part of their examination engagement herein."
+    )
+    claim_text = "Revenue from operations was ₹11,247.39 crore"
+    ratio = fuzz.token_set_ratio(_normalize(claim_text), _normalize(window))
+    assert ratio < CITE_CHECK_TOKEN_RATIO, f"scenario invalid: ratio {ratio}"
+    answer = _make_answer([_make_claim(text=claim_text, span_offsets=(0, len(window)))])
+    all_grounded, failures = cite_check(answer, {"chunk_001": window})
+    assert all_grounded is True, failures
+
+
+def test_low_prose_number_swap_still_fails():
+    """Decoupling must NOT let a hallucinated number through: a non-reconciling
+    number in a low-prose window stays ungrounded (P2 antibody intact)."""
+    claim_text = "Revenue from operations was ₹99,999.99 crore"  # != 112,473.90 million
+    answer = _make_answer([
+        _make_claim(
+            claim_id="c_swap01",
+            text=claim_text,
+            span_offsets=(0, len(_DENSE_MILLIONS_WINDOW)),
+        )
+    ])
+    retrieved = {"chunk_001": _DENSE_MILLIONS_WINDOW}
+    all_grounded, failures = cite_check(answer, retrieved)
+    assert all_grounded is False
+    assert any("c_swap01" in f for f in failures)
+
+
+def test_low_prose_qualitative_claim_still_blocked():
+    """A purely-qualitative claim (no numbers) with low prose overlap still fails
+    via the prose gate — the qualitative antibody is unchanged by the fix."""
+    claim_text = "The company has expanded into European retail markets"
+    answer = _make_answer([
+        _make_claim(
+            claim_id="c_qual01",
+            text=claim_text,
+            span_offsets=(0, len(_DENSE_MILLIONS_WINDOW)),
+        )
+    ])
+    retrieved = {"chunk_001": _DENSE_MILLIONS_WINDOW}
+    all_grounded, failures = cite_check(answer, retrieved)
+    assert all_grounded is False
+    assert any("c_qual01" in f for f in failures)

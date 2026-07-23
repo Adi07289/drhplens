@@ -224,36 +224,50 @@ def cite_check(
             claim_norm = _normalize(claim.text)
             window_norm = _normalize(window)
 
-            # Fuzzy token overlap check
-            ratio = fuzz.token_set_ratio(claim_norm, window_norm)
-            if ratio < CITE_CHECK_TOKEN_RATIO:
-                failure_reason = (
-                    f"claim {claim.claim_id!r}: token_set_ratio={ratio} < "
-                    f"{CITE_CHECK_TOKEN_RATIO} (claim={claim.text!r})"
-                )
-                continue  # Try next source
-
-            # Numeric grounding (PITFALL P2 antibody + D3-10 unit reconciliation).
-            # Fast path: exact-string subset short-circuits to grounded (no
-            # regression to existing cite-check tests). Slow path: per-number
-            # unit-aware + tolerance reconciliation so "₹11,247 crore" grounds
-            # against "1,12,470 lakh" instead of false-failing the 0.95 gate.
+            # Two ORTHOGONAL antibodies, evaluated independently (EVAL-03 fix):
+            #
+            #  * Numeric antibody (PITFALL P2 + D3-10 unit reconciliation): every
+            #    number the claim emits must reconcile to some window number.
+            #    Fast path exact-string subset; slow path per-number unit-aware
+            #    tolerance so "₹11,247 crore" grounds against "112,473.90 million"
+            #    / "1,12,470 lakh". Trivially satisfied when the claim has no
+            #    numbers (a qualitative claim can't fail P2).
+            #  * Prose antibody (RESEARCH Pattern 3): fuzzy token overlap.
+            #
+            # A source grounds the claim when its numbers reconcile AND EITHER the
+            # claim is numeric OR the prose overlaps. Numeric reconciliation is
+            # itself the grounding proof for a numeric claim: a concise numeric
+            # answer legitimately shares few tokens with a dense ~500-token
+            # financial window, so requiring the prose gate too would false-reject
+            # a genuinely-grounded number (this drove numeric_faithfulness to 0.08,
+            # EVAL-03). Number-swaps still fail (numbers_grounded=False); purely
+            # qualitative hallucinations still fail the prose gate (no claim
+            # numbers → prose overlap is the only path to grounded).
             claim_numbers = _extract_numbers(claim_norm)
             window_numbers = _extract_numbers(window_norm)
-            if not _numbers_subset(claim_numbers, window_numbers) and not (
+            numbers_grounded = _numbers_subset(claim_numbers, window_numbers) or (
                 _scaled_numbers_grounded(claim_norm, window_norm)
-            ):
+            )
+            ratio = fuzz.token_set_ratio(claim_norm, window_norm)
+            prose_grounded = ratio >= CITE_CHECK_TOKEN_RATIO
+
+            if numbers_grounded and (bool(claim_numbers) or prose_grounded):
+                grounded = True
+                break
+
+            if not numbers_grounded:
                 failure_reason = (
                     f"claim {claim.claim_id!r}: numeric grounding failed — "
                     f"claim has {claim_numbers} but window has {window_numbers}; "
                     f"no unit-reconcilable match within tolerance "
                     f"(PITFALL P2 / D3-10)"
                 )
-                continue  # Try next source
-
-            # Both checks passed — claim is grounded
-            grounded = True
-            break
+            else:
+                failure_reason = (
+                    f"claim {claim.claim_id!r}: token_set_ratio={ratio} < "
+                    f"{CITE_CHECK_TOKEN_RATIO} (claim={claim.text!r})"
+                )
+            continue  # Try next source
 
         if not grounded:
             failures.append(
