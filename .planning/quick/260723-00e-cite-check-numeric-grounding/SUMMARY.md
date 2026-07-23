@@ -47,12 +47,33 @@ section/page anchoring (one 273,590-token "Preamble" section → wrong chunks,
 span-offset slicing, flaky retrieval). Residual failure categories:
 `numeric-mismatch` 38, `refused` 7.
 
-## Follow-up required (NOT this task's scope)
+## Follow-up (Part 2) — page-anchored re-parse + re-ingest (DONE, 2026-07-23)
 
-EVAL-03 cannot pass until the chunking/page-anchoring/retrieval defect is fixed
-(the deferred "Option 2" — fix `extract_sections_from_docling` section
-segmentation + page anchoring, re-ingest Swiggy so cite-check windows are focused
-and page-precise). This cite_check fix is a necessary prerequisite now in place.
+The chunking/anchoring defect was fixed in the same session (user-approved):
 
-Do NOT close EVAL-03 or mark Phase 3 gate-green until the live numeric gate
-reaches ≥ 0.95 on real retrieval.
+- Root cause deeper than "bad chunker": the committed `*.docling.json` was a known
+  Phase-1 **PyMuPDF-fallback placeholder** (per `data/swiggy_drhp/INGEST_LATER.md`)
+  that flattened the whole prospectus into one 273,590-token section → every chunk
+  inherited page span `(0,284)`.
+- Docling can't re-parse here (needs torch≥2.4 + torchvision; conflicts with the
+  pinned Phase-5 numpy/shap stack). Added a torch-free **page-anchored** parser
+  `pipelines.ingest.parse_drhp_pages` (PyMuPDF text + pdfplumber table rows, one
+  Section per page) + `test_parse_drhp_pages.py` pinning single-page anchoring.
+- Re-ingested Swiggy: 541 pages → **1,885 single-page-anchored chunks**, ONNX-embedded,
+  re-upserted to Qdrant `drhp_chunks` (old chunks deleted; collection = 1,885).
+  Offline-validated: figures co-located (total+fresh+OFS in one chunk).
+- **Result:** numeric grounding materially improved — on the questions that ran,
+  num-001/003/004/006/008 now ground (all failed pre-re-ingest). num-001's
+  multi-number issue-size claim grounds via co-location.
+
+## Still open — EVAL-03 NOT yet green
+
+- **Full gate re-measurement blocked by Gemini free-tier rate limits** (only ~12/50
+  questions completed per run before quota exhaustion; not a fix problem).
+- **Residual failures** are now (a) retrieval/citation precision (number is in the
+  index but the LLM cited a chunk lacking it — num-002/num-005) and (b) derived-number
+  gold questions (YoY %, ratios, "3 days") that can't ground by design — a numeric
+  gold-set curation question.
+
+Do NOT close EVAL-03 or mark the Phase-3 gate green until a full live run reaches
+≥ 0.95. Next: rate-limit-safe batched gate run + retrieval-precision + gold-set review.
