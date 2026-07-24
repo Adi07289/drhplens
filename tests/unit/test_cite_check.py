@@ -268,3 +268,70 @@ def test_low_prose_qualitative_claim_still_blocked():
     all_grounded, failures = cite_check(answer, retrieved)
     assert all_grounded is False
     assert any("c_qual01" in f for f in failures)
+
+
+# ---------------------------------------------------------------------------
+# EVAL-03 / citation repair — re-anchor a mis-cited numeric claim to the
+# retrieved chunk that actually contains its numbers.
+# ---------------------------------------------------------------------------
+
+
+def _reranked(chunks: list[tuple[str, str, int]]) -> list[dict]:
+    return [
+        {"payload": {"chunk_id": cid, "chunk_text": txt, "page_start": pg,
+                     "page_end": pg, "section": "The Issue"}}
+        for cid, txt, pg in chunks
+    ]
+
+
+def test_repair_reanchors_mis_cited_numeric_claim():
+    """The LLM cited the total-issue chunk for a fresh-issue claim; repair re-anchors
+    it to the retrieved chunk that actually contains the fresh figure, so it grounds."""
+    from agent.nodes.cite_check import repair_citations
+
+    claim = _make_claim(text="Fresh issue was ₹44,990 million", chunk_id="chunk_001",
+                        span_offsets=(0, 40))
+    answer = _make_answer([claim])
+    reranked = _reranked([
+        ("chunk_001", "The total offer was ₹113,274.27 million in aggregate.", 0),
+        ("chunk_002", "The fresh issue was ₹44,990 million of fresh capital raised.", 2),
+    ])
+    text_by_id = {c["payload"]["chunk_id"]: c["payload"]["chunk_text"] for c in reranked}
+
+    before_ok, _ = cite_check(answer, text_by_id)
+    assert before_ok is False  # cited chunk lacks 44,990
+
+    repaired = repair_citations(answer, reranked)
+    after_ok, fails = cite_check(repaired, text_by_id)
+    assert after_ok is True, fails
+    assert repaired.claims[0].source_chunk_id == "chunk_002"  # citation now accurate
+
+
+def test_repair_never_repairs_a_hallucinated_number():
+    """A number in NO retrieved chunk is left ungrounded — repair must not invent support."""
+    from agent.nodes.cite_check import repair_citations
+
+    claim = _make_claim(text="Fresh issue was ₹99,999 million", chunk_id="chunk_001",
+                        span_offsets=(0, 40))
+    answer = _make_answer([claim])
+    reranked = _reranked([
+        ("chunk_001", "The total offer was ₹113,274.27 million in aggregate.", 0),
+        ("chunk_002", "The fresh issue was ₹44,990 million of fresh capital raised.", 2),
+    ])
+    text_by_id = {c["payload"]["chunk_id"]: c["payload"]["chunk_text"] for c in reranked}
+
+    repaired = repair_citations(answer, reranked)
+    ok, _ = cite_check(repaired, text_by_id)
+    assert ok is False  # 99,999 grounds to nothing → still fails
+
+
+def test_repair_ignores_qualitative_claim():
+    """A no-number claim is never re-anchored (repair only touches numeric claims)."""
+    from agent.nodes.cite_check import repair_citations
+
+    claim = _make_claim(text="The company operates a food delivery platform",
+                        chunk_id="chunk_001", span_offsets=(0, 40))
+    answer = _make_answer([claim])
+    reranked = _reranked([("chunk_002", "Swiggy operates a food delivery platform.", 2)])
+    repaired = repair_citations(answer, reranked)
+    assert repaired.claims[0].source_chunk_id == claim.source_chunk_id

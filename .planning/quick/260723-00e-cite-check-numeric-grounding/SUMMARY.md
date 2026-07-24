@@ -66,14 +66,41 @@ The chunking/anchoring defect was fixed in the same session (user-approved):
   num-001/003/004/006/008 now ground (all failed pre-re-ingest). num-001's
   multi-number issue-size claim grounds via co-location.
 
-## Still open — EVAL-03 NOT yet green
+## Part 3 — gold-set curation + citation repair (2026-07-24)
 
-- **Full gate re-measurement blocked by Gemini free-tier rate limits** (only ~12/50
-  questions completed per run before quota exhaustion; not a fix problem).
-- **Residual failures** are now (a) retrieval/citation precision (number is in the
-  index but the LLM cited a chunk lacking it — num-002/num-005) and (b) derived-number
-  gold questions (YoY %, ratios, "3 days") that can't ground by design — a numeric
-  gold-set curation question.
+**(3a) Gold-set curation.** The full 50-Q numeric set conflated numeric GROUNDING
+with numeric REASONING. `numeric_faithfulness` is a grounding metric — valid only for
+numbers the DRHP states. Split into `numeric_eval_disclosed.jsonl` (24, gated) vs
+`numeric_eval_derived.jsonl` (26, computed values / lakh restatements that can't
+ground by construction — tracked, not gated). Rationale + full membership (NOT
+score-gaming; some disclosed Qs fail, some derived Qs pass): `eval/gold/NUMERIC_EVAL_SPLIT.md`.
+Gate repointed to the disclosed subset (`scripts/release_gate.py`); 0.95 unchanged.
+
+**(3b) Citation repair.** Diagnosis (offline, no Gemini): retrieval is fine — the
+number-bearing chunks reach the reranked top-5 — but the LLM inconsistently cites the
+wrong sibling chunk (e.g. a fresh-issue claim cited to the total-issue chunk), so a
+genuinely-supported number scored ungrounded (and flakily: same Q grounded on one run,
+failed on another). Added `repair_citations` in `agent/nodes/cite_check.py` (+3 TDD
+tests): a deterministic, non-LLM step that re-anchors a mis-cited numeric claim to the
+retrieved top-k chunk that actually contains its numbers (best topical overlap), wired
+into `cite_check.run` before the check and persisted to state. It NEVER repairs a
+number absent from every retrieved chunk, so hallucinations still fail. Full unit
+suite 510 pass / 0 regressions.
+
+**Measured impact (disclosed subset, live, 0 crashes):**
+
+| stage | numeric_faithfulness |
+|---|---|
+| pre-fix (full 50) | 0.08 |
+| + cite_check decouple + re-ingest (disclosed 24) | 0.21 |
+| + citation repair (disclosed 24) | **0.79 (19/24)** |
+
+## Still open — EVAL-03 NOT yet green (0.79 < 0.95)
+
+The 5 remaining disclosed failures are no longer citation-precision — they are
+**4 refusals** (num-007, 026, 033, 040 — the agent declines to answer a disclosed
+fact) + **1 grounding miss** (num-030, QIB 75%). This is a retrieval/gate-confidence
+issue (gate1 threshold / generate refusing), a separate fix from citation repair.
 
 Do NOT close EVAL-03 or mark the Phase-3 gate green until a full live run reaches
-≥ 0.95. Next: rate-limit-safe batched gate run + retrieval-precision + gold-set review.
+≥ 0.95. Next: diagnose + fix the refusals (gate1 / generate), then re-measure.
