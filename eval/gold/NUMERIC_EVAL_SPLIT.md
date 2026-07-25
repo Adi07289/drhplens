@@ -39,17 +39,24 @@ live grounding results. It is **not** selected by which questions the model pass
 The 0.95 threshold is unchanged. The derived set is retained in full for the
 reasoning track — nothing is deleted.
 
-## Disclosed (24) — scored by the release gate
+## Disclosed (23) — scored by the release gate
 
 Directly-stated single figures: total/fresh/OFS issue size, price band (371/390),
 face value, lot size, OFS share count, bid dates, QIB/NII/RII allocations, and the
 stated restated-financials line items (revenue & loss for FY22/FY23/FY24 + Q1FY25).
 
-`num-001,002,003,004,005,006,007,012,013,014,015,017,018,019,023,024,026,030,031,032,033,035,036,040`
+`num-001,002,003,004,005,006,007,012,013,014,015,017,018,019,023,024,026,030,031,032,035,036,040`
 
-## Derived / reasoning (26) — tracked separately, not gated
+> **2026-07-25 (human-approved):** num-033 moved to the derived set below. It asks for
+> an "implied equity value given the post-issue share count" — a *computed* quantity —
+> while its gold answer is the per-share price 390 (which already appears as num-005). A
+> computed-value question belongs in the reasoning bucket by the criterion above, and it
+> is redundant with num-005. See `NUMERIC_GOLD_REVIEW.md`.
+
+## Derived / reasoning (27) — tracked separately, not gated
 
 Computed values (margins, growth %, absolute diffs, ratios, sums, lot×price,
-band width, day count) and lakh unit-restatements the document never prints.
+band width, day count, **implied equity value — num-033**) and lakh unit-restatements
+the document never prints.
 
-`num-008,009,010,011,016,020,021,022,025,027,028,029,034,037,038,039,041,042,043,044,045,046,047,048,049,050`
+`num-008,009,010,011,016,020,021,022,025,027,028,029,033,034,037,038,039,041,042,043,044,045,046,047,048,049,050`

@@ -8,6 +8,12 @@ model's to make (anti-p-hacking).
 
 ## Verdict: 22 sound · 1 defective · 1 awkward
 
+### ✅ num-033 — RESOLVED 2026-07-25: reclassified disclosed → derived (human-approved)
+
+The recommendation below was accepted by the human reviewer. num-033 was moved to the
+derived/reasoning set (it asks for a *computed* implied value; redundant with num-005).
+The disclosed gate set is now 23 questions. Original finding retained below for the record.
+
 ### ⚠ num-033 — DEFECTIVE + REDUNDANT (recommend REMOVE or REWORD)
 
 > "What was the implied equity value at the upper price band, given the post-issue
