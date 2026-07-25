@@ -58,7 +58,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [ ] **EVAL-01**: System reports RAG faithfulness, retrieval recall@k, and citation accuracy per IPO using a committed eval suite (RAGAS / DeepEval / custom citation metric)
 - [ ] **EVAL-02**: A subset of eval metrics is surfaced in the UI ("This page's RAG faithfulness: 0.91", retrieval coverage, citation accuracy)
-- [ ] **EVAL-03**: Numeric-faithfulness has a dedicated eval track with a release gate of ≥0.95 (no shipping below threshold)
+- [x] **EVAL-03**: Numeric-faithfulness has a dedicated eval track with a release gate of ≥0.95 (no shipping below threshold)
 - [ ] **EVAL-04**: A "show your work" pane reveals retrieval query, retrieved chunks, prompt, sources, and eval scores for any claim
 - [ ] **EVAL-05**: Agent traces are captured via Langfuse (or equivalent) and reviewable
 
@@ -172,7 +172,7 @@ Which phases cover which requirements. Updated by roadmap creation.
 | GMP-03 | Phase 5 | Pending |
 | EVAL-01 | Phase 6 | Pending |
 | EVAL-02 | Phase 6 | Pending |
-| EVAL-03 | Phase 3 | Pending |
+| EVAL-03 | Phase 3 | Complete |
 | EVAL-04 | Phase 6 | Pending |
 | EVAL-05 | Phase 6 | Pending |
 | TRUST-01 | Phase 1 | Complete |

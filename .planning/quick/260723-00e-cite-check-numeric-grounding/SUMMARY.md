@@ -2,12 +2,19 @@
 quick_id: 260723-00e
 slug: cite-check-numeric-grounding
 requirement: EVAL-03
-status: incomplete
-completed: 2026-07-23
-gate_passing: false
+status: complete
+completed: 2026-07-25
+gate_passing: true
 ---
 
 # Summary: Decouple numeric grounding from the prose gate in cite_check
+
+> ## ✅ RESOLVED 2026-07-25 — EVAL-03 gate PASSES: numeric_faithfulness = **0.957 ≥ 0.95**
+>
+> Disclosed subset 22/23, 0 crashes. Official report: `eval/reports/2026-07-25-numeric-gate.md`.
+> Journey **0.08 → 0.21 → 0.79 → 0.917 → 0.957** across six commits + a human-approved
+> gold reclassification (num-033). One honest remaining miss (num-030, LLM answer-quality)
+> and one first-line OOS guard (swiggy-012) are documented follow-ups, not gate blockers.
 
 ## What was done
 
