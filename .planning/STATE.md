@@ -6,10 +6,10 @@ status: executing
 last_updated: "2026-07-20T00:00:00Z"
 progress:
   total_phases: 6
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 36
-  completed_plans: 34
-  percent: 94
+  completed_plans: 35
+  percent: 97
 ---
 
 # STATE: DRHPLens
@@ -43,7 +43,7 @@ Plan: 05-11 — Task 1 (nse verify + install) ✅ DONE; Task 2 CODE LIVE-READY (
 | 2 | Multi-IPO Catalogue + DRHP Snapshot Surface | Complete |
 | 3 | Structured Signal Extraction (Red-Flag Table) | Complete (7/7 plans; EVAL-03 gate PASSES 0.957 as of 2026-07-25) |
 | 4 | Historical IPO Dataset + Peer Comparator + GMP Display | In progress (6/7; 04-07 panel folds into 05-11 live build) |
-| 5 | Calibrated Listing-Day Forecaster | In progress (10/11; 05-11 live crawl deferred) |
+| 5 | Calibrated Listing-Day Forecaster | **Complete** (11/11; live crawl run 2026-07-25, honest model card — model does not beat baselines) |
 | 6 | Full Eval Harness + Agentic Polish + Portfolio Surface | Not started (next) |
 
 ## Performance Metrics
