@@ -1,0 +1,44 @@
+{
+ "passed": false,
+ "r2": -0.009512299349818898,
+ "r2_alarm": null,
+ "per_baseline": {
+  "predict_zero": {
+   "dm_stat": 0.20637051256163277,
+   "p_value": 0.836538645931219,
+   "wilcoxon_p": 0.07185863141363855,
+   "model_beats_sig": false,
+   "baseline_beats_model_sig": false,
+   "n": 1132
+  },
+  "global_median": {
+   "dm_stat": 5.47078808484494,
+   "p_value": 5.5133643428462165e-08,
+   "wilcoxon_p": 4.087368827075323e-05,
+   "model_beats_sig": false,
+   "baseline_beats_model_sig": true,
+   "n": 1132
+  },
+  "trailing_12": {
+   "dm_stat": 4.327305365818982,
+   "p_value": 1.6428998687922913e-05,
+   "wilcoxon_p": 3.091927458556826e-06,
+   "model_beats_sig": false,
+   "baseline_beats_model_sig": true,
+   "n": 1132
+  },
+  "sector_mean": {
+   "dm_stat": -17.072610619958304,
+   "p_value": 0.0,
+   "wilcoxon_p": 2.6647372972648167e-50,
+   "model_beats_sig": true,
+   "baseline_beats_model_sig": false,
+   "n": 1132
+  }
+ },
+ "n_scored": 1132,
+ "notes": [
+  "RELEASE GATE FAILED (baseline beats model): the naive baseline(s) ['global_median', 'trailing_12'] significantly beat the model (Diebold\u2013Mariano p<0.05 in the baseline's favor). The model adds nothing over a naive rule on this evaluation \u2014 do NOT ship it and do NOT p-hack features to force a pass.",
+  "The model does not significantly outperform the following baseline(s) at p<0.05: ['predict_zero', 'global_median', 'trailing_12']. For a pre-apply, no-demand forecast this humble result is EXPECTED (D5-01) \u2014 a low R\u00b2 is a feature, not a bug. The model card states this plainly; no features/folds/tests were tuned to cross the gate."
+ ]
+}
