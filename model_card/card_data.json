@@ -1,59 +1,61 @@
 {
-  "training_window": "2016-2025 listing years (2016\u20132025)",
-  "backtest_window": "2016-2025",
-  "n_scored": 247,
-  "coverage": 0.783,
-  "mae_pts": 11.4,
+  "training_window": "2014\u20132025 listing years \u2014 live NSE survivorship panel (1,378 IPOs, 5 withdrawn)",
+  "backtest_window": "expanding-window walk-forward, as-of-T0 (issue open); 1,132 scored OOS",
+  "n_scored": 1132,
+  "coverage": 0.8004,
+  "mae_pts": 0.43,
   "per_year_rmse": {
-    "2016": 14.1,
-    "2017": 12.8,
-    "2018": 15.6,
-    "2019": 13.2,
-    "2020": 18.9,
-    "2021": 21.4,
-    "2022": 16.7,
-    "2023": 12.1,
-    "2024": 11.9,
-    "2025": 13.5
+    "2003": 0.06,
+    "2017": 0.28,
+    "2018": 0.19,
+    "2019": 0.33,
+    "2020": 0.35,
+    "2021": 0.6,
+    "2022": 0.41,
+    "2023": 7.39,
+    "2024": 0.86,
+    "2025": 0.38,
+    "2026": 0.62
   },
-  "r2": -0.06393446004692938,
+  "r2": -0.009512299349818898,
   "r2_alarm": null,
-  "gate_passed": true,
+  "gate_passed": false,
   "gate_notes": [
-    "The model does not significantly outperform the following baseline(s) at p<0.05: ['predict_zero', 'global_median', 'trailing_12', 'sector_mean']. For a pre-apply, no-demand forecast this humble result is EXPECTED (D5-01) \u2014 a low R\u00b2 is a feature, not a bug. The model card states this plainly; no features/folds/tests were tuned to cross the gate."
+    "RELEASE GATE FAILED (baseline beats model): the naive baseline(s) ['global_median', 'trailing_12'] significantly beat the model (Diebold\u2013Mariano p<0.05 in the baseline's favor). The model adds nothing over a naive rule on this evaluation \u2014 do NOT ship it and do NOT p-hack features to force a pass.",
+    "The model does not significantly outperform the following baseline(s) at p<0.05: ['predict_zero', 'global_median', 'trailing_12']. For a pre-apply, no-demand forecast this humble result is EXPECTED (D5-01) \u2014 a low R\u00b2 is a feature, not a bug. The model card states this plainly; no features/folds/tests were tuned to cross the gate."
   ],
   "baselines": [
     {
       "name": "predict_zero",
-      "dm_stat": 0.4234338670352966,
-      "p_value": 0.6739957672427708,
-      "wilcoxon_p": 0.72908175368363,
-      "n": 46,
-      "verdict": "tie \u2014 no significant difference"
+      "dm_stat": 0.20637051256163277,
+      "p_value": 0.836538645931219,
+      "wilcoxon_p": 0.07185863141363855,
+      "verdict": "tie \u2014 no significant difference",
+      "n": 1132
     },
     {
       "name": "global_median",
-      "dm_stat": 0.3076109946394688,
-      "p_value": 0.7597975944736104,
-      "wilcoxon_p": 0.7536307561459807,
-      "n": 46,
-      "verdict": "tie \u2014 no significant difference"
+      "dm_stat": 5.47078808484494,
+      "p_value": 5.5133643428462165e-08,
+      "wilcoxon_p": 4.087368827075323e-05,
+      "verdict": "baseline lower loss (DM p<0.05)",
+      "n": 1132
     },
     {
       "name": "trailing_12",
-      "dm_stat": -1.0960038360031794,
-      "p_value": 0.2789081518190071,
-      "wilcoxon_p": 0.2678875678517443,
-      "n": 46,
-      "verdict": "tie \u2014 no significant difference"
+      "dm_stat": 4.327305365818982,
+      "p_value": 1.6428998687922913e-05,
+      "wilcoxon_p": 3.091927458556826e-06,
+      "verdict": "baseline lower loss (DM p<0.05)",
+      "n": 1132
     },
     {
       "name": "sector_mean",
-      "dm_stat": -0.10853463747580144,
-      "p_value": 0.9140541235465838,
-      "wilcoxon_p": 0.9396294242376939,
-      "n": 46,
-      "verdict": "tie \u2014 no significant difference"
+      "dm_stat": -17.072610619958304,
+      "p_value": 0.0,
+      "wilcoxon_p": 2.6647372972648167e-50,
+      "verdict": "model lower loss (DM p<0.05)",
+      "n": 1132
     }
   ],
   "selected_features": [
@@ -177,8 +179,12 @@
       "body": "The four baselines are compared under the identical as-of-T0 protocol, but the loss differential is cross-sectional across IPOs rather than a single time series \u2014 read the DM p-values with that caveat (A7). A paired Wilcoxon signed-rank p is reported alongside as a distribution-free cross-check."
     },
     {
-      "title": "Seed provenance \u2014 regenerates at the live build",
-      "body": "These numbers are assembled from the current seed/fixture artifacts so the card and its plots render offline today. They regenerate from the live walk-forward over the real survivorship panel at the 05-11 checkpoint."
+      "title": "Live 05-11 backtest \u2014 the model does NOT beat naive baselines",
+      "body": "This card is the real live walk-forward over the 1,378-IPO survivorship panel (built 2026-07-25). The P9 release gate FAILED: global_median and trailing_12 beat the model (Diebold\u2013Mariano p<1e-5). The forecaster is not presented as a validated model \u2014 the honest 'does-not-outperform' verdict is the result; no features/folds/tests were tuned to cross the gate (D5-01/P9)."
+    },
+    {
+      "title": "SHAP plot pending real regeneration",
+      "body": "The calibration and PIT plots are regenerated from the real held-out run; the SHAP feature-importance plot (shap.png) is still the seed fixture and is illustrative only."
     }
   ],
   "plot_files": {
@@ -186,6 +192,6 @@
     "pit": "pit.png",
     "shap": "shap.png"
   },
-  "model_version": "cqr-xgb-seed-2026.07",
-  "seed": true
+  "model_version": "cqr-xgb-live-2026.07",
+  "seed": false
 }
