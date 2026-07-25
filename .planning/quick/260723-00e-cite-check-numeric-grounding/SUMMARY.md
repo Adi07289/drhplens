@@ -111,10 +111,14 @@ unrelated "weather" query at −8.8); empty/scoreless retrieval now refuses via 
 
 ## Still open — EVAL-03 at 0.917 (< 0.95); no p-hacking
 
-Two remaining misses, both honest:
-- **num-030 (QIB 75%)** — retrieval miss: post-decompose the "75%" allocation chunk
-  didn't reach the reranked top-5, so citation-repair had nothing to re-anchor to.
-  A retrieval/decompose fix (uncertain payoff). Fixing this alone → 23/24 = 0.958.
+Two remaining misses, both honest (diagnosed live, 2026-07-25):
+- **num-030 (QIB 75%)** — NOT a retrieval miss (instrumentation: the "75%" chunk IS in
+  the reranked top-5, rank 2). The LLM over-answers "what portion is reserved for QIB"
+  (gold: 75%) with QIB *mechanics* — anchor 60%, MF-reservation 5%, the "if 75% cannot
+  be allotted" under-subscription rule, NII 15%, RII 10% — emitting peripheral numbers
+  (60%, 5%) absent from the retrieved top-5, so not every number grounds. This is
+  LLM-answer-quality (constrain numeric answers) / anchor-detail retrieval coverage —
+  uncertain generate-side work, NOT a widen-retrieval fix. Not pursued (no clean lever).
 - **num-033** — a DEFECTIVE gold question: it asks for an "implied equity value given
   the post-issue share count" (a computation) but the gold answer is the per-share
   price 390. The LLM reasonably says the DRHP doesn't state that implied value. Flagged
