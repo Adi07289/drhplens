@@ -33,6 +33,8 @@ Plan: 05-11 — Task 1 (nse verify + install) ✅ DONE; Task 2 CODE LIVE-READY (
 **Status:** 05-11 is NOT complete — the real-artifact regeneration is a deferred SUPERVISED crawl. See `05-11-LIVE-BUILD-RUNBOOK.md`. Phase-level verification/completion intentionally NOT run (an incomplete plan remains). Seed artifacts + SEED banner intact.
 **Progress:** [█████████░] 95%
 
+**05-11 LIVE CRAWL RUN (2026-07-25):** Real panel built live — 1,378 IPOs (5 withdrawn, P3 satisfied), 1,245 scorable, median return 10.2%. Committed as the real 04-07/05-11 panel. **Walk-forward P9 gate FAILED HONESTLY** (R²=-0.009, no leakage; global_median + trailing_12 baselines beat the model at DM p<1e-5). On the thin NSE-only feature set the model does not outperform a naive median — the EXPECTED humble pre-apply result (D5-01/P9). Per the runbook, model records/card/mlruns were NOT regenerated (step 4 is "only if gate passes"); nothing was p-hacked. Evidence: `data/forecasts/_gate/release_gate.json`. Remaining to fully close 05-11: enrich the feature set (issue-size/OFS/promoter/regime/anchor need sources beyond the NSE feed) OR ship the forecaster with the honest "does-not-beat-baseline" verdict on /methodology; then the Task-3 human verify.
+
 ## Phase Map
 
 | Phase | Name | Status |
