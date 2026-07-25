@@ -124,13 +124,23 @@ Two remaining misses, both honest (diagnosed live, 2026-07-25):
   price 390. The LLM reasonably says the DRHP doesn't state that implied value. Flagged
   for human gold-quality review — NOT reclassified/removed to game the gate.
 
-## ⚠️ Separate honesty finding (pre-existing, NOT from these fixes)
+## Honesty finding — swiggy-012 OOS refusal gap: FIRST-LINE GUARD ADDED (2026-07-25)
 
-Live refusal verification found the OOS question swiggy-012 ("Swiggy vs Zomato
-listing-day performance") is **answered, not refused**. It scores +1.23 → passed gate1
-under BOTH the old 0.0 and new −3.0 threshold (unchanged path), so the gate1 change is
-orthogonal. Root cause: the reranker can't gate topical-OOS, and the answer plausibly
-grounds on the DRHP's peer discussion so cite_check doesn't block it. Needs its own fix
-(an answer-addresses-the-question / OOS relevance check) before public launch (P1/TRUST-04).
+Live refusal verification had found the OOS question swiggy-012 ("Swiggy vs Zomato
+listing-day performance") was **answered, not refused** (it scores +1.23, passing gate1
+at any threshold; the reranker can't gate topical-OOS, and the answer plausibly grounds
+on the DRHP's peer discussion so cite_check doesn't block it).
+
+**Fixed:** added a deterministic out-of-scope screen `is_out_of_scope()` in
+`agent/nodes/gate1_check.py` — a DRHP is filed PRE-listing, so post-listing-performance
+and real-time-valuation questions are refused BEFORE the LLM, regardless of reranker
+score, via the existing gate1 refusal path. Conservative patterns: **0 false positives**
+across all 50 numeric gold Qs + swiggy-001..011 ("expected listing date" / "how did
+revenue perform" / "proposed to be listed" deliberately do NOT match). +4 TDD tests;
+suite 514 pass. **Live-verified: swiggy-012 now refuses** (was answered).
+
+Remaining follow-up: this is a first-line heuristic for the clear post-listing/real-time
+class, not a complete OOS solution. The general case (arbitrary off-topic questions that
+plausibly ground) still wants an LLM answer-relevance judge before public launch (TRUST-04).
 
 Do NOT close EVAL-03 or mark the Phase-3 gate green until a full live run reaches ≥ 0.95.
