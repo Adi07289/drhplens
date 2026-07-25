@@ -30,10 +30,13 @@ def run(state: GraphState) -> GraphState:
     """
     reranked = state.get("reranked_top_k", [])
 
+    # Empty / scoreless retrieval must ALWAYS refuse, independent of the threshold
+    # (float(-inf) < any finite GATE1_THRESHOLD). This is what makes it safe to
+    # lower the threshold to admit relevant-but-negative reranker logits.
     if not reranked:
-        max_score = -1.0
+        max_score = float("-inf")
     else:
-        max_score = max(c.get("rerank_score", -1.0) for c in reranked)
+        max_score = max(c.get("rerank_score", float("-inf")) for c in reranked)
 
     gate1_passed = max_score >= GATE1_THRESHOLD
 

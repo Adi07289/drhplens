@@ -95,12 +95,38 @@ suite 510 pass / 0 regressions.
 | + cite_check decouple + re-ingest (disclosed 24) | 0.21 |
 | + citation repair (disclosed 24) | **0.79 (19/24)** |
 
-## Still open — EVAL-03 NOT yet green (0.79 < 0.95)
+## Part 4 — gate1 calibration (2026-07-24)
 
-The 5 remaining disclosed failures are no longer citation-precision — they are
-**4 refusals** (num-007, 026, 033, 040 — the agent declines to answer a disclosed
-fact) + **1 grounding miss** (num-030, QIB 75%). This is a retrieval/gate-confidence
-issue (gate1 threshold / generate refusing), a separate fix from citation repair.
+The 4 refusals were gate1 rejecting answerable questions BEFORE the LLM. The
+bge-reranker-v2 cross-encoder emits NEGATIVE logits for relevant DRHP passages
+(answerable Qs measured −0.5 to −2.54), all below the uncalibrated
+`GATE1_THRESHOLD = 0.0`. Meanwhile topical-out-of-scope Qs score HIGHER
+(Zomato-listing +1.23, market-cap +2.81), so the reranker score CANNOT separate
+in-scope from out-of-scope — refusal is (and must be) the LLM + cite_check's job,
+not gate1. Recalibrated to **−3.0** (below worst answerable, above garbage like an
+unrelated "weather" query at −8.8); empty/scoreless retrieval now refuses via −inf.
++2 gate1 tests, existing tests updated; suite green.
 
-Do NOT close EVAL-03 or mark the Phase-3 gate green until a full live run reaches
-≥ 0.95. Next: diagnose + fix the refusals (gate1 / generate), then re-measure.
+**Disclosed gate: 0.79 → 0.917** (22/24, 0 refusals, 0 crashes).
+
+## Still open — EVAL-03 at 0.917 (< 0.95); no p-hacking
+
+Two remaining misses, both honest:
+- **num-030 (QIB 75%)** — retrieval miss: post-decompose the "75%" allocation chunk
+  didn't reach the reranked top-5, so citation-repair had nothing to re-anchor to.
+  A retrieval/decompose fix (uncertain payoff). Fixing this alone → 23/24 = 0.958.
+- **num-033** — a DEFECTIVE gold question: it asks for an "implied equity value given
+  the post-issue share count" (a computation) but the gold answer is the per-share
+  price 390. The LLM reasonably says the DRHP doesn't state that implied value. Flagged
+  for human gold-quality review — NOT reclassified/removed to game the gate.
+
+## ⚠️ Separate honesty finding (pre-existing, NOT from these fixes)
+
+Live refusal verification found the OOS question swiggy-012 ("Swiggy vs Zomato
+listing-day performance") is **answered, not refused**. It scores +1.23 → passed gate1
+under BOTH the old 0.0 and new −3.0 threshold (unchanged path), so the gate1 change is
+orthogonal. Root cause: the reranker can't gate topical-OOS, and the answer plausibly
+grounds on the DRHP's peer discussion so cite_check doesn't block it. Needs its own fix
+(an answer-addresses-the-question / OOS relevance check) before public launch (P1/TRUST-04).
+
+Do NOT close EVAL-03 or mark the Phase-3 gate green until a full live run reaches ≥ 0.95.
