@@ -2,11 +2,17 @@
 
 **Model version:** `cqr-xgb-seed-2026.07`
 
-> ⚠️ **SEED / NOT-YET-REGENERATED (CODE-NOW-DEFER).** Every number below is
-> assembled from the current seed/fixture artifacts so this card and its
-> plots render offline today. They are NOT the live backtest — they
-> regenerate from the real walk-forward over the survivorship panel at the
-> 05-11 checkpoint. Seed numbers are never presented as live results.
+> ⚠️ **05-11 LIVE BACKTEST RAN (2026-07-25) — HONEST RESULT: the model does NOT beat
+> naive baselines.** The real survivorship panel (1,378 IPOs, 5 withdrawn, 1,245 scorable,
+> median listing-day return 10.2%) was built live and the walk-forward P9 release gate was
+> run on it. **Verdict: R² = −0.009 (no leakage); the `global_median` and `trailing_12`
+> baselines significantly beat the model (Diebold–Mariano p = 5.5e-08 and 1.6e-05).** On
+> this thin NSE-only feature set the forecaster adds nothing over a naive median — the
+> expected, honest outcome for a pre-apply, no-demand model (P9 / D5-01). Per the release
+> gate, the model is **not shipped as a validated forecaster**, and no features/folds/tests
+> were tuned to force a pass. Gate evidence: `data/forecasts/_gate/release_gate.json`.
+> **The plots + per-number tables below are still the SEED fixtures** — regenerating them
+> from the real fitted model (calibration / PIT / SHAP) is the remaining 05-11 polish step.
 
 ## What this model is
 
