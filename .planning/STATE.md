@@ -39,20 +39,20 @@ Plan: 05-11 — Task 1 (nse verify + install) ✅ DONE; Task 2 CODE LIVE-READY (
 |-------|------|--------|
 | 1 | Foundation + MVP-A (Cited Q&A on One IPO) | Complete |
 | 2 | Multi-IPO Catalogue + DRHP Snapshot Surface | Complete |
-| 3 | Structured Signal Extraction (Red-Flag Table) | Code complete (7/7 plans; 03-05 live numeric-gate pending) |
-| 4 | Historical IPO Dataset + Peer Comparator + GMP Display | Not started |
-| 5 | Calibrated Listing-Day Forecaster | Not started |
-| 6 | Full Eval Harness + Agentic Polish + Portfolio Surface | Not started |
+| 3 | Structured Signal Extraction (Red-Flag Table) | Complete (7/7 plans; EVAL-03 gate PASSES 0.957 as of 2026-07-25) |
+| 4 | Historical IPO Dataset + Peer Comparator + GMP Display | In progress (6/7; 04-07 panel folds into 05-11 live build) |
+| 5 | Calibrated Listing-Day Forecaster | In progress (10/11; 05-11 live crawl deferred) |
+| 6 | Full Eval Harness + Agentic Polish + Portfolio Surface | Not started (next) |
 
 ## Performance Metrics
 
-(Populated as phases complete.)
+(Reconciled 2026-07-25 — earlier "0/6" line was stale boilerplate.)
 
-- Phases completed: 0 / 6
-- v1 requirements satisfied: 0 / 42
-- Numeric faithfulness (release gate >=0.95): not yet measured
-- Citation accuracy (release gate >=0.95): not yet measured
-- Forecast empirical coverage (target 80%): not yet measured
+- Phases completed: 3 / 6 (P1–P3 code-complete; P4 6/7, P5 10/11 in flight)
+- Plans executed: 34 / 36 (94%)
+- Numeric faithfulness (release gate >=0.95): **0.957 PASS** (disclosed subset, 2026-07-25)
+- Citation accuracy (release gate >=0.95): infra live; not separately measured
+- Forecast empirical coverage (target 80%): pending the 05-11 live backtest
 
 ## Accumulated Context
 

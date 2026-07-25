@@ -45,3 +45,8 @@ mlruns/
 # NOTE: data/swiggy_drhp/*.pdf is intentionally NOT ignored.
 # The DRHP binary is committed for reproducibility + SHA-pin integrity.
 # See data/swiggy_drhp/SHA256SUMS and tests/unit/test_drhp_integrity.py.
+.gstack/
+.claude/
+.cache/
+# Regenerable local crawl/cache artifacts (per 05-11-LIVE-BUILD-RUNBOOK.md)
+data/historical/raw/

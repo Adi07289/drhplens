@@ -204,11 +204,11 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation + MVP-A | 5/6 | In Progress|  |
+| 1. Foundation + MVP-A | 6/6 | Code complete (OPS-02 public deploy pending) |  |
 | 2. Multi-IPO Catalogue + DRHP Snapshot | 5/5 | Complete   | 2026-06-24 |
-| 3. Structured Signal Extraction | 7/7 | Complete   | 2026-07-05 |
-| 4. Historical IPO Dataset + Peer Comparator + GMP | 6/7 | In Progress|  |
-| 5. Calibrated Listing-Day Forecaster | 9/11 | In Progress|  |
+| 3. Structured Signal Extraction | 7/7 | Complete (EVAL-03 gate PASSES 0.957) | 2026-07-25 |
+| 4. Historical IPO Dataset + Peer Comparator + GMP | 6/7 | In Progress (04-07 folds into 05-11) |  |
+| 5. Calibrated Listing-Day Forecaster | 10/11 | In Progress (05-11 live crawl deferred) |  |
 | 6. Full Eval Harness + Agentic Polish + Portfolio | 0/0 | Not started | - |
 
 ## Cross-Cutting Invariants
