@@ -213,8 +213,8 @@ def test_load_forecast_reads_committed_seed() -> None:
     assert rec.drhp_id == "swiggy_2024_11"
     assert rec.is_abstain is False
     assert rec.interval is not None
-    assert rec.interval.low_pct == -4.2
-    assert rec.metrics.n == 247
+    assert rec.interval.low_pct == -4.2  # seed illustrative band preserved (D5-01)
+    assert rec.metrics.n == 1132  # global metrics reconciled to the live backtest (05-11)
 
 
 def test_load_forecast_abstain_seed_carries_no_interval() -> None:

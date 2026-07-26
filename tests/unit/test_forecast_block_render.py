@@ -128,9 +128,9 @@ def test_full_render_band_gmp_marker_gap_and_metrics(cap: _CaptureSt) -> None:
     assert FORECAST_NO_GMP_NOTE not in body
     # The always-visible honesty strip — coverage / MAE / RMSE, NOT collapsed.
     assert "drhp-forecast-tested" in body
-    assert "78.3%" in body  # empirical coverage shown honestly (≠ 80%, P17)
+    assert "80.0%" in body  # live held-out empirical coverage (0.8004, P17 — the real number)
     assert "drhp-forecast-rmse" in body
-    assert "2016" in body and "2025" in body
+    assert "2003" in body and "2026" in body  # live backtest year span (2003-2026)
     assert cap.expanders == []  # metrics never behind an expander (L5-3)
     # Model-card link → /methodology.
     assert 'href="/methodology"' in body
