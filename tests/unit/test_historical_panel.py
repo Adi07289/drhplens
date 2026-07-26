@@ -362,14 +362,24 @@ _SAMPLE_CSV = _SAMPLE_PARQUET.with_suffix(".csv")
 
 
 @pytest.mark.skipif(
-    not _SAMPLE_PARQUET.exists(), reason="sample parquet not built yet (Task 2)"
+    not _SAMPLE_PARQUET.exists(),
+    reason="panel parquet not built yet (Task 2 / 05-11 live crawl)",
 )
-def test_committed_sample_parquet_has_full_taxonomy_and_a_nan_row():
+def test_committed_panel_valid_taxonomy_survivorship_and_a_nan_row():
+    # The committed data/historical/ipo_panel.parquet is the REAL 05-11 live
+    # survivorship panel (the hand-crafted seed SAMPLE was replaced by the live
+    # crawl). It need NOT carry every taxonomy value — the real NSE + withdrawn
+    # universe produced only {listed_alive, withdrawn} — but it MUST use only valid
+    # statuses, MUST retain non-survivors (P3), and MUST keep a NaN-return row.
     df = coerce_panel(pd.read_parquet(_SAMPLE_PARQUET))
     assert list(df.columns) == list(PANEL_COLUMNS)
-    assert set(df["status"].unique()) == STATUS_VALUES  # all five present
+    # Only valid taxonomy values (never a fabricated status).
+    assert set(df["status"].dropna().unique()) <= STATUS_VALUES
+    # Survivorship overlay is non-empty: at least one non-survivor row is retained
+    # (P3 — a pure listed_alive panel would BE the survivorship bias this guards).
+    assert set(df["status"].dropna().unique()) - {"listed_alive"}
     assert df["listing_day_return"].isna().any()  # survivorship NaN retained
-    # The sample must be sane enough not to trip its own divergence flag.
+    # The committed panel's median stays within the ~7% MAAR sanity band (no flag).
     _, flag = sanity_check_median(df)
     assert flag is None
 
