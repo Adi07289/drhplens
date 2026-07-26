@@ -1082,6 +1082,12 @@ a.drhp-ipo-card:focus-visible {
   color: var(--drhp-text-primary);
 }
 
+.drhp-forecast-gatefail {
+  /* P9-fail honesty banner (Option A) — the amber .drhp-refusal treatment leads the
+     covered block; this only adds breathing room above the band (05-11). */
+  margin: 0 0 var(--drhp-space-md);
+}
+
 .drhp-forecast-caption-subline {
   font-size: 12px;
   font-weight: 400;

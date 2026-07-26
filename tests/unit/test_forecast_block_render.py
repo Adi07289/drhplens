@@ -34,6 +34,7 @@ from ui.copy import (
     FORECAST_EMPTY_ABSTAIN,
     FORECAST_EMPTY_NOT_COVERED,
     FORECAST_ERROR_STATE,
+    FORECAST_GATE_FAIL_HEADING,
     FORECAST_NO_GMP_NOTE,
 )
 
@@ -204,6 +205,70 @@ def test_not_covered_renders_honest_note_no_band(cap: _CaptureSt) -> None:
     assert html.escape(FORECAST_EMPTY_NOT_COVERED) in body
     assert "drhp-forecast-band" not in body
     assert {"border": True, "key": "drhpcard-forecast-empty"} in cap.containers
+
+
+# --------------------------------------------------------------------------- #
+# P9-fail honesty banner (Option A) — the shipped model failed its release gate;
+# the covered band still renders but is reframed as calibration transparency.
+# --------------------------------------------------------------------------- #
+
+
+def test_gate_banner_html_amber_when_failed() -> None:
+    """A failed P9 gate → an amber honest-caution banner naming the fail + a model-
+    card link, WITHOUT role=alert (static framing, not an urgent live alert)."""
+    out = fb._gate_banner_html(True)
+    assert "drhp-refusal" in out  # the project's amber honest-caution treatment
+    assert "drhp-forecast-gatefail" in out  # dedicated hook class
+    assert FORECAST_GATE_FAIL_HEADING in out
+    assert 'href="/methodology"' in out  # links to the full model card
+    assert 'role="alert"' not in out
+
+
+def test_gate_banner_html_empty_when_passed() -> None:
+    """A passing gate → no banner (the band stands on its own)."""
+    assert fb._gate_banner_html(False) == ""
+
+
+def test_gate_failed_reads_committed_card_verdict(tmp_path, monkeypatch) -> None:
+    """_gate_failed reads the committed card_data.json (cache-only, no model import).
+    A missing/unreadable card never ASSERTS a fail we cannot read."""
+    card = tmp_path / "card_data.json"
+    card.write_text('{"gate_passed": false}', encoding="utf-8")
+    monkeypatch.setattr(fb, "_CARD_DATA_PATH", card)
+    assert fb._gate_failed() is True
+
+    card.write_text('{"gate_passed": true}', encoding="utf-8")
+    assert fb._gate_failed() is False
+
+    monkeypatch.setattr(fb, "_CARD_DATA_PATH", tmp_path / "absent.json")
+    assert fb._gate_failed() is False
+
+
+def test_covered_render_leads_with_gatefail_banner(cap: _CaptureSt, monkeypatch) -> None:
+    """Option A: when the model failed its gate the covered block LEADS with the
+    honesty banner, and the calibrated band STILL renders below it."""
+    monkeypatch.setattr(fb, "_gate_failed", lambda: True)
+    record = load_forecast("swiggy_2024_11")
+    fb.render_forecast_block(record, None, _ISSUE_PRICE)
+
+    body = cap.joined
+    assert "drhp-forecast-gatefail" in body  # honesty banner present
+    assert "drhp-forecast-band" in body  # band STILL renders (Option A)
+    # the banner precedes the plot in render order
+    idx_banner = next(
+        i for i, m in enumerate(cap.markdowns) if "drhp-forecast-gatefail" in m
+    )
+    idx_plot = next(
+        i for i, m in enumerate(cap.markdowns) if "drhp-forecast-plot" in m
+    )
+    assert idx_banner < idx_plot
+
+
+def test_covered_render_no_banner_when_gate_passes(cap: _CaptureSt, monkeypatch) -> None:
+    monkeypatch.setattr(fb, "_gate_failed", lambda: False)
+    record = load_forecast("swiggy_2024_11")
+    fb.render_forecast_block(record, None, _ISSUE_PRICE)
+    assert "drhp-forecast-gatefail" not in cap.joined
 
 
 def test_error_renders_amber_refusal_not_red(cap: _CaptureSt) -> None:

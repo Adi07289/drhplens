@@ -195,20 +195,40 @@ else:
 
     # available_at ≤ T0 leakage audit (the lean feature list) + the anchor pre-open
     # audit (D5-08).
+    _leak = _card.get("leakage_audit", [])
+    # The live card stamps each feature with populated_live (whether its source was
+    # actually populated on the live panel); the seed card omits it. Show the column
+    # only when present — a deferred feature is marked "no (deferred)", never hidden.
+    _has_pop = any("populated_live" in r for r in _leak)
+
+    def _pop_cell(r: dict) -> str:
+        if "populated_live" not in r:
+            return ""
+        label = "yes" if r.get("populated_live") else "no (deferred)"
+        return f'<td class="m-status">{label}</td>'
+
     _leak_rows = "".join(
         f'<tr><td class="m-name">{html.escape(str(r.get("feature", "")))}</td>'
         f'<td class="m-how">{html.escape(str(r.get("family", "")))}</td>'
         f'<td class="m-target">{html.escape(str(r.get("available_at_rule", "")))}</td>'
+        f'{_pop_cell(r)}'
         f'<td class="m-status">{html.escape(str(r.get("verdict", "")))}</td></tr>'
-        for r in _card.get("leakage_audit", [])
+        for r in _leak
+    )
+    _pop_th = "<th>Populated live?</th>" if _has_pop else ""
+    _pop_note = (
+        " The <code>Populated live?</code> column flags a feature whose source was "
+        "deferred at the live build — marked, not hidden."
+        if _has_pop
+        else ""
     )
     st.markdown(
         '<p class="drhp-method-note">Every feature carries a verified '
         "<code>available_at ≤ T0</code> stamp — the leakage gate that keeps the model "
-        "honest (FCAST-02).</p>"
+        f"honest (FCAST-02).{_pop_note}</p>"
         '<div class="drhp-metrics-wrap"><table class="drhp-metrics">'
         "<thead><tr><th>Feature</th><th>Family</th><th>available_at</th>"
-        "<th>Verdict</th></tr></thead>"
+        f"{_pop_th}<th>Verdict</th></tr></thead>"
         f"<tbody>{_leak_rows}</tbody></table></div>",
         unsafe_allow_html=True,
     )

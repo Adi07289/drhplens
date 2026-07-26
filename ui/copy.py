@@ -693,6 +693,17 @@ FORECAST_COVERAGE_HONESTY_NOTE: str = (
 # Model-card link (the one explicit affordance) — points to /methodology (FCAST-05).
 FORECAST_MODEL_CARD_LINK: str = "Full model card →"
 
+# P9-fail honesty banner (Option A) — the shipped forecaster FAILED its release gate
+# on the live backtest (naive baselines match/beat it, the honest D5-01 result). The
+# covered band still renders, but the block LEADS with this so no reader mistakes the
+# range for a validated call. Driven by the committed gate verdict (card_data.json).
+FORECAST_GATE_FAIL_HEADING: str = "This forecaster does not beat a naive baseline"
+FORECAST_GATE_FAIL_BODY: str = (
+    "On the live backtest the model failed its release gate (P9: FAIL) — a naive "
+    "baseline matches or beats it. The range below is shown for calibration "
+    "transparency, not as a validated call."
+)
+
 # Empty states — not-covered (no forecast) + model-abstains (insufficient history).
 FORECAST_EMPTY_NOT_COVERED: str = (
     "No calibrated listing-day forecast is available for this IPO yet."

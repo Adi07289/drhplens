@@ -28,8 +28,10 @@ interpolated numeric strings are formatted floats (safe).
 from __future__ import annotations
 
 import html as _html
+import json
 import math
 import statistics
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import streamlit as st
@@ -46,6 +48,8 @@ from ui.copy import (
     FORECAST_EMPTY_NOT_COVERED,
     FORECAST_ERROR_STATE,
     FORECAST_FRAMING_SUBLINE,
+    FORECAST_GATE_FAIL_BODY,
+    FORECAST_GATE_FAIL_HEADING,
     FORECAST_GMP_ARIA_TEMPLATE,
     FORECAST_GMP_BASIS_TITLE_TEMPLATE,
     FORECAST_GMP_GAP_TEMPLATE,
@@ -72,6 +76,49 @@ if TYPE_CHECKING:  # pragma: no cover - typing only, no runtime import cost
 # The href for the model-card link — the /methodology page is the model card's
 # in-app home (FCAST-05, L5-3).
 _MODEL_CARD_HREF = "/methodology"
+
+# The committed model card's plain-data verdict (written by the card writer). The
+# block reads ONLY the release-gate PASS/FAIL from it — a cache-only read of a
+# committed JSON artifact, NOT a model import (FCAST-02 Direction 1 preserved: the
+# render still imports no modelling library and no heavy model / feature / walk-
+# forward pipeline).
+_CARD_DATA_PATH = Path(__file__).resolve().parents[1] / "model_card" / "card_data.json"
+
+
+def _gate_failed() -> bool:
+    """True iff the committed model card records a FAILED P9 release gate.
+
+    Reads the committed ``model_card/card_data.json`` (cache-only). Any missing file,
+    unreadable JSON, or absent ``gate_passed`` key returns False — the block never
+    ASSERTS a fail it cannot read; the honesty banner shows only a KNOWN committed
+    fail, never a fabricated one.
+    """
+    try:
+        data = json.loads(_CARD_DATA_PATH.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False
+    return data.get("gate_passed") is False
+
+
+def _gate_banner_html(gate_failed: bool) -> str:
+    """The amber P9-fail honesty banner leading a covered block, or '' when it passed.
+
+    Option A: the calibrated band still renders below; this banner reframes it as
+    calibration transparency, not a validated call. It reuses the project's amber
+    ``.drhp-refusal`` honest-caution treatment but is NOT an alert (static framing —
+    no ``role="alert"``), and carries the model-card link so the reader can see the
+    full DM table + baselines behind the verdict.
+    """
+    if not gate_failed:
+        return ""
+    return (
+        f'<div class="drhp-refusal drhp-forecast-gatefail">'
+        f'<p class="drhp-refusal-heading">{_html.escape(FORECAST_GATE_FAIL_HEADING)}</p>'
+        f'<p class="drhp-refusal-body">{_html.escape(FORECAST_GATE_FAIL_BODY)} '
+        f'<a class="drhp-forecast-cardlink" href="{_MODEL_CARD_HREF}">'
+        f'{_html.escape(FORECAST_MODEL_CARD_LINK)}</a></p>'
+        f'</div>'
+    )
 
 
 # ===========================================================================
@@ -416,6 +463,13 @@ def render_forecast_block(
             )
             st.markdown(render_per_answer_footer(), unsafe_allow_html=True)
             return
+
+        # Option A honesty banner — when the shipped model FAILED its P9 release gate
+        # (the committed verdict), the covered block LEADS with the honest note so no
+        # reader mistakes the band below for a validated call. The band still renders.
+        banner = _gate_banner_html(_gate_failed())
+        if banner:
+            st.markdown(banner, unsafe_allow_html=True)
 
         # Covered — the calibrated GMP-free framing sub-line.
         st.caption(FORECAST_FRAMING_SUBLINE)
