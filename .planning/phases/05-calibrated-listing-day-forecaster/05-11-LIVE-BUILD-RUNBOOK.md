@@ -1,13 +1,50 @@
 # 05-11 — Live Build Runbook (deferred supervised crawl)
 
-**Status:** 05-11 is PARTIALLY complete. This is NOT a plan SUMMARY — 05-11 stays `[ ]`
-in ROADMAP until the real artifacts are committed and a human verifies `/methodology`.
+**Status:** 05-11 crawl is CLOSED and the three post-crawl residuals are DONE +
+render-verified. The live walk-forward ran over the real 1,378-IPO survivorship panel,
+the P9 gate HONESTLY FAILED (baselines beat the model — the expected D5-01 result, not
+p-hacked), and the model card was regenerated from the real backtest (`bcc23b0` →
+`11e57a0`). The three residuals that remained after that close are now finished (see
+"05-11 residuals — CLOSED" below). Final human sign-off on `/methodology` is the only
+thing left and is captured with screenshots.
 
 | Task | State |
 |---|---|
 | **1 — verify + install `nse`** | ✅ **DONE.** Verified at the blocking-human legitimacy checkpoint (Sigstore attestation + PyPI Trusted Publishing + GPL-3.0 + 50 releases, github.com/BennyThadikaran/NseIndiaApi). Installed `nse 3.1.2` (+ `mthrottle`), declared in `pyproject.toml` (commit `84a5a9d`). |
-| **2 — live universe build + real records + real model card** | ⏳ **CODE LIVE-READY, crawl deferred.** The build was genuinely unwired (see below); fixed + committed (`e7737c8`). The real ~1,400-IPO crawl + walk-forward + gate + artifact regeneration is the remaining supervised step. |
-| **3 — human verify `/methodology` + honest P9 verdict** | ⬜ **PENDING** (depends on Task 2 producing real artifacts). |
+| **2 — live universe build + real records + real model card** | ✅ **DONE.** The live crawl ran; real panel built, walk-forward scored 1,132 OOS IPOs, P9 gate HONESTLY FAILED (`global_median` + `trailing_12` beat the model, DM p<1e-5), model card regenerated from the real run (`bcc23b0`→`11e57a0`). |
+| **3 — human verify `/methodology` + honest P9 verdict** | ✅ **RENDER-VERIFIED.** Booted Streamlit, drove `/methodology` + `/snapshot` headless: P9 gate shows FAIL matching `release_gate.json`, no seed banner, real SHAP plot renders, `Populated live?` column present, forecast block leads with the honest P9-fail banner. Screenshots captured for final human glance. |
+
+## 05-11 residuals — CLOSED (real SHAP · honest forecast-block UI · /methodology verify)
+
+Three residuals remained after the honest crawl close; all three are now done and
+verified in the running app.
+
+1. **Real SHAP.** `model_card/shap.png` had stayed the seed fixture (SHAP needs a
+   FITTED model, not just the OOS frame). Added `pipelines/forecast/interpret.py`
+   (`fit_median_model` fits the ONE production median quantile model on the full
+   panel; `feature_population` reports which lean features carry a value) and
+   `scripts/regenerate_model_card.py` — the runbook's `card build`, now REAL and
+   reproducible. It fits the median model, regenerates `shap.png` from real
+   `TreeExplainer` values, and re-renders `MODEL_CARD.md` + `card_data.json` from one
+   `CardInputs`. **Honest finding:** on the live panel only `trailing_listing_gain`
+   is populated (the DRHP/regime/anchor sources were deferred at 05-11), so the live
+   model is effectively a one-feature model — which is WHY it is humble and fails P9.
+   Disclosed fully: a new `Populated live?` column + a "one-feature model" limitation.
+   The reproducibility footgun the runbook flagged (a stray `card build` clobbering
+   the live card back to seed) is closed — the script rebuilds the live card from the
+   committed `oos_real.parquet` + `release_gate.json`, seed path untouched.
+
+2. **Honest forecast-block UI (Option A).** `ui/forecast_block.py` now LEADS the
+   covered block with an amber honesty banner when the shipped model failed its P9
+   gate — "This forecaster does not beat a naive baseline … the range below is shown
+   for calibration transparency, not as a validated call." The calibrated band still
+   renders below it (P17 — the measured coverage stays visible). Wired cache-only:
+   the block reads `gate_passed` from the committed `card_data.json`, imports NO model
+   module (FCAST-02 Direction 1 isolation audit stays green).
+
+3. **`/methodology` verify.** Headless-browser render check (evidence above).
+
+**Regenerate command:** `PYTHONPATH=. .venv/bin/python scripts/regenerate_model_card.py`
 
 ## What was discovered at the live pull (and fixed)
 
