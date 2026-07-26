@@ -75,61 +75,71 @@
       "feature": "issue_size_cr",
       "family": "a",
       "available_at_rule": "filing_date",
-      "verdict": "<= T0 \u2713"
+      "verdict": "<= T0 \u2713",
+      "populated_live": false
     },
     {
       "feature": "price_band_width_pct",
       "family": "a",
       "available_at_rule": "filing_date",
-      "verdict": "<= T0 \u2713"
+      "verdict": "<= T0 \u2713",
+      "populated_live": false
     },
     {
       "feature": "ofs_fraction",
       "family": "a",
       "available_at_rule": "filing_date",
-      "verdict": "<= T0 \u2713"
+      "verdict": "<= T0 \u2713",
+      "populated_live": false
     },
     {
       "feature": "promoter_dilution_pct",
       "family": "a",
       "available_at_rule": "filing_date",
-      "verdict": "<= T0 \u2713"
+      "verdict": "<= T0 \u2713",
+      "populated_live": false
     },
     {
       "feature": "nifty_mom_3m",
       "family": "b",
       "available_at_rule": "preopen_snapshot",
-      "verdict": "<= T0 \u2713"
+      "verdict": "<= T0 \u2713",
+      "populated_live": false
     },
     {
       "feature": "india_vix",
       "family": "b",
       "available_at_rule": "preopen_snapshot",
-      "verdict": "<= T0 \u2713"
+      "verdict": "<= T0 \u2713",
+      "populated_live": false
     },
     {
       "feature": "trailing_listing_gain",
       "family": "b",
       "available_at_rule": "preopen_snapshot",
-      "verdict": "<= T0 \u2713"
+      "verdict": "<= T0 \u2713",
+      "populated_live": true
     },
     {
       "feature": "red_flag_count",
       "family": "c",
       "available_at_rule": "filing_date",
-      "verdict": "<= T0 \u2713"
+      "verdict": "<= T0 \u2713",
+      "populated_live": false
     },
     {
       "feature": "rpt_intensity",
       "family": "c",
       "available_at_rule": "filing_date",
-      "verdict": "<= T0 \u2713"
+      "verdict": "<= T0 \u2713",
+      "populated_live": false
     },
     {
       "feature": "anchor_book_cr",
       "family": "d",
       "available_at_rule": "preopen_snapshot",
-      "verdict": "<= T0 \u2713"
+      "verdict": "<= T0 \u2713",
+      "populated_live": false
     }
   ],
   "anchor_audit": [
@@ -183,8 +193,8 @@
       "body": "This card is the real live walk-forward over the 1,378-IPO survivorship panel (built 2026-07-25). The P9 release gate FAILED: global_median and trailing_12 beat the model (Diebold\u2013Mariano p<1e-5). The forecaster is not presented as a validated model \u2014 the honest 'does-not-outperform' verdict is the result; no features/folds/tests were tuned to cross the gate (D5-01/P9)."
     },
     {
-      "title": "SHAP plot pending real regeneration",
-      "body": "The calibration and PIT plots are regenerated from the real held-out run; the SHAP feature-importance plot (shap.png) is still the seed fixture and is illustrative only."
+      "title": "Live panel \u2014 effectively a one-feature model",
+      "body": "On the live NSE survivorship panel only `trailing_listing_gain` (a regime feature derived from prior listings) was populated. The DRHP-structure (families a / c), the market-regime VIX / nifty features (b) and the anchor book (d) all require the DRHP caches and the market / anchor fetchers that were deferred at the 05-11 live build, so every other lean column was all-NaN. The live model is therefore effectively a single-feature model \u2014 which is WHY it is humble and does not beat the naive baselines (D5-01). The SHAP plot above shows the one populated feature carrying all the attribution; populating the deferred sources is the path to a model with genuine signal."
     }
   ],
   "plot_files": {

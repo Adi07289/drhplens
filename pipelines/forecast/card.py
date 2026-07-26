@@ -61,6 +61,7 @@ PLOT_FILES: dict[str, str] = {
 }
 
 MODEL_VERSION_SEED: str = "cqr-xgb-seed-2026.07"
+MODEL_VERSION_LIVE: str = "cqr-xgb-live-2026.07"
 
 # Prescriptive advice tokens the card must NEVER carry (informational only). These
 # are the ADVICE verbs/phrases — NOT the technical stems — so a leakage-exclusion
@@ -323,13 +324,34 @@ def _render_markdown(ci: CardInputs) -> str:
         "`available_at ≤ T0` leakage gate (FCAST-02)."
     )
     a("")
-    a("| Feature | Family | available_at | Verdict |")
-    a("|---|---|---|---|")
-    for row in ci.leakage_audit:
+    # "Populated live?" is shown only when the inputs carry it (the live card) — it
+    # states, per feature, whether the column actually held a value on the live
+    # panel, so the schema-vs-populated gap is explicit (D5-11 honesty).
+    has_pop = any("populated_live" in row for row in ci.leakage_audit)
+    if has_pop:
         a(
-            f"| `{row['feature']}` | {row.get('family', '?')} | "
-            f"{_available_at_friendly(row['available_at_rule'])} | {row['verdict']} |"
+            "The `Populated live?` column states whether each feature actually carried "
+            "a value on the live survivorship panel — a feature whose source was "
+            "deferred at the 05-11 build is honestly marked `no (deferred)`, not hidden."
         )
+        a("")
+        a("| Feature | Family | available_at | Populated live? | Verdict |")
+        a("|---|---|---|---|---|")
+        for row in ci.leakage_audit:
+            pop = "yes" if row.get("populated_live") else "no (deferred)"
+            a(
+                f"| `{row['feature']}` | {row.get('family', '?')} | "
+                f"{_available_at_friendly(row['available_at_rule'])} | {pop} | "
+                f"{row['verdict']} |"
+            )
+    else:
+        a("| Feature | Family | available_at | Verdict |")
+        a("|---|---|---|---|")
+        for row in ci.leakage_audit:
+            a(
+                f"| `{row['feature']}` | {row.get('family', '?')} | "
+                f"{_available_at_friendly(row['available_at_rule'])} | {row['verdict']} |"
+            )
     a("")
 
     # ── Anchor pre-open audit (D5-08) ─────────────────────────────────────────
@@ -385,6 +407,13 @@ def _render_markdown(ci: CardInputs) -> str:
     a(f"![PIT histogram — grid-derived, flat means calibrated]({ci.plot_files['pit']})")
     a("")
     a(f"![SHAP feature importance over the lean feature set]({ci.plot_files['shap']})")
+    a("")
+    a(
+        "*Feature importance is the mean |SHAP value| of the median quantile model fit "
+        "on the FULL panel (global interpretability) — distinct from the as-of-T0 "
+        "walk-forward that produced the held-out metrics above. A feature that was "
+        "never populated on the panel contributes zero.*"
+    )
     a("")
 
     # ── Held-out metrics (P17) ────────────────────────────────────────────────

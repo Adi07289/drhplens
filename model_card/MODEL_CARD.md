@@ -16,18 +16,20 @@ A calibrated 80% prediction INTERVAL for the listing-day return of an Indian mai
 
 The wide four-family candidate pool is curated to a lean production set (D5-07); every feature is disclosed at or before issue open, verified by the `available_at ≤ T0` leakage gate (FCAST-02).
 
-| Feature | Family | available_at | Verdict |
-|---|---|---|---|
-| `issue_size_cr` | a | DRHP/RHP filing date (≤ T0) | <= T0 ✓ |
-| `price_band_width_pct` | a | DRHP/RHP filing date (≤ T0) | <= T0 ✓ |
-| `ofs_fraction` | a | DRHP/RHP filing date (≤ T0) | <= T0 ✓ |
-| `promoter_dilution_pct` | a | DRHP/RHP filing date (≤ T0) | <= T0 ✓ |
-| `nifty_mom_3m` | b | pre-open T0−1 EOD snapshot (< T0) | <= T0 ✓ |
-| `india_vix` | b | pre-open T0−1 EOD snapshot (< T0) | <= T0 ✓ |
-| `trailing_listing_gain` | b | pre-open T0−1 EOD snapshot (< T0) | <= T0 ✓ |
-| `red_flag_count` | c | DRHP/RHP filing date (≤ T0) | <= T0 ✓ |
-| `rpt_intensity` | c | DRHP/RHP filing date (≤ T0) | <= T0 ✓ |
-| `anchor_book_cr` | d | pre-open T0−1 EOD snapshot (< T0) | <= T0 ✓ |
+The `Populated live?` column states whether each feature actually carried a value on the live survivorship panel — a feature whose source was deferred at the 05-11 build is honestly marked `no (deferred)`, not hidden.
+
+| Feature | Family | available_at | Populated live? | Verdict |
+|---|---|---|---|---|
+| `issue_size_cr` | a | DRHP/RHP filing date (≤ T0) | no (deferred) | <= T0 ✓ |
+| `price_band_width_pct` | a | DRHP/RHP filing date (≤ T0) | no (deferred) | <= T0 ✓ |
+| `ofs_fraction` | a | DRHP/RHP filing date (≤ T0) | no (deferred) | <= T0 ✓ |
+| `promoter_dilution_pct` | a | DRHP/RHP filing date (≤ T0) | no (deferred) | <= T0 ✓ |
+| `nifty_mom_3m` | b | pre-open T0−1 EOD snapshot (< T0) | no (deferred) | <= T0 ✓ |
+| `india_vix` | b | pre-open T0−1 EOD snapshot (< T0) | no (deferred) | <= T0 ✓ |
+| `trailing_listing_gain` | b | pre-open T0−1 EOD snapshot (< T0) | yes | <= T0 ✓ |
+| `red_flag_count` | c | DRHP/RHP filing date (≤ T0) | no (deferred) | <= T0 ✓ |
+| `rpt_intensity` | c | DRHP/RHP filing date (≤ T0) | no (deferred) | <= T0 ✓ |
+| `anchor_book_cr` | d | pre-open T0−1 EOD snapshot (< T0) | no (deferred) | <= T0 ✓ |
 
 ## Anchor pre-open leakage audit (D5-08)
 
@@ -63,6 +65,8 @@ The model is compared against four naive baselines under the IDENTICAL as-of-T0 
 ![PIT histogram — grid-derived, flat means calibrated](pit.png)
 
 ![SHAP feature importance over the lean feature set](shap.png)
+
+*Feature importance is the mean |SHAP value| of the median quantile model fit on the FULL panel (global interpretability) — distinct from the as-of-T0 walk-forward that produced the held-out metrics above. A feature that was never populated on the panel contributes zero.*
 
 ## Held-out calibration metrics
 
@@ -108,7 +112,7 @@ Sectors with fewer than 30 IPOs are pooled into `Other` so a thin sector never b
 - **The PIT curve is grid-derived.** The reliability/PIT diagnostic fits a fine 0.05..0.95 quantile grid PURELY for the plot; the production interval stays the 0.1 / 0.5 / 0.9 band. The PIT is labelled grid-derived wherever it is shown (A8).
 - **The Diebold–Mariano test is cross-sectional.** The four baselines are compared under the identical as-of-T0 protocol, but the loss differential is cross-sectional across IPOs rather than a single time series — read the DM p-values with that caveat (A7). A paired Wilcoxon signed-rank p is reported alongside as a distribution-free cross-check.
 - **Live 05-11 backtest — the model does NOT beat naive baselines.** This card is the real live walk-forward over the 1,378-IPO survivorship panel (built 2026-07-25). The P9 release gate FAILED: global_median and trailing_12 beat the model (Diebold–Mariano p<1e-5). The forecaster is not presented as a validated model — the honest 'does-not-outperform' verdict is the result; no features/folds/tests were tuned to cross the gate (D5-01/P9).
-- **SHAP plot pending real regeneration.** The calibration and PIT plots are regenerated from the real held-out run; the SHAP feature-importance plot (shap.png) is still the seed fixture and is illustrative only.
+- **Live panel — effectively a one-feature model.** On the live NSE survivorship panel only `trailing_listing_gain` (a regime feature derived from prior listings) was populated. The DRHP-structure (families a / c), the market-regime VIX / nifty features (b) and the anchor book (d) all require the DRHP caches and the market / anchor fetchers that were deferred at the 05-11 live build, so every other lean column was all-NaN. The live model is therefore effectively a single-feature model — which is WHY it is humble and does not beat the naive baselines (D5-01). The SHAP plot above shows the one populated feature carrying all the attribution; populating the deferred sources is the path to a model with genuine signal.
 
 ---
 

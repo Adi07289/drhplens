@@ -132,6 +132,38 @@ def test_writer_emits_markdown_and_card_data_json(tmp_path):
     assert data["plot_files"]["shap"] == "shap.png"
 
 
+def test_card_labels_shap_as_global_interpretability():
+    """The SHAP plot is labelled global interpretability (median model on the FULL
+    panel), explicitly distinct from the as-of-T0 walk-forward metrics — so no reader
+    conflates the two (05-11 SHAP residual)."""
+    md = build_model_card(inputs=_fake_inputs(), write=False)
+    assert "shap.png" in md
+    assert "global interpretability" in md
+    assert "mean |SHAP value|" in md
+
+
+def test_card_renders_populated_live_column_only_when_present():
+    """The live card stamps each lean feature with populated_live; the render then
+    shows a 'Populated live?' column (yes / no (deferred)). The seed/injected card
+    (no populated_live key) omits the column entirely — seed render unchanged."""
+    ci = _fake_inputs()
+    ci.leakage_audit = [
+        {"feature": "trailing_listing_gain", "family": "b",
+         "available_at_rule": "preopen_snapshot", "verdict": "<= T0 ✓",
+         "populated_live": True},
+        {"feature": "issue_size_cr", "family": "a",
+         "available_at_rule": "filing_date", "verdict": "<= T0 ✓",
+         "populated_live": False},
+    ]
+    md = build_model_card(inputs=ci, write=False)
+    assert "Populated live?" in md
+    assert "| `trailing_listing_gain` | b | pre-open T0−1 EOD snapshot (< T0) | yes |" in md
+    assert "no (deferred)" in md  # the unpopulated feature is honestly marked, not hidden
+
+    plain = build_model_card(inputs=_fake_inputs(), write=False)
+    assert "Populated live?" not in plain
+
+
 @pytest.mark.slow
 def test_default_seed_inputs_assembles_from_committed_artifacts():
     """Integration: the seed inputs are COMPUTED (seed forecast record metrics +
