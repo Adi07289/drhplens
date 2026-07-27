@@ -24,7 +24,7 @@ progress:
 
 **Audience:** Indian retail investors (mobile-first); secondary audience is the DS-recruiter reviewing the portfolio piece.
 
-**Current Focus:** Phase 06 — full eval harness + agentic polish + portfolio surface (next / not started). Phases 1–5 complete; Phase 4 + Phase 5 goal-backward verified 2026-07-27.
+**Current Focus:** Phase 06 split (2026-07-28) into decimal sub-phases **6.1 / 6.2 / 6.3** (see ROADMAP.md; "6a/6b/6c" aliases). **Phase 6.1 — Eval Harness + Inline Metrics + Langfuse Ops (EVAL-01/02/05)** is the active slice: `06.1-SPEC.md` (4 reqs, ambiguity 0.115) + `06.1-UI-SPEC.md` (6/6 dims + 9/9 honesty checks PASS) written & committed on branch `phase6/6a-eval-harness`. Next: `/gsd-ai-integration-phase 6.1` (AI-SPEC) → `/gsd-spike` → `/gsd-plan-phase 6.1`. Phases 1–5 complete; Phase 4 + Phase 5 goal-backward verified 2026-07-27.
 
 ## Current Position
 
