@@ -13,7 +13,9 @@
 - [x] **Phase 3: Structured Signal Extraction (Red-Flag Table)** - NLP-extracted structured red-flag table per IPO with per-field confidence scores, hand-labeled gold set evaluation (F1), and numeric-faithfulness release gate. (completed 2026-07-05)
 - [x] **Phase 4: Historical IPO Dataset + Peer Comparator + GMP Display** - Survivorship-corrected historical IPO dataset (SEBI-sourced universe with status column), peer multiples comparison table, GMP read-only display, Indian-context formatting throughout. (completed 2026-07-27)
 - [x] **Phase 5: Calibrated Listing-Day Forecaster** - XGBoost + MAPIE conformal regression with walk-forward backtest, four baselines, committed model card, GMP-vs-model gap signal, uncertainty rendered as first-class UI. (completed 2026-07-25; honest model card — forecaster does not beat baselines, the expected D5-01 result)
-- [ ] **Phase 6: Full Eval Harness + Agentic Polish + Portfolio Surface** - RAGAS/DeepEval/Langfuse eval dashboards, in-UI metric surfacing, "Show your work" pane, agent trace visibility, portfolio-presentable repo (README + methodology + failure gallery).
+- [ ] **Phase 6.1: Eval Harness + Inline Metrics + Langfuse Ops** - Committed RAGAS/DeepEval/custom eval suite (faithfulness + recall@k + citation accuracy), honest inline metric surfacing on IPO pages, and Langfuse trace enrichment + failure-mode ops dashboard. (EVAL-01/02/05; alias "6a" — built first)
+- [ ] **Phase 6.2: Portfolio Surfaces** - "Show your work" pane, portfolio-presentable README + model card + committed HTML eval dashboards, recruiter /methodology landing page, and browseable /failures gallery. (EVAL-04/OPS-03/LAND-01/FAILGAL-01; alias "6b")
+- [ ] **Phase 6.3: Agent Polish + Launch Gate** - Full multi-tool LangGraph orchestration (TTL + semantic call dedup + supervisor stress-tested) and the SEBI legal-review checkpoint gating public launch. (alias "6c")
 
 ## Phase Details
 
@@ -175,28 +177,63 @@ Plans:
 
 ---
 
-### Phase 6: Full Eval Harness + Agentic Polish + Portfolio Surface
+### Phase 6.1: Eval Harness + Inline Metrics + Langfuse Ops
 
-**Goal:** A retail user (and a recruiter reviewing the portfolio) sees the DS rigor surface visibly: per-page RAG faithfulness / retrieval coverage / citation accuracy displayed inline, a "Show your work" pane expandable on any claim to reveal retrieval query + retrieved chunks + prompt + sources + eval scores, full agent traces captured via Langfuse, and a portfolio-presentable repo with README, methodology writeup, model card, failure gallery, and committed eval dashboards.
+**Goal:** A retail user (and a recruiter) sees the RAG DS-rigor surface: a committed RAGAS/DeepEval/custom-citation eval suite computes RAG faithfulness + retrieval recall@k + citation accuracy, an honest system-level subset is surfaced inline on every IPO page (per-IPO line where a real gold set exists), and every agent trace is enriched via Langfuse with cost / latency / tool-call counts + a failure-mode taxonomy on an operational dashboard.
 **Mode:** mvp
 **Depends on:** Phase 5
-**Requirements:** EVAL-01, EVAL-02, EVAL-04, EVAL-05, OPS-03, LAND-01, FAILGAL-01
+**Requirements:** EVAL-01, EVAL-02, EVAL-05
 **Success Criteria** (what must be TRUE):
 
-  1. User sees per-IPO RAG faithfulness, retrieval recall@k, and citation accuracy scores surfaced inline on the IPO page (e.g., "This page's RAG faithfulness: 0.91") — computed by a committed RAGAS/DeepEval/custom-citation-metric eval suite (EVAL-01, EVAL-02).
-  2. User can click "Show your work" on any claim or forecast to expand a pane revealing the retrieval query, retrieved chunks (with scores), prompt, sources used, and eval scores for that specific claim (EVAL-04).
-  3. Every agent trace is captured via Langfuse (or equivalent), reviewable by the developer, with cost / latency / tool-call counts / failure-mode taxonomy surfaced on an operational dashboard (EVAL-05).
-  4. The public repo contains a portfolio-presentable README (methodology-forward, paper-like), a model card for the forecaster, a failure gallery (>=10 inspected RAG / extraction / forecast failures with commentary), and committed HTML eval dashboards under `eval/reports/` per release (OPS-03).
-  5. A SEBI legal-review checkpoint has been completed before this phase ships publicly (P1 final gate); the agent is upgraded to full multi-tool LangGraph orchestration with TTL + semantic call dedup + supervisor stress-tested against weird-user-query inputs (P8 mitigation).
-  6. **Recruiter landing page (LAND-01, CEO-approved cherry-pick E2)**: `/methodology` deep-linkable page renders model card + methodology writeup + failure gallery link + per-IPO eval dashboard summary — the page resume deep-links land on; the Phase 1 stub link is replaced with this full implementation.
-  7. **Live browseable failure gallery (FAILGAL-01, CEO-approved cherry-pick E6)**: `/failures` page renders the eval/failures gallery (≥10 documented failures across RAG / extraction / forecast surfaces) with category, query, expected vs actual, and post-mortem note — browseable and searchable, not just a markdown file in `eval/`.
+  1. User sees RAG faithfulness, retrieval recall@k, and citation accuracy scores surfaced inline on the IPO page — an honest system-level figure across the committed eval set, with a per-IPO line where a real gold set exists (no fabricated per-IPO numbers) — computed by a committed RAGAS/DeepEval/custom-citation-metric eval suite (EVAL-01, EVAL-02).
+  2. Every agent trace is captured via Langfuse (or equivalent), reviewable by the developer, with cost / latency / tool-call counts / failure-mode taxonomy surfaced on an operational dashboard (EVAL-05).
 
 **Plans**: TBD
 **UI hint**: yes
+**Alias**: 6a — built first; branch `phase6/6a-eval-harness`; design doc `docs/superpowers/specs/2026-07-28-6a-eval-harness-design.md`
 
-**Pitfalls owned:** P8 (agent infinite loops — TTL + semantic dedup + supervisor stress-tested), P10 (evaluation theater — every headline metric gets interpretation paragraph + failure gallery + human spot-check of >=50 examples), P18 (agent answers without retrieving — retrieval-mandatory contract + output-schema enforcement + trace audit eval), P1 final gate (SEBI legal-review checkpoint before public launch), P19 (demo-day fragility — final pass: pre-index corpus, cache LLM responses, cron pinger, offline demo video).
+**Pitfalls owned:** P10 (evaluation theater — every headline metric gets interpretation paragraph + failure gallery + human spot-check of >=50 examples), P18 (agent answers without retrieving — retrieval-mandatory contract + output-schema enforcement + trace audit eval).
 
 **Research flag:** DeepEval CI integration and Langfuse custom-score callbacks may benefit from a brief exploration spike at phase start (~1-2 days).
+
+---
+
+### Phase 6.2: Portfolio Surfaces
+
+**Goal:** A recruiter reviewing the portfolio can expand a "Show your work" pane on any claim/forecast, read a methodology-forward README + forecaster model card, browse a searchable /failures gallery, and land on a deep-linkable /methodology page — with committed HTML eval dashboards per release.
+**Mode:** mvp
+**Depends on:** Phase 6.1
+**Requirements:** EVAL-04, OPS-03, LAND-01, FAILGAL-01
+**Success Criteria** (what must be TRUE):
+
+  1. User can click "Show your work" on any claim or forecast to expand a pane revealing the retrieval query, retrieved chunks (with scores), prompt, sources used, and eval scores for that specific claim (EVAL-04 — largely delivered by METHOD-01 in Phase 3; verify coverage and extend to forecasts).
+  2. The public repo contains a portfolio-presentable README (methodology-forward, paper-like), a model card for the forecaster, a failure gallery (>=10 inspected RAG / extraction / forecast failures with commentary), and committed HTML eval dashboards under `eval/reports/` per release (OPS-03).
+  3. **Recruiter landing page (LAND-01, CEO-approved cherry-pick E2)**: `/methodology` deep-linkable page renders model card + methodology writeup + failure gallery link + per-IPO eval dashboard summary — the page resume deep-links land on; the Phase 1 stub link is replaced with this full implementation.
+  4. **Live browseable failure gallery (FAILGAL-01, CEO-approved cherry-pick E6)**: `/failures` page renders the eval/failures gallery (≥10 documented failures across RAG / extraction / forecast surfaces) with category, query, expected vs actual, and post-mortem note — browseable and searchable, not just a markdown file in `eval/`.
+
+**Plans**: TBD
+**UI hint**: yes
+**Alias**: 6b
+
+**Pitfalls owned:** P19 (demo-day fragility — final pass: pre-index corpus, cache LLM responses, cron pinger, offline demo video).
+
+---
+
+### Phase 6.3: Agent Polish + Launch Gate
+
+**Goal:** The agent is upgraded to full multi-tool LangGraph orchestration (TTL + semantic call dedup + supervisor stress-tested against weird-user-query inputs), and a SEBI legal-review checkpoint is completed before the app ships publicly.
+**Mode:** mvp
+**Depends on:** Phase 6.2
+**Requirements:** (none new — success-criterion-driven; agentic-orchestration polish + the P1 final launch gate)
+**Success Criteria** (what must be TRUE):
+
+  1. A SEBI legal-review checkpoint has been completed before the app ships publicly (P1 final gate); the agent is upgraded to full multi-tool LangGraph orchestration with TTL + semantic call dedup + supervisor stress-tested against weird-user-query inputs (P8 mitigation).
+
+**Plans**: TBD
+**UI hint**: no
+**Alias**: 6c — holds public launch
+
+**Pitfalls owned:** P8 (agent infinite loops — TTL + semantic dedup + supervisor stress-tested), P1 final gate (SEBI legal-review checkpoint before public launch).
 
 ---
 
@@ -209,7 +246,9 @@ Plans:
 | 3. Structured Signal Extraction | 7/7 | Complete (EVAL-03 gate PASSES 0.957) | 2026-07-25 |
 | 4. Historical IPO Dataset + Peer Comparator + GMP | 7/7 | Complete (survivorship panel built live; median sanity on /methodology) | 2026-07-27 |
 | 5. Calibrated Listing-Day Forecaster | 11/11 | Complete (honest model card; forecaster does not beat baselines) | 2026-07-25 |  |
-| 6. Full Eval Harness + Agentic Polish + Portfolio | 0/0 | Not started | - |
+| 6.1 Eval Harness + Inline Metrics + Langfuse Ops | 0/0 | Not started | - |
+| 6.2 Portfolio Surfaces | 0/0 | Not started | - |
+| 6.3 Agent Polish + Launch Gate | 0/0 | Not started | - |
 
 ## Cross-Cutting Invariants
 
@@ -224,7 +263,7 @@ These hold across every phase and are non-negotiable design constraints derived 
 - **Naive baselines are reported alongside every model.** If the ML forecaster doesn't beat a trailing-12-IPO-median baseline with statistical significance, the portfolio piece says so honestly (P9).
 - **GMP display !== GMP feature.** GMP is shown read-only with caveats; it never enters any model pipeline (GMP-01, GMP-02, P4).
 - **Storage is the integration bus.** Batch pipelines write; on-demand tools read; no pipeline-to-pipeline direct calls; no batch pipeline calls the agent (architecture invariant).
-- **Eval hooks are instrumented from Phase 1.** Dashboard polish is Phase 6, but every agent run writes a full trace from day one (P10).
+- **Eval hooks are instrumented from Phase 1.** Dashboard polish is Phase 6.1, but every agent run writes a full trace from day one (P10).
 - **Agent traces carry `claim_id` references from Phase 1 day one** (not bolted on later). Every generated claim is emitted with a `claim_id` referencing the retrieval object; the renderer resolves citations and the methodology pane (METHOD-01, Phase 3) consumes the same data structure. Necessary so Phase 3's "Show your work" pane has structured data to render — captured here so it isn't forgotten during Phase 1 plan-phase.
 
 ## Coverage
@@ -261,11 +300,11 @@ These hold across every phase and are non-negotiable design constraints derived 
 | GMP-01 | Phase 4 |
 | GMP-02 | Phase 4 |
 | GMP-03 | Phase 5 |
-| EVAL-01 | Phase 6 |
-| EVAL-02 | Phase 6 |
+| EVAL-01 | Phase 6.1 |
+| EVAL-02 | Phase 6.1 |
 | EVAL-03 | Phase 3 |
-| EVAL-04 | Phase 6 |
-| EVAL-05 | Phase 6 |
+| EVAL-04 | Phase 6.2 |
+| EVAL-05 | Phase 6.1 |
 | TRUST-01 | Phase 1 |
 | TRUST-02 | Phase 1 |
 | TRUST-03 | Phase 1 |
@@ -276,10 +315,10 @@ These hold across every phase and are non-negotiable design constraints derived 
 | UI-04 | Phase 4 |
 | OPS-01 | Phase 2 |
 | OPS-02 | Phase 1 |
-| OPS-03 | Phase 6 |
+| OPS-03 | Phase 6.2 |
 | METHOD-01 | Phase 3 |
-| LAND-01 | Phase 6 |
-| FAILGAL-01 | Phase 6 |
+| LAND-01 | Phase 6.2 |
+| FAILGAL-01 | Phase 6.2 |
 
 ## Notes
 
@@ -292,7 +331,7 @@ The phase progression maps onto the canonical research-identified MVP slices (AR
 - Phase 3 = MVP-B (adds structured extraction NLP signal)
 - Phase 4 = MVP-C (adds peer comparison + historical dataset foundation)
 - Phase 5 = MVP-D (adds the headline DS forecaster — the portfolio piece)
-- Phase 6 = polished DRHPLens v1 (eval harness + portfolio surface)
+- Phase 6.1/6.2/6.3 = polished DRHPLens v1 (6.1 eval harness → 6.2 portfolio surface → 6.3 agent polish + launch gate)
 
 Phase 1 must ship publicly (or at least to a Loom + repo) before Phase 2 begins. This is the most important phase gate in the project — it locks the compliance + citation infrastructure in place and proves the vertical slice works end-to-end before depth is added on any layer.
 
