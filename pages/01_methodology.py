@@ -126,6 +126,39 @@ def _mc_num(value, nd: int = 3) -> str:
     return "—" if num != num else f"{num:.{nd}f}"
 
 
+# ── Historical panel survivorship sanity (04-07 / SC-5) ──────────────────────
+# The forecaster's backtest universe is a survivorship-corrected panel; its median
+# listing-day return is sanity-checked against the ~7% MAAR baseline (P3). Render-only:
+# reads the committed data/historical/panel_sanity.json (json ONLY — never a
+# pipelines import, T-05-10-ISO). A divergence flag is shown VERBATIM only when it
+# actually fires; within-band is stated honestly, never a fabricated alarm.
+_panel_sanity_path = (
+    Path(__file__).resolve().parents[1] / "data" / "historical" / "panel_sanity.json"
+)
+if _panel_sanity_path.is_file():
+    _ps = json.loads(_panel_sanity_path.read_text(encoding="utf-8"))
+    if _ps.get("flag"):
+        _ps_verdict = (
+            f'<span class="drhp-not-disclosed">{html.escape(str(_ps["flag"]))}</span>'
+        )
+    else:
+        _ps_verdict = (
+            "The built panel's median listing-day return is "
+            f"<strong>{_mc_num(_ps.get('median_pct'), 2)}%</strong> over "
+            f"{html.escape(str(_ps.get('n_scored', '—')))} scored IPOs — above the "
+            f"~{_mc_num(_ps.get('baseline_pct'), 2)}% point estimate but WITHIN the "
+            f"[{_mc_num(_ps.get('band_lower_pct'), 0)}%, "
+            f"{_mc_num(_ps.get('band_upper_pct'), 0)}%] sanity band, so no "
+            "survivorship-inflation flag fires (withdrawn / delisted IPOs are retained "
+            "as NaN, not dropped — P3)."
+        )
+    st.markdown(
+        '<p class="drhp-method-note"><strong>Survivorship sanity.</strong> '
+        f"{html.escape(str(_ps.get('methodology', '')))} {_ps_verdict}</p>",
+        unsafe_allow_html=True,
+    )
+
+
 if not _card_data_path.is_file():
     st.markdown(
         '<p class="drhp-method-note drhp-not-disclosed">'

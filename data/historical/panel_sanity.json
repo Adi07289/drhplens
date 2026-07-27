@@ -1,0 +1,11 @@
+{
+  "median_return": 0.1019,
+  "median_pct": 10.19,
+  "n_scored": 1245,
+  "baseline_pct": 7.19,
+  "band_lower_pct": -5.0,
+  "band_upper_pct": 20.0,
+  "within_band": true,
+  "flag": null,
+  "methodology": "Median listing-day return is sanity-checked against the ~7.19% MAAR baseline (Shah & Mehta 2015, 113 NSE mainboard IPOs 2010\u20132014). A built median outside [-5%, 20%] raises a plain-text divergence flag; a median above 20% is read as survivorship inflation (dropped withdrawn/delisted IPOs)."
+}

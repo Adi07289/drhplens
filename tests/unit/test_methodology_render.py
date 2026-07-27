@@ -65,6 +65,20 @@ def test_page_renders_n_per_sector_and_limitations_grid():
     assert '_card.get("limitations"' in src
 
 
+def test_page_surfaces_panel_survivorship_sanity():
+    """The page surfaces the SC-5 median MAAR sanity result, read render-only from the
+    committed data/historical/panel_sanity.json (json — NOT a pipelines import)."""
+    src = _page_source()
+    assert "panel_sanity.json" in src
+    assert "Survivorship sanity" in src
+    assert '_ps.get("flag")' in src  # the divergence flag is shown only when it fires
+
+
+def test_committed_panel_sanity_artifact_exists():
+    p = REPO_ROOT / "data" / "historical" / "panel_sanity.json"
+    assert p.is_file() and p.stat().st_size > 0
+
+
 def test_page_is_render_only_imports_no_model_module():
     """The page imports NO modelling / training / explainability module — it is a
     cache-only read over the committed model_card/ artifacts (T-05-10-ISO)."""
