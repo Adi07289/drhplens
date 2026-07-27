@@ -154,9 +154,9 @@ Which phases cover which requirements. Updated by roadmap creation.
 | SNAP-05 | Phase 2 | Complete |
 | SNAP-06 | Phase 2 | Complete |
 | SNAP-07 | Phase 2 | Complete |
-| RAG-01 | Phase 1 | Complete — LangGraph cited-Q&A pipeline (agent/graph.py: intake→retrieve→rerank→generate→cite_check→emit) + snapshot chat; exercised end-to-end by the EVAL-03 gate run |
-| RAG-02 | Phase 1 | Complete — span-level citation chips (ui/chip.py) over page-anchored chunks (parse_drhp_pages, 1,885 single-page chunks) via GroundedAnswer citations |
-| RAG-03 | Phase 1 | Complete — refusal node (agent/nodes/refuse_with_reformulation.py) + gate1 + deterministic OOS guard (swiggy-012 refuses, live-verified) |
+| RAG-01 | Phase 1 | Complete — LangGraph cited-Q&A pipeline (agent/graph.py: intake→retrieve→rerank→generate→cite_check→emit) + snapshot chat; exercised end-to-end by the EVAL-03 gate run; live-verified 2026-07-27 (agent.demo: issue-size Q → grounded answer) |
+| RAG-02 | Phase 1 | Complete — span-level citation chips (ui/chip.py) over page-anchored chunks (parse_drhp_pages, 1,885 single-page chunks) via GroundedAnswer citations; live-verified 2026-07-27 (agent.demo: citation "Swiggy Limited, page 3") |
+| RAG-03 | Phase 1 | Complete — refusal node (agent/nodes/refuse_with_reformulation.py) + gate1 + deterministic OOS guard (swiggy-012 refuses); live-verified 2026-07-27 (agent.demo: out-of-scope Q refused "does not address"; advice Q refused banned_token) |
 | EXTRACT-01 | Phase 3 | Complete |
 | EXTRACT-02 | Phase 3 | Complete |
 | EXTRACT-03 | Phase 3 | Complete |
