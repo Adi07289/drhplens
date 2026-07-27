@@ -170,11 +170,11 @@ Which phases cover which requirements. Updated by roadmap creation.
 | GMP-01 | Phase 4 | Complete |
 | GMP-02 | Phase 4 | Complete |
 | GMP-03 | Phase 5 | Complete — GMP-vs-model gap line (ui/forecast_block._gap_html) on the band's axis; test_gmp_implied_conversion pins "implies X% above/below the GMP-free median" |
-| EVAL-01 | Phase 6 | Pending |
-| EVAL-02 | Phase 6 | Pending |
+| EVAL-01 | Phase 6.1 | Pending |
+| EVAL-02 | Phase 6.1 | Pending |
 | EVAL-03 | Phase 3 | Complete |
-| EVAL-04 | Phase 6 | Pending |
-| EVAL-05 | Phase 6 | Pending |
+| EVAL-04 | Phase 6.2 | Pending |
+| EVAL-05 | Phase 6.1 | Pending |
 | TRUST-01 | Phase 1 | Complete |
 | TRUST-02 | Phase 1 | Complete |
 | TRUST-03 | Phase 1 | Complete |
@@ -185,10 +185,10 @@ Which phases cover which requirements. Updated by roadmap creation.
 | UI-04 | Phase 4 | Complete |
 | OPS-01 | Phase 2 | Complete |
 | OPS-02 | Phase 1 | Pending |
-| OPS-03 | Phase 6 | Pending |
+| OPS-03 | Phase 6.2 | Pending |
 | METHOD-01 | Phase 3 | Complete |
-| LAND-01 | Phase 6 | Pending |
-| FAILGAL-01 | Phase 6 | Pending |
+| LAND-01 | Phase 6.2 | Pending |
+| FAILGAL-01 | Phase 6.2 | Pending |
 
 **Coverage:**
 - v1 requirements: 45 total
