@@ -105,7 +105,7 @@ Plans:
 - [x] 04-04-PLAN.md — GMP data layer: GmpRecord multi-source spread + GMP-02 isolation import-audit + seed fixtures (GMP-01, GMP-02)
 - [x] 04-05-PLAN.md — Peer table renderer + pure-CSS glossary tooltips, wired into snapshot page (PEER-01, PEER-02, UI-04)
 - [x] 04-06-PLAN.md — Read-only monochrome GMP block, last read block, cache-only (GMP-01, GMP-02, UI-04)
-- [ ] 04-07-PLAN.md — Survivorship-corrected historical IPO panel + ~7% median sanity-check (FCAST-03 foundation)
+- [x] 04-07-PLAN.md — Survivorship-corrected historical IPO panel + ~7% median sanity-check (FCAST-03 foundation) — panel built live at 05-11 (1,378 IPOs, 5 withdrawn; median 10.2% WITHIN the [-5%, 20%] band, no survivor inflation); SC-5 sanity result surfaced on /methodology (2026-07-27)
 
 **UI hint**: yes
 
