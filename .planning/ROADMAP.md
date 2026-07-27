@@ -11,8 +11,8 @@
 - [ ] **Phase 1: Foundation + MVP-A (Cited Q&A on One IPO)** - End-to-end cited Q&A working on one hand-loaded DRHP with full compliance posture, citation infrastructure, and deployed demo URL.
 - [x] **Phase 2: Multi-IPO Catalogue + DRHP Snapshot Surface** - Browseable catalogue of 5-10 IPOs, each with a per-IPO snapshot page (metadata, business summary, financials, risks, use of proceeds, promoter section), all DRHP-cited. (completed 2026-06-24)
 - [x] **Phase 3: Structured Signal Extraction (Red-Flag Table)** - NLP-extracted structured red-flag table per IPO with per-field confidence scores, hand-labeled gold set evaluation (F1), and numeric-faithfulness release gate. (completed 2026-07-05)
-- [ ] **Phase 4: Historical IPO Dataset + Peer Comparator + GMP Display** - Survivorship-corrected historical IPO dataset (SEBI-sourced universe with status column), peer multiples comparison table, GMP read-only display, Indian-context formatting throughout.
-- [x] **Phase 5: Calibrated Listing-Day Forecaster** - XGBoost + MAPIE conformal regression with walk-forward backtest, four baselines, committed model card, GMP-vs-model gap signal, uncertainty rendered as first-class UI.
+- [x] **Phase 4: Historical IPO Dataset + Peer Comparator + GMP Display** - Survivorship-corrected historical IPO dataset (SEBI-sourced universe with status column), peer multiples comparison table, GMP read-only display, Indian-context formatting throughout. (completed 2026-07-27)
+- [x] **Phase 5: Calibrated Listing-Day Forecaster** - XGBoost + MAPIE conformal regression with walk-forward backtest, four baselines, committed model card, GMP-vs-model gap signal, uncertainty rendered as first-class UI. (completed 2026-07-25; honest model card — forecaster does not beat baselines, the expected D5-01 result)
 - [ ] **Phase 6: Full Eval Harness + Agentic Polish + Portfolio Surface** - RAGAS/DeepEval/Langfuse eval dashboards, in-UI metric surfacing, "Show your work" pane, agent trace visibility, portfolio-presentable repo (README + methodology + failure gallery).
 
 ## Phase Details
@@ -96,7 +96,7 @@
   4. All financial numbers render in Indian conventions (lakh/crore, INR symbols), and acronyms (RPT, QIB, NII, RII) carry hoverable glossary tooltips (UI-04).
   5. The historical IPO dataset (~800-1000 mainboard IPOs from 2014-present) is committed to the repo with an explicit `status` column (withdrawn / listed_alive / delisted / merged / name_changed), and the dataset's median listing-day return is sanity-checked against the published ~7% academic baseline — flagged in the methodology page if it materially diverges (foundation for Phase 5; not yet user-visible).
 
-**Plans:** 6/7 plans executed
+**Plans:** 7/7 plans executed
 Plans:
 
 - [x] 04-01-PLAN.md — Wave 0 spike: yfinance 1.5.1 pin + jugaad-data NSE endpoint validation + nightly integration test (PEER-02)
@@ -207,7 +207,7 @@ Plans:
 | 1. Foundation + MVP-A | 6/6 | Code complete (OPS-02 public deploy pending) |  |
 | 2. Multi-IPO Catalogue + DRHP Snapshot | 5/5 | Complete   | 2026-06-24 |
 | 3. Structured Signal Extraction | 7/7 | Complete (EVAL-03 gate PASSES 0.957) | 2026-07-25 |
-| 4. Historical IPO Dataset + Peer Comparator + GMP | 6/7 | In Progress (04-07 folds into 05-11) |  |
+| 4. Historical IPO Dataset + Peer Comparator + GMP | 7/7 | Complete (survivorship panel built live; median sanity on /methodology) | 2026-07-27 |
 | 5. Calibrated Listing-Day Forecaster | 11/11 | Complete (honest model card; forecaster does not beat baselines) | 2026-07-25 |  |
 | 6. Full Eval Harness + Agentic Polish + Portfolio | 0/0 | Not started | - |
 

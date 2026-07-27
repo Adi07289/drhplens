@@ -3,18 +3,18 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-07-20T00:00:00Z"
+last_updated: "2026-07-27T00:00:00Z"
 progress:
   total_phases: 6
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 36
-  completed_plans: 35
-  percent: 97
+  completed_plans: 36
+  percent: 83
 ---
 
 # STATE: DRHPLens
 
-**Last Updated:** 2026-07-20
+**Last Updated:** 2026-07-27
 
 ## Project Reference
 
@@ -24,16 +24,15 @@ progress:
 
 **Audience:** Indian retail investors (mobile-first); secondary audience is the DS-recruiter reviewing the portfolio piece.
 
-**Current Focus:** Phase 05 — calibrated-listing-day-forecaster
+**Current Focus:** Phase 06 — full eval harness + agentic polish + portfolio surface (next / not started). Phases 1–5 complete; Phase 4 + Phase 5 goal-backward verified 2026-07-27.
 
 ## Current Position
 
-Phase: 05 (calibrated-listing-day-forecaster) — EXECUTING (10/11 plans complete; 05-11 live checkpoint PARTIALLY done)
-Plan: 05-11 — Task 1 (nse verify + install) ✅ DONE; Task 2 CODE LIVE-READY (the live build was UNWIRED — fixed + committed `84a5a9d`/`e7737c8`, the ~1,400-symbol crawl deferred as a supervised step); Task 3 (/methodology human-verify) ⬜ PENDING
-**Status:** 05-11 is NOT complete — the real-artifact regeneration is a deferred SUPERVISED crawl. See `05-11-LIVE-BUILD-RUNBOOK.md`. Phase-level verification/completion intentionally NOT run (an incomplete plan remains). Seed artifacts + SEED banner intact.
-**Progress:** [█████████░] 95%
+Phase: 06 (full eval harness + agentic polish + portfolio surface) — NEXT / not started. Phases 1–5 complete; Phase 4 + Phase 5 goal-backward verified 2026-07-27 (04-VERIFICATION.md / 05-VERIFICATION.md).
+**Status:** Milestone v1.0 at 5/6 phases. Phase 5 closed honestly — the 05-11 live crawl ran, the P9 gate FAILS by design (the expected D5-01 result), and the real model card + real SHAP are committed. The three 05-11 residuals (real SHAP, honest forecast-block P9-fail banner, /methodology verify) are DONE + render-verified; 04-07 closed (median sanity surfaced on /methodology); the requirement ledger is reconciled (10 shipped reqs marked Complete, RAG-01/02/03 live-smoke verified). All this work is on branch `phase5/05-11-residuals` (10 commits, unpushed).
+**Progress:** [████████▆░] 83% (5/6 phases; Phase 6 remaining)
 
-**05-11 LIVE CRAWL RUN (2026-07-25):** Real panel built live — 1,378 IPOs (5 withdrawn, P3 satisfied), 1,245 scorable, median return 10.2%. Committed as the real 04-07/05-11 panel. **Walk-forward P9 gate FAILED HONESTLY** (R²=-0.009, no leakage; global_median + trailing_12 baselines beat the model at DM p<1e-5). On the thin NSE-only feature set the model does not outperform a naive median — the EXPECTED humble pre-apply result (D5-01/P9). Per the runbook, model records/card/mlruns were NOT regenerated (step 4 is "only if gate passes"); nothing was p-hacked. Evidence: `data/forecasts/_gate/release_gate.json`. Remaining to fully close 05-11: enrich the feature set (issue-size/OFS/promoter/regime/anchor need sources beyond the NSE feed) OR ship the forecaster with the honest "does-not-beat-baseline" verdict on /methodology; then the Task-3 human verify.
+**05-11 LIVE CRAWL (2026-07-25) + residuals close (2026-07-27):** Real panel built live — 1,378 IPOs (5 withdrawn, P3), 1,245 scorable, median 10.2% (WITHIN the ~7% [-5%,20%] sanity band, not survivor-inflated). Walk-forward **P9 gate FAILS HONESTLY** (R²=-0.009, no leakage; global_median + trailing_12 beat the model, DM p<1e-5) — the EXPECTED humble pre-apply result (D5-01/P9), never p-hacked. The model card + /snapshot forecast block now LEAD with the honest "does-not-beat-baseline" verdict; real SHAP shows the live panel is effectively one-feature (trailing_listing_gain), disclosed via a "Populated live?" column + a one-feature limitation. Per-IPO record metrics reconciled to the live run (coverage 0.800 / n=1,132). Full unit suite: 530 passed, 0 failed. Evidence: `data/forecasts/_gate/release_gate.json`, `model_card/`, `05-VERIFICATION.md`.
 
 ## Phase Map
 
@@ -42,19 +41,19 @@ Plan: 05-11 — Task 1 (nse verify + install) ✅ DONE; Task 2 CODE LIVE-READY (
 | 1 | Foundation + MVP-A (Cited Q&A on One IPO) | Complete |
 | 2 | Multi-IPO Catalogue + DRHP Snapshot Surface | Complete |
 | 3 | Structured Signal Extraction (Red-Flag Table) | Complete (7/7 plans; EVAL-03 gate PASSES 0.957 as of 2026-07-25) |
-| 4 | Historical IPO Dataset + Peer Comparator + GMP Display | In progress (6/7; 04-07 panel folds into 05-11 live build) |
+| 4 | Historical IPO Dataset + Peer Comparator + GMP Display | Complete (7/7; survivorship panel + median sanity on /methodology, verified 2026-07-27) |
 | 5 | Calibrated Listing-Day Forecaster | **Complete** (11/11; live crawl run 2026-07-25, honest model card — model does not beat baselines) |
 | 6 | Full Eval Harness + Agentic Polish + Portfolio Surface | Not started (next) |
 
 ## Performance Metrics
 
-(Reconciled 2026-07-25 — earlier "0/6" line was stale boilerplate.)
+(Reconciled 2026-07-27 — Phase 4 + 5 verified, progress drift repaired.)
 
-- Phases completed: 3 / 6 (P1–P3 code-complete; P4 6/7, P5 10/11 in flight)
-- Plans executed: 34 / 36 (94%)
+- Phases completed: 5 / 6 (P1–P5 complete + verified; P6 not started)
+- Plans executed: 36 / 36 (100% of planned; Phase 6 plans TBD)
 - Numeric faithfulness (release gate >=0.95): **0.957 PASS** (disclosed subset, 2026-07-25)
-- Citation accuracy (release gate >=0.95): infra live; not separately measured
-- Forecast empirical coverage (target 80%): pending the 05-11 live backtest
+- Citation accuracy (release gate >=0.95): infra live + live-smoke verified 2026-07-27; not separately scored
+- Forecast empirical coverage (held-out, live backtest): **0.800** over n=1,132 OOS (P9 gate honestly FAILS — model ≤ baselines, D5-01)
 
 ## Accumulated Context
 
