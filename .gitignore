@@ -50,3 +50,6 @@ mlruns/
 .cache/
 # Regenerable local crawl/cache artifacts (per 05-11-LIVE-BUILD-RUNBOOK.md)
 data/historical/raw/
+
+# DeepEval local telemetry/cache
+.deepeval/
