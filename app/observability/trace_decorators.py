@@ -7,9 +7,19 @@ All four no-op gracefully when Langfuse is not enabled (is_enabled() is False).
 Per SKELETON cross-cutting invariant: claim_id references are materialized on the
 generate and cite_check node spans so Phase 3 METHOD-01 can query trace data.
 
-Failure-mode taxonomy (attach_refusal_reason_to_trace):
+Failure-mode taxonomy:
+  attach_refusal_reason_to_trace emits the four REFUSAL reasons —
   refusal_reason ∈ {low_retrieval_score, unsupported_claim, banned_token, infrastructure_error}
-  Matches the RefusalResponse.reason enum (agent/schemas.py).
+  (matches the RefusalResponse.reason enum in agent/schemas.py).
+
+  EVAL-05 extends this into the full run-level failure-mode taxonomy in
+  app/observability/trace_enrichment.py :: FAILURE_MODES — the four refusal reasons
+  PLUS {retrieval_miss, cite_check_fail, judge_flag, crash}. The enriched
+  `failure_mode` custom score is attached via the DIRECT client API
+  (emit_enriched_trace), NOT via this callback path: spike 001 proved
+  get_callback_handler() is silently no-op without the `langchain` package.
+  These refusal helpers stay valid; they annotate node spans, while
+  emit_enriched_trace scores the trace root.
 """
 from __future__ import annotations
 
