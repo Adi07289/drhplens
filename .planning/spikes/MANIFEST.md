@@ -14,11 +14,14 @@ Design decisions locked upstream (SPEC/AI-SPEC/UI-SPEC on branch `phase6/6a-eval
 - **[001] Pin `langfuse<3` (2.60.10) for 6.1** — v4 is a full OTEL rewrite + still needs `langchain`; buys nothing 6.1 needs.
 - **[001] Instrument Langfuse via the direct client API** (`lf.trace()`/`trace.score()`/`create_score`), NOT the LangChain CallbackHandler (which needs the `langchain` package on v2 AND v4; repo has only `langchain_core`).
 - **[001] ⚠ EVAL-05 = "make tracing actually work + enrich"** — the callback handler has been silently no-op (no `langchain`), so traces may not have been captured; plan must size the direct-API instrumentation, not just enrichment.
+- **[002] Pin `deepeval>=4.1,<5` (4.1.4); judge = native `GeminiModel`** (no OpenAI dep).
+- **[002] Judge model = `gemini-3.5-flash`, NOT `gemini-2.5-flash`** (2.5-flash 404s "no longer available"; 3.5-flash is the codebase standard) — correct the AI-SPEC + CLAUDE.md.
+- **[002] ⚠ Free-tier Gemini = 5 RPM** for gemini-3.5-flash; faithfulness fan-out exhausts it → runner needs async_mode=False + serial + tenacity backoff + DeepEval cache; a full faithfulness pass is minutes. Reinforces report-not-gate + ≥0.7 human calibration.
 
 ## Spikes
 
 | # | Name | Type | Validates | Verdict | Tags |
 |---|------|------|-----------|---------|------|
 | 001 | langfuse-v4-migration | standard | v4 custom-score + cost/latency/tool-call attach + no-op fallback → migrate vs pin<3 | ✓ VALIDATED (pin<3 + direct API; langchain-gap caveat) | langfuse, observability, EVAL-05 |
-| 002 | deepeval-gemini-judge | standard | FaithfulnessMetric.measure() on native GeminiModel (no OpenAI) + assert_test opt-in → confirm pin | PENDING | deepeval, faithfulness, gemini |
+| 002 | deepeval-gemini-judge | standard | FaithfulnessMetric.measure() on native GeminiModel (no OpenAI) + assert_test opt-in → confirm pin | ✓ VALIDATED (deepeval 4.1.4; judge=gemini-3.5-flash; 5 RPM free-tier) | deepeval, faithfulness, gemini |
 | 003 | recall-baseline | standard | real recall@5/10/30 over the 13-Q Swiggy gold set → ratify recall@10 ≥0.85 gate | PENDING | recall, retrieval, gate-threshold |
