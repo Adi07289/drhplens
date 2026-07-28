@@ -46,6 +46,7 @@ from ui.copy import (  # noqa: E402
     UNKNOWN_DRHP_ID_COPY,
 )
 from ui.chrome import render_nav, render_site_footer  # noqa: E402
+from ui.eval_inline import render_eval_inline  # noqa: E402
 from ui.forecast_block import (  # noqa: E402
     render_forecast_block,
     render_forecast_error,
@@ -402,6 +403,14 @@ def main() -> None:
     # record: it must remain the last read block even while the snapshot is still
     # precomputing. Cache-only, monochrome, de-emphasised.
     _render_gmp_block(gmp_record, gmp_state)
+
+    # EVAL-02 (06.1-06) — the honest inline eval figure, read from the committed
+    # eval_summary.json. Rendered directly ABOVE the Q&A divider, OUTSIDE the
+    # `record is not None` guard (like the GMP block) so it appears on EVERY IPO page
+    # even while the snapshot is still precomputing: the eval figures describe the
+    # reliability of the very Q&A the user is about to use. `drhp_id` is already
+    # allow-list-validated upstream. Read-only, no live judge call (P19).
+    render_eval_inline(drhp_id)
 
     # 2xl gap + divider before the co-located Q&A chat (D2-08).
     st.markdown(
