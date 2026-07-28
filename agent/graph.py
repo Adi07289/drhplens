@@ -18,10 +18,17 @@ and Wave 4 Streamlit. Wave 6 swaps MemorySaver for SqliteSaver.
 """
 from __future__ import annotations
 
+import time
+
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, StateGraph
 
 from app.observability.trace_decorators import build_callbacks_for_run
+from app.observability.trace_enrichment import (
+    count_tool_calls,
+    emit_enriched_trace,
+    flush,
+)
 
 from agent.nodes import (
     cite_check,
@@ -177,11 +184,22 @@ Direct GRAPH.invoke() continues to work for unit tests (callbacks optional).
 
 
 def invoke_with_tracing(state: dict, question: str) -> dict:
-    """Invoke GRAPH with Langfuse tracing callbacks attached.
+    """Invoke GRAPH and emit a real, enriched Langfuse trace (EVAL-05).
 
-    This is the preferred call site for app.py and agent.demo.
-    When LANGFUSE_PUBLIC_KEY is unset, build_callbacks_for_run() returns []
-    and the call is equivalent to GRAPH.invoke(state) — no performance overhead.
+    This is the preferred call site for app.py and agent.demo. Spike 001 found the
+    LangChain CallbackHandler path is silently no-op without the `langchain`
+    package, so tracing is now driven by the DIRECT client API via
+    emit_enriched_trace: every run emits a trace carrying cost / latency /
+    tool-call-count metadata plus a failure-mode custom score, then flush()es so
+    short-lived callers (the 06.1-04 runner, CI) actually ship scores.
+
+    The legacy build_callbacks_for_run/thread_id config is left untouched — it is
+    harmless (returns [] / a no-op handler) and the direct-API trace is now the
+    real trace.
+
+    No-op contract: when Langfuse is disabled (keys unset), emit_enriched_trace
+    and flush() short-circuit inside trace_enrichment, so behavior is byte-for-byte
+    identical to a bare GRAPH.invoke(state, config).
 
     Args:
         state: Initial GraphState dict (must include 'question' key).
@@ -199,4 +217,36 @@ def invoke_with_tracing(state: dict, question: str) -> dict:
     callbacks = build_callbacks_for_run(question)
     if callbacks:
         config["callbacks"] = callbacks
-    return GRAPH.invoke(state, config=config)
+
+    start = time.perf_counter()
+    try:
+        final_state = GRAPH.invoke(state, config=config)
+    except Exception:
+        # A crash still emits an enriched, crash-classified trace so the failure
+        # is visible in Langfuse, then re-raises to preserve the caller contract.
+        latency_ms = (time.perf_counter() - start) * 1000.0
+        emit_enriched_trace(
+            question,
+            {},
+            latency_ms,
+            tool_calls=0,
+            cost_usd=0.0,
+            crashed=True,
+        )
+        flush()
+        raise
+
+    latency_ms = (time.perf_counter() - start) * 1000.0
+    # tool_calls is derived deterministically from observable state evidence
+    # (retrieve/rerank/generate/cite_check stages that produced output) — honest,
+    # not fabricated. Free-tier cost is $0 but tracked per SPEC (the real budget
+    # ceiling is RPD/RPM, not dollars).
+    emit_enriched_trace(
+        question,
+        final_state,
+        latency_ms,
+        tool_calls=count_tool_calls(final_state),
+        cost_usd=0.0,
+    )
+    flush()
+    return final_state
