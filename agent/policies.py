@@ -168,3 +168,32 @@ faithfulness is < this threshold — enforcement over discipline. Locked at 0.95
 per the ROADMAP cross-phase invariant; this is the threshold, not a tunable to
 relax. The calibration note refers to the eval-set construction procedure.
 """
+
+CITATION_ACCURACY_GATE: float = 0.95
+"""
+The citation-accuracy RELEASE GATE (EVAL-01 / 06.1-05). citation_accuracy =
+the fraction of cited pages/spans that genuinely contain the stated claim
+("did the cited page actually contain the claim") — the project's custom,
+deterministic (non-LLM) retrieval-attribution metric. A regression below this
+threshold is a HARD CI FAILURE per the CLAUDE.md project rule ("Treat
+regression in citation accuracy as a hard CI failure"); the pre-deploy gate
+(scripts/release_gate.py) reads the committed eval_summary.json and exits
+non-zero when citation_accuracy < this threshold. Locked at 0.95
+(literature-backed for high-stakes financial RAG) — enforced, not a tunable to
+relax.
+"""
+
+RECALL_AT_10_GATE: float = 0.85
+"""
+The recall@10 RELEASE GATE (EVAL-01 / 06.1-05) — a labelled REGRESSION FLOOR,
+never a headline quality metric (P10). recall@10 = the fraction of gold
+questions whose expected page-span(s) appear within the top-10 retrieved
+candidates (deterministic span-overlap, computed over the 50 Qdrant candidates,
+not the rerank-capped top-5). This 0.85 floor is ratified against spike 003's
+measured 1.00 baseline (measured decision #4 / .planning/spikes/003-recall-baseline):
+it is SATURATED at 1.00 because the current gold set's expected_sources are
+coarse section-level page ranges (mean 44.5 pages), so it is a low-signal
+regression tripwire set just below real performance — never self-blocking, never
+trivially low, and NEVER advertised as a quality win. The pre-deploy gate exits
+non-zero when recall@10 < this threshold — enforced, not a tunable to relax.
+"""
