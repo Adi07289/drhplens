@@ -103,4 +103,14 @@ def test_faithful_fixture_assert_test_optin() -> None:
         async_mode=False,  # serial: 5-RPM free-tier ceiling
     )
 
-    assert_test(test_case, [metric])
+    # Free-tier gemini-3.5-flash is capped at 5 RPM AND 20 requests/day (spike 002).
+    # A quota exhaustion is NOT a faithfulness verdict — skip rather than fail so the
+    # non-blocking opt-in lane never reports a red on a rate limit. run_async=False keeps
+    # the judge serial (matching the `-n 1` intent) instead of bursting concurrent claims.
+    try:
+        assert_test(test_case, [metric], run_async=False)
+    except Exception as exc:  # noqa: BLE001 — narrow via message; avoids a google.genai import
+        msg = str(exc)
+        if "RESOURCE_EXHAUSTED" in msg or "429" in msg or "quota" in msg.lower():
+            pytest.skip(f"gemini free-tier quota exhausted (5 RPM / 20 per day) — not a faithfulness failure: {msg[:120]}")
+        raise
