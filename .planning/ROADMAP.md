@@ -188,7 +188,13 @@ Plans:
   1. User sees RAG faithfulness, retrieval recall@k, and citation accuracy scores surfaced inline on the IPO page — an honest system-level figure across the committed eval set, with a per-IPO line where a real gold set exists (no fabricated per-IPO numbers) — computed by a committed RAGAS/DeepEval/custom-citation-metric eval suite (EVAL-01, EVAL-02).
   2. Every agent trace is captured via Langfuse (or equivalent), reviewable by the developer, with cost / latency / tool-call counts / failure-mode taxonomy surfaced on an operational dashboard (EVAL-05).
 
-**Plans**: TBD
+**Plans**: 6 plans in 4 waves
+- [ ] 06.1-01-PLAN.md — Deps (langfuse<3, deepeval) + importable eval/metrics deterministic recall@k + citation_accuracy (TDD) + pinned EvalSummary schema [W1, EVAL-01]
+- [ ] 06.1-02-PLAN.md — DeepEval faithfulness LLM-judge (gemini-3.5-flash, reported-not-gated, -1 sentinel) + opt-in assert_test lane [W2, EVAL-01]
+- [ ] 06.1-03-PLAN.md — Langfuse direct-API trace enrichment (cost/latency/tool-calls + extended failure-mode custom scores; make tracing actually work) [W2, EVAL-05]
+- [ ] 06.1-04-PLAN.md — Runner emits eval_summary.json + rag-eval.md (P10 interpretation + recall-floor/gold-set caveat) [W3, EVAL-01]
+- [ ] 06.1-05-PLAN.md — Release gate deterministic hard-gates (citation_accuracy>=0.95, recall@10>=0.85; faithfulness reported-only) [W4, EVAL-01]
+- [ ] 06.1-06-PLAN.md — Honest inline eval surface on IPO pages + /methodology fill (no verdict UX, provenance, P19 read-only) [W4, EVAL-02]
 **UI hint**: yes
 **Alias**: 6a — built first; branch `phase6/6a-eval-harness`; design doc `docs/superpowers/specs/2026-07-28-6a-eval-harness-design.md`
 
@@ -246,7 +252,7 @@ Plans:
 | 3. Structured Signal Extraction | 7/7 | Complete (EVAL-03 gate PASSES 0.957) | 2026-07-25 |
 | 4. Historical IPO Dataset + Peer Comparator + GMP | 7/7 | Complete (survivorship panel built live; median sanity on /methodology) | 2026-07-27 |
 | 5. Calibrated Listing-Day Forecaster | 11/11 | Complete (honest model card; forecaster does not beat baselines) | 2026-07-25 |  |
-| 6.1 Eval Harness + Inline Metrics + Langfuse Ops | 0/0 | Not started | - |
+| 6.1 Eval Harness + Inline Metrics + Langfuse Ops | 0/6 | Planned | 4 waves |
 | 6.2 Portfolio Surfaces | 0/0 | Not started | - |
 | 6.3 Agent Polish + Launch Gate | 0/0 | Not started | - |
 
