@@ -599,10 +599,14 @@ def _write_rag_eval_report(
         "",
         "**Citation accuracy — deterministic, HARD-GATED >= 0.95.** Pure page-range span "
         "overlap: did the cited page actually contain the claim (CLAUDE.md's custom metric). It "
-        "is model-free and reproducible, computed over the reranked chunks the agent consumed. "
-        "This is the finer-grained REAL retrieval-quality signal (spike 003) and — with "
-        "numeric_faithfulness — carries the release gate: a citation-accuracy regression is a "
-        "hard CI failure.",
+        "is model-free, reproducible, computed over the reranked chunks the agent consumed, and "
+        "— with numeric_faithfulness — carries the release gate: a citation-accuracy regression "
+        "is a hard CI failure. **Honesty caveat (P10):** on the CURRENT gold set citation also "
+        "reads 1.00, saturated by the SAME coarse-span mechanism as recall (expected_sources are "
+        "10-101-page ranges, mean 44.5 — spike 003), so TODAY it is a regression FLOOR, not yet a "
+        "discriminating quality signal. It only becomes the finer-grained REAL retrieval-quality "
+        "signal once expected_sources are tightened to <= 2-3-page answer spans (gold-set "
+        "follow-up below); until then, read its 1.00 as a floor, not a headline win.",
         "",
         "**Recall@k — deterministic; a LABELLED REGRESSION FLOOR, NOT a headline quality "
         "metric (P10).** recall@10 is gated at >= 0.85 ONLY as a conservative regression floor. "
@@ -611,8 +615,9 @@ def _write_rag_eval_report(
         "003), which span-overlap satisfies trivially; a \"recall@10 = 1.00\" headline would be "
         "evaluation theater. Recall is computed over the 50 `retrieved_chunks` (the Qdrant "
         "candidates), NOT the 5 reranked chunks, because RERANK_TOP_K=5 makes k=10/30 undefined "
-        "on the reranked list. The real retrieval-quality signal lives in citation-accuracy + "
-        "faithfulness, not here.",
+        "on the reranked list. A discriminating retrieval-quality signal will emerge from "
+        "citation-accuracy (once the gold spans are tightened) and faithfulness (once the judge "
+        "is calibrated) — on today's coarse gold set, neither is a headline win either.",
         "",
         "**Gold-set follow-up (flagged, NOT executed in 6.1 — measured decision #7).** To make "
         "recall discriminating, tighten the gold `expected_sources` to <= 2-3-page answer spans "

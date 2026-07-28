@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-28",
+  "generated": "2026-07-29",
   "judge_model": "gemini-3.5-flash",
   "corpus": {
     "gold_set": "tests/eval/gold_set.jsonl",
@@ -22,5 +22,5 @@
       "recall_at_30": 1.0
     }
   },
-  "report": "eval/reports/2026-07-28-rag-eval.md"
+  "report": "eval/reports/2026-07-29-rag-eval.md"
 }
