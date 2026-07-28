@@ -252,7 +252,7 @@ Plans:
 | 3. Structured Signal Extraction | 7/7 | Complete (EVAL-03 gate PASSES 0.957) | 2026-07-25 |
 | 4. Historical IPO Dataset + Peer Comparator + GMP | 7/7 | Complete (survivorship panel built live; median sanity on /methodology) | 2026-07-27 |
 | 5. Calibrated Listing-Day Forecaster | 11/11 | Complete (honest model card; forecaster does not beat baselines) | 2026-07-25 |  |
-| 6.1 Eval Harness + Inline Metrics + Langfuse Ops | 0/6 | Planned | 4 waves |
+| 6.1 Eval Harness + Inline Metrics + Langfuse Ops | 6/6 | Executed (verification pending) | 4 waves |
 | 6.2 Portfolio Surfaces | 0/0 | Not started | - |
 | 6.3 Agent Polish + Launch Gate | 0/0 | Not started | - |
 
