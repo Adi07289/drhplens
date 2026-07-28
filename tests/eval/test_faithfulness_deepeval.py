@@ -32,11 +32,17 @@ from eval.metrics.faithfulness_deepeval import NOT_MEASURED, faithfulness_deepev
 # Skip marker for the opt-in, key-gated assert_test lane
 # ---------------------------------------------------------------------------
 
+# Gate on an EXPLICIT opt-in flag, not mere GEMINI_API_KEY presence: DeepEval's pytest
+# plugin auto-loads the repo .env, so a key-only skip never actually skips locally and the
+# lane would red the default suite on free-tier quota. Every other live test in this repo
+# uses an explicit flag (--run-eval, --run-langfuse, NSE_LIVE_SMOKE, RUN_SLOW_EMBED); match
+# that. Run this lane with: RUN_FAITHFULNESS_JUDGE=1 pytest ..., or `deepeval test run ... -c -i -n 1`.
 _requires_gemini = pytest.mark.skipif(
-    not os.environ.get("GEMINI_API_KEY"),
+    not os.environ.get("RUN_FAITHFULNESS_JUDGE"),
     reason=(
-        "requires GEMINI_API_KEY — opt-in faithfulness lane; run via "
-        "`deepeval test run tests/eval/test_faithfulness_deepeval.py -c -i -n 1` (non-blocking)"
+        "opt-in faithfulness judge lane — set RUN_FAITHFULNESS_JUDGE=1 (and GEMINI_API_KEY) to run, "
+        "or use `deepeval test run tests/eval/test_faithfulness_deepeval.py -c -i -n 1`. "
+        "Non-blocking; skipped by default so .env auto-load / free-tier quota never reds the suite."
     ),
 )
 
