@@ -48,19 +48,25 @@ _TRANSIENT_TEXT = (
 )
 
 
+# Single source of truth for the judge model id (spike 002 / AI-SPEC §8 item 1: the stale
+# gemini-2.x flash literal in the §4 sketch 404s). The runner reads THIS for eval_summary.json's
+# judge_model provenance — never a decoupled literal — so a model bump can't make the committed
+# provenance (and the schema's honesty guard) silently lie (WR-04).
+JUDGE_MODEL = "gemini-3.5-flash"
+
+
 @lru_cache(maxsize=1)
 def _judge():
     """Module-cached native Gemini judge — built once per process (5-RPM free tier is precious).
 
-    Model id is ``gemini-3.5-flash`` per spike 002 / AI-SPEC §8 item 1 (the stale ``gemini-2.x``
-    flash literal in the §4 sketch 404s). Reads ``GEMINI_API_KEY`` only; callers must guard the
-    missing-key case *before* calling this (``faithfulness_deepeval`` does), so this never
-    ``KeyError``s on the reported path.
+    Model id is ``JUDGE_MODEL`` (``gemini-3.5-flash``) — the id the codebase runs on. Reads
+    ``GEMINI_API_KEY`` only; callers must guard the missing-key case *before* calling this
+    (``faithfulness_deepeval`` does), so this never ``KeyError``s on the reported path.
     """
     from deepeval.models import GeminiModel
 
     return GeminiModel(
-        model="gemini-3.5-flash",
+        model=JUDGE_MODEL,
         api_key=os.environ["GEMINI_API_KEY"],
         temperature=0.0,
     )

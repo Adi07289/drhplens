@@ -49,7 +49,7 @@ from eval.metrics import (  # noqa: E402
     faithfulness_deepeval,
     recall_at_k,
 )
-from eval.metrics.faithfulness_deepeval import NOT_MEASURED  # noqa: E402
+from eval.metrics.faithfulness_deepeval import JUDGE_MODEL, NOT_MEASURED  # noqa: E402
 
 
 def _check_env() -> None:
@@ -213,8 +213,11 @@ def run_eval(
     # ---------------------------------------------------------------------------
     # Compute summary statistics
     # ---------------------------------------------------------------------------
-    grounded_results = [r for r in results if not r["refusal_expected"] and "citation_accuracy" in r and r["citation_accuracy"] is not None]
-    refusal_results = [r for r in results if r["refusal_expected"]]
+    # .get(): a crashed-question row (appended above with only qid/category/status/error) has no
+    # "refusal_expected" key — r["refusal_expected"] would KeyError and abort the whole report the
+    # moment any question crashes (WR-01). A crash row is neither grounded nor a refusal.
+    grounded_results = [r for r in results if not r.get("refusal_expected") and "citation_accuracy" in r and r["citation_accuracy"] is not None]
+    refusal_results = [r for r in results if r.get("refusal_expected")]
 
     avg_cite = sum(r["citation_accuracy"] for r in grounded_results) / len(grounded_results) if grounded_results else 0.0
     avg_cov = sum(r["answer_coverage"] for r in grounded_results) / len(grounded_results) if grounded_results else 0.0
@@ -496,7 +499,7 @@ def run_rag_eval(
     report_rel = f"eval/reports/{date.today()}-rag-eval.md"
     summary = EvalSummary(
         generated=date.today().isoformat(),
-        judge_model="gemini-3.5-flash",  # spike 002: 2.5-flash 404s; 3.5-flash is the codebase judge
+        judge_model=JUDGE_MODEL,  # single source of truth (eval.metrics.faithfulness_deepeval) — provenance can't drift from the real judge (WR-04)
         corpus=corpus,
         aggregate=aggregate,
         # per_ipo carries ONLY Swiggy — the one IPO with a real gold set (honesty invariant;
