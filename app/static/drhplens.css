@@ -1707,6 +1707,9 @@ a.drhp-ipo-card:hover { border-color: rgba(224, 162, 78, 0.4) !important; }
   margin-top: var(--drhp-space-xs);
 }
 .drhp-eval-report-link { color: var(--drhp-accent-link); text-decoration: underline; }
+/* Plain neutral mono report reference (NOT a link — the committed report path is not
+   served by Streamlit; a real link returns at deploy-time, OPS-02). Muted, never accent. */
+.drhp-eval-report-ref { font-family: var(--drhp-font-mono); color: var(--drhp-text-muted); }
 .drhp-eval-empty {
   font-size: 14px; color: var(--drhp-text-muted); font-style: italic;
   line-height: 1.6; margin: var(--drhp-space-md) 0;

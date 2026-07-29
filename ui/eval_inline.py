@@ -110,19 +110,30 @@ def render_eval_inline(drhp_id: str) -> None:
     generated = html.escape(str(summary.get("generated", "—")))
     judge_model = html.escape(str(summary.get("judge_model", "—")))
 
+    # Honest base: the deterministic metrics are scored over the GRADED subset, not every
+    # entry (refusal-eligible questions are excluded). Show "N-question set · M scored" so
+    # the surface never implies all N were measured (UI audit WARNING). Falls back to the
+    # plain set size when n_scored is absent (older artifacts).
+    n_scored = corpus.get("n_scored")
+    if n_scored is not None:
+        set_clause = f"our {n_questions}-question eval set ({html.escape(str(n_scored))} scored)"
+    else:
+        set_clause = f"our {n_questions}-question eval set"
     provenance = (
-        f"Measured across our {n_questions}-question eval set "
+        f"Measured over {set_clause} "
         f"({ipo}, {generated}, judge {judge_model}): "
     )
     system_line = provenance + _metrics_clause(aggregate)
 
-    # Report link is the ONE accent element. Omit entirely when `report` is absent —
-    # never a dead link.
+    # Report reference. The committed report lives at a repo-relative path Streamlit does
+    # not serve (and the branch isn't deployed), so rendering it as an <a href> would be a
+    # DEAD link (UI audit WARNING). Show the path as PLAIN neutral mono text instead — no
+    # dead link, honest provenance. This can become a real link once the app is deployed and
+    # the report is served/pushed (OPS-02). Omit entirely when `report` is absent.
     report = summary.get("report")
     if report:
-        href = html.escape(str(report), quote=True)
         system_line += (
-            f' <a class="drhp-eval-report-link" href="{href}">view report</a>'
+            f' · report: <span class="drhp-eval-report-ref">{html.escape(str(report))}</span>'
         )
 
     # A single muted <p> with text content (never a bare <div>, never a split card) so

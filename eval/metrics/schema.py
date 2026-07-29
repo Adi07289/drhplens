@@ -32,7 +32,12 @@ class Corpus(BaseModel):
 
     gold_set: str
     ipo: str
-    n_questions: int = Field(gt=0)
+    n_questions: int = Field(gt=0)  # total gold entries in the set
+    # How many of those were actually SCORED for the deterministic metrics (grounded
+    # questions; refusal-eligible entries are excluded). Optional for back-compat; the
+    # honest inline surface shows "N-question set · M scored" so it never implies all
+    # n_questions were measured (UI audit WARNING).
+    n_scored: int | None = Field(default=None, ge=0)
 
 
 class EvalSummary(BaseModel):

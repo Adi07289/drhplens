@@ -495,7 +495,12 @@ def run_rag_eval(
         recall_at_10=_mean("recall_at_10"),
         recall_at_30=_mean("recall_at_30"),
     )
-    corpus = Corpus(gold_set=gold_set_path, ipo="Swiggy DRHP", n_questions=len(entries))
+    corpus = Corpus(
+        gold_set=gold_set_path,
+        ipo="Swiggy DRHP",
+        n_questions=len(entries),   # total gold entries
+        n_scored=len(per_q),        # grounded questions actually scored (refusals excluded)
+    )
     report_rel = f"eval/reports/{date.today()}-rag-eval.md"
     summary = EvalSummary(
         generated=date.today().isoformat(),

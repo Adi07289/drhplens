@@ -38,7 +38,7 @@ from ui.eval_inline import render_eval_inline
 _ALLOWED_CLASSES = {
     "drhp-eval-inline",
     "drhp-eval-figure",
-    "drhp-eval-report-link",
+    "drhp-eval-report-ref",
     "drhp-eval-per-ipo",
     "drhp-eval-empty",
 }
