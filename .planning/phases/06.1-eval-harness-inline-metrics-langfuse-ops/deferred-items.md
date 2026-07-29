@@ -27,3 +27,12 @@ Two audit gaps were FIXED (production tracing → `invoke_with_tracing`; citatio
 - **≥50-example human spot-check (P10) not done** while deterministic figures surface inline. Pairs with the calibration above.
 - **No automated CI gate lane.** The deterministic gate is a manual `make release`; only `nightly-nse.yml` exists in GitHub Actions. Add a CI workflow that regenerates the eval artifact + runs `release_gate.py` (fits OPS-02 deploy / a later slice).
 - **Gold-set tightening (from spike 003).** Until `expected_sources` are ≤2-3-page spans (+ RPT/numeric coverage), recall AND citation are saturated floors, not discriminating signals.
+
+## From /gsd-code-review (2026-07-29, 0 Critical / 6 Warning / 8 Info — see 06.1-REVIEW.md)
+
+Honesty invariant PASSED. **WR-01 (legacy run_eval crash KeyError) + WR-04 (hardcoded judge_model provenance) FIXED** this session. Remaining warnings deferred (tracked):
+
+- **WR-02 (gate-metric hardening) — DEFERRED, needs care.** `eval/metrics/{citation,recall}.py` return a vacuous `1.0` for empty `expected_sources` and use asymmetric page defaults (expected `[0, 9999]` vs chunk `[0, 0]`), so a *mislabeled* gold entry missing page bounds would match any chunk and silently inflate the HARD-GATED citation metric. Current gold data all has bounds, so measured values are unaffected — but harden it (treat a bound-less expected source as a non-match, not match-all) WITH updated `tests/unit/test_eval_metrics.py` before the gold set grows. Changes shared gate semantics → do deliberately, not in a review pass.
+- **WR-03 (requirements.txt ↔ pyproject drift) — DEFERRED to deploy (OPS-02).** `requirements.txt` omits `deepeval`, `google-genai`, `fastembed`, and Phase 4/5 runtime deps; an HF-Spaces install straight from `requirements.txt` would break. Pre-existing debt (not introduced by 6.1). Reconcile the two dep files (and decide ragas → optional-extras) as part of the deploy phase.
+- **WR-05 (unguarded json.loads on /methodology) — DEFERRED.** `pages/01_methodology.py:183,213` load `panel_sanity.json`/`card_data.json` without the `.is_file()`+try/except guard the eval read uses; a corrupt file crashes the page. Pre-existing; mirror the eval-read guard.
+- Info items (dead code `_STAGES_UNUSED`, stale `policies.py` threshold docstrings, orphan `judge_flag`, unused import, href-scheme note) — low priority, batch later.
