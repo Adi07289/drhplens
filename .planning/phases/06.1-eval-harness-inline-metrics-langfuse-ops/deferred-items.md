@@ -36,3 +36,23 @@ Honesty invariant PASSED. **WR-01 (legacy run_eval crash KeyError) + WR-04 (hard
 - **WR-03 (requirements.txt ↔ pyproject drift) — DEFERRED to deploy (OPS-02).** `requirements.txt` omits `deepeval`, `google-genai`, `fastembed`, and Phase 4/5 runtime deps; an HF-Spaces install straight from `requirements.txt` would break. Pre-existing debt (not introduced by 6.1). Reconcile the two dep files (and decide ragas → optional-extras) as part of the deploy phase.
 - **WR-05 (unguarded json.loads on /methodology) — DEFERRED.** `pages/01_methodology.py:183,213` load `panel_sanity.json`/`card_data.json` without the `.is_file()`+try/except guard the eval read uses; a corrupt file crashes the page. Pre-existing; mirror the eval-read guard.
 - Info items (dead code `_STAGES_UNUSED`, stale `policies.py` threshold docstrings, orphan `judge_flag`, unused import, href-scheme note) — low priority, batch later.
+
+## Gold-set tightening — ATTEMPTED 2026-07-30, cannot auto-complete honestly
+
+Tried to derive tight (<=2-3pp) `expected_sources` for the 11 grounded Swiggy Qs by matching
+each entry's `expected_answer_contains` substrings against the 1,885 indexed DRHP chunks.
+**It does not work reliably** and must NOT be auto-committed (fabricated precision violates the
+honesty invariant):
+- Distinctive answer NUMBERS are not verbatim in the chunk text: `11,327` (issue size),
+  `4,499` (OFS/fresh), `11,247` (revenue) -> **0 chunks** each (Indian number formatting /
+  table-extraction differences). `2,350` (net loss) -> **page 431**, but its gold label says
+  `[200-300]` — so an existing label is itself questionable.
+- Generic substrings over-match: `1` (face value) -> 1,674 chunks; `BSE`/`NSE` -> 80; `related
+  party` -> 28 -> meaningless auto-pages (0, 1, 24).
+- Only 2-3 entries got a confident content match (swiggy-009 path-to-profitability -> p32,
+  swiggy-010 competition/Zomato -> p42).
+**Requires a HUMAN reading the Swiggy DRHP PDF** to confirm the real answer page per question
+(and to fix formatting so answer numbers are findable). Do NOT ship auto-derived spans. Until
+tightened, recall AND citation remain honest saturated floors (already disclosed on the surface
++ report). Bonus finding: the extraction/formatting gap (numbers not verbatim in text) is worth
+a look for retrieval quality generally.
