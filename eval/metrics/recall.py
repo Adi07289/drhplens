@@ -34,12 +34,18 @@ def recall_at_k(expected_sources: list[dict], retrieved_chunks: list[dict], k: i
     top_k = retrieved_chunks[:k]
     hits = 0
     for exp_src in expected_sources:
-        exp_start = exp_src.get("page_start", 0)
-        exp_end = exp_src.get("page_end", 9999)
+        exp_start = exp_src.get("page_start")
+        exp_end = exp_src.get("page_end")
+        # Malformed gold entry (no page bounds) counts as a miss, never a vacuous
+        # match-all — the old [0, 9999] default could inflate the gated metric (WR-02).
+        if exp_start is None or exp_end is None:
+            continue
         for chunk in top_k:
             payload = chunk.get("payload", {})
-            chunk_start = payload.get("page_start", 0)
-            chunk_end = payload.get("page_end", 0)
+            chunk_start = payload.get("page_start")
+            chunk_end = payload.get("page_end")
+            if chunk_start is None or chunk_end is None:
+                continue  # chunk without page info can't confirm containment
             if chunk_start <= exp_end and chunk_end >= exp_start:
                 hits += 1
                 break

@@ -126,3 +126,22 @@ def test_metrics_import_without_agent_qdrant_or_llm():
     )
     assert result.returncode == 0, result.stderr
     assert "clean" in result.stdout
+
+
+# ── WR-02 hardening: a bound-less (malformed) gold entry must NOT vacuously match ──────
+def test_bound_less_expected_source_is_a_miss_not_a_vacuous_hit():
+    """A gold entry missing page bounds counts as a miss, never a match-all — so a
+    mislabeled entry can't silently inflate the HARD-GATED citation / recall metrics
+    (code-review WR-02). Well-formed entries are unaffected."""
+    from eval.metrics import citation_accuracy, recall_at_k
+
+    chunks = [{"payload": {"page_start": 5, "page_end": 9}}]
+    # well-formed overlap -> hit (behavior preserved)
+    assert citation_accuracy([{"page_start": 6, "page_end": 7}], chunks) == 1.0
+    assert recall_at_k([{"page_start": 6, "page_end": 7}], chunks, 5) == 1.0
+    # missing bounds -> miss (was a vacuous 1.0 before the fix)
+    assert citation_accuracy([{}], chunks) == 0.0
+    assert citation_accuracy([{"page_start": 6}], chunks) == 0.0
+    assert recall_at_k([{}], chunks, 5) == 0.0
+    # a chunk without page info can't confirm containment
+    assert citation_accuracy([{"page_start": 6, "page_end": 7}], [{"payload": {}}]) == 0.0

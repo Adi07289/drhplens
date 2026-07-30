@@ -179,8 +179,13 @@ _card_data_path = _MODEL_CARD_DIR / "card_data.json"
 _panel_sanity_path = (
     Path(__file__).resolve().parents[1] / "data" / "historical" / "panel_sanity.json"
 )
+_ps = None
 if _panel_sanity_path.is_file():
-    _ps = json.loads(_panel_sanity_path.read_text(encoding="utf-8"))
+    try:  # a corrupt/unreadable artifact degrades to no note, never crashes the page (WR-05)
+        _ps = json.loads(_panel_sanity_path.read_text(encoding="utf-8"))
+    except (ValueError, OSError):
+        _ps = None
+if _ps is not None:
     if _ps.get("flag"):
         _ps_verdict = (
             f'<span class="drhp-not-disclosed">{html.escape(str(_ps["flag"]))}</span>'
@@ -210,7 +215,15 @@ if not _card_data_path.is_file():
         unsafe_allow_html=True,
     )
 else:
-    _card = json.loads(_card_data_path.read_text(encoding="utf-8"))
+    try:  # corrupt/unreadable card degrades to the same fallback, never crashes (WR-05)
+        _card = json.loads(_card_data_path.read_text(encoding="utf-8"))
+    except (ValueError, OSError):
+        st.markdown(
+            '<p class="drhp-method-note drhp-not-disclosed">'
+            "The forecaster model card could not be read (corrupt artifact).</p>",
+            unsafe_allow_html=True,
+        )
+        st.stop()
 
     if _card.get("seed"):
         st.markdown(

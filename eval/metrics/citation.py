@@ -25,12 +25,21 @@ def citation_accuracy(expected_sources: list[dict], chunks: list[dict]) -> float
         return 1.0
     hits = 0
     for exp_src in expected_sources:
-        exp_start = exp_src.get("page_start", 0)
-        exp_end = exp_src.get("page_end", 9999)
+        exp_start = exp_src.get("page_start")
+        exp_end = exp_src.get("page_end")
+        # A gold entry missing its page bounds is MALFORMED — it must count as a miss,
+        # never a vacuous match against everything (the old [0, 9999] default let a
+        # mislabeled entry silently inflate this HARD-GATED metric — code-review WR-02).
+        if exp_start is None or exp_end is None:
+            continue
         for chunk in chunks:
             payload = chunk.get("payload", {})
-            chunk_start = payload.get("page_start", 0)
-            chunk_end = payload.get("page_end", 0)
+            chunk_start = payload.get("page_start")
+            chunk_end = payload.get("page_end")
+            # A chunk without page info can't CONFIRM containment — skip it (do not
+            # spuriously match on a [0, 0] default).
+            if chunk_start is None or chunk_end is None:
+                continue
             if chunk_start <= exp_end and chunk_end >= exp_start:
                 hits += 1
                 break
