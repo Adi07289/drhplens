@@ -44,7 +44,9 @@ Phase: 06 (full eval harness + agentic polish + portfolio surface) — NEXT / no
 | 3 | Structured Signal Extraction (Red-Flag Table) | Complete (7/7 plans; EVAL-03 gate PASSES 0.957 as of 2026-07-25) |
 | 4 | Historical IPO Dataset + Peer Comparator + GMP Display | Complete (7/7; survivorship panel + median sanity on /methodology, verified 2026-07-27) |
 | 5 | Calibrated Listing-Day Forecaster | **Complete** (11/11; live crawl run 2026-07-25, honest model card — model does not beat baselines) |
-| 6 | Full Eval Harness + Agentic Polish + Portfolio Surface | Not started (next) |
+| 6.1 | Eval Harness + Inline Metrics + Langfuse Ops | **Complete** (6/6 plans; UAT 6/6, secure 23/23; shipped PR #2 merged to main 2026-07-31; 4 disclosed follow-ups gate a production-ready stamp only) |
+| 6.2 | Portfolio Surfaces (LAND-01 / FAILGAL-01 / OPS-03) | Not started (next) |
+| 6.3 | Agent Polish + Launch Gate (SEBI + orchestration) | Not started |
 
 ## Performance Metrics
 

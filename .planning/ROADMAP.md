@@ -13,7 +13,7 @@
 - [x] **Phase 3: Structured Signal Extraction (Red-Flag Table)** - NLP-extracted structured red-flag table per IPO with per-field confidence scores, hand-labeled gold set evaluation (F1), and numeric-faithfulness release gate. (completed 2026-07-05)
 - [x] **Phase 4: Historical IPO Dataset + Peer Comparator + GMP Display** - Survivorship-corrected historical IPO dataset (SEBI-sourced universe with status column), peer multiples comparison table, GMP read-only display, Indian-context formatting throughout. (completed 2026-07-27)
 - [x] **Phase 5: Calibrated Listing-Day Forecaster** - XGBoost + MAPIE conformal regression with walk-forward backtest, four baselines, committed model card, GMP-vs-model gap signal, uncertainty rendered as first-class UI. (completed 2026-07-25; honest model card — forecaster does not beat baselines, the expected D5-01 result)
-- [ ] **Phase 6.1: Eval Harness + Inline Metrics + Langfuse Ops** - Committed RAGAS/DeepEval/custom eval suite (faithfulness + recall@k + citation accuracy), honest inline metric surfacing on IPO pages, and Langfuse trace enrichment + failure-mode ops dashboard. (EVAL-01/02/05; alias "6a" — built first)
+- [x] **Phase 6.1: Eval Harness + Inline Metrics + Langfuse Ops** - Committed RAGAS/DeepEval/custom eval suite (faithfulness + recall@k + citation accuracy), honest inline metric surfacing on IPO pages, and Langfuse trace enrichment + failure-mode ops dashboard. (EVAL-01/02/05; alias "6a" — built first) (completed 2026-07-31; UAT 6/6, shipped PR #2 merged to main; 4 disclosed follow-ups gate a production-ready stamp only)
 - [ ] **Phase 6.2: Portfolio Surfaces** - "Show your work" pane, portfolio-presentable README + model card + committed HTML eval dashboards, recruiter /methodology landing page, and browseable /failures gallery. (EVAL-04/OPS-03/LAND-01/FAILGAL-01; alias "6b")
 - [ ] **Phase 6.3: Agent Polish + Launch Gate** - Full multi-tool LangGraph orchestration (TTL + semantic call dedup + supervisor stress-tested) and the SEBI legal-review checkpoint gating public launch. (alias "6c")
 
@@ -189,12 +189,12 @@ Plans:
   2. Every agent trace is captured via Langfuse (or equivalent), reviewable by the developer, with cost / latency / tool-call counts / failure-mode taxonomy surfaced on an operational dashboard (EVAL-05).
 
 **Plans**: 6 plans in 4 waves
-- [ ] 06.1-01-PLAN.md — Deps (langfuse<3, deepeval) + importable eval/metrics deterministic recall@k + citation_accuracy (TDD) + pinned EvalSummary schema [W1, EVAL-01]
-- [ ] 06.1-02-PLAN.md — DeepEval faithfulness LLM-judge (gemini-3.5-flash, reported-not-gated, -1 sentinel) + opt-in assert_test lane [W2, EVAL-01]
-- [ ] 06.1-03-PLAN.md — Langfuse direct-API trace enrichment (cost/latency/tool-calls + extended failure-mode custom scores; make tracing actually work) [W2, EVAL-05]
-- [ ] 06.1-04-PLAN.md — Runner emits eval_summary.json + rag-eval.md (P10 interpretation + recall-floor/gold-set caveat) [W3, EVAL-01]
-- [ ] 06.1-05-PLAN.md — Release gate deterministic hard-gates (citation_accuracy>=0.95, recall@10>=0.85; faithfulness reported-only) [W4, EVAL-01]
-- [ ] 06.1-06-PLAN.md — Honest inline eval surface on IPO pages + /methodology fill (no verdict UX, provenance, P19 read-only) [W4, EVAL-02]
+- [x] 06.1-01-PLAN.md — Deps (langfuse<3, deepeval) + importable eval/metrics deterministic recall@k + citation_accuracy (TDD) + pinned EvalSummary schema [W1, EVAL-01]
+- [x] 06.1-02-PLAN.md — DeepEval faithfulness LLM-judge (gemini-3.5-flash, reported-not-gated, -1 sentinel) + opt-in assert_test lane [W2, EVAL-01]
+- [x] 06.1-03-PLAN.md — Langfuse direct-API trace enrichment (cost/latency/tool-calls + extended failure-mode custom scores; make tracing actually work) [W2, EVAL-05]
+- [x] 06.1-04-PLAN.md — Runner emits eval_summary.json + rag-eval.md (P10 interpretation + recall-floor/gold-set caveat) [W3, EVAL-01]
+- [x] 06.1-05-PLAN.md — Release gate deterministic hard-gates (citation_accuracy>=0.95, recall@10>=0.85; faithfulness reported-only) [W4, EVAL-01]
+- [x] 06.1-06-PLAN.md — Honest inline eval surface on IPO pages + /methodology fill (no verdict UX, provenance, P19 read-only) [W4, EVAL-02]
 **UI hint**: yes
 **Alias**: 6a — built first; branch `phase6/6a-eval-harness`; design doc `docs/superpowers/specs/2026-07-28-6a-eval-harness-design.md`
 
