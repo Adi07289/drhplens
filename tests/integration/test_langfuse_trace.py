@@ -87,7 +87,7 @@ def test_langfuse_client_noop_when_keys_missing(monkeypatch) -> None:
 
 
 @_langfuse_skip
-def test_langfuse_client_initialized_when_keys_present() -> None:
+def test_langfuse_client_initialized_when_keys_present(request) -> None:
     """With real env vars, the DIRECT client initializes and is the real trace path.
 
     Spike 001 (langfuse-v4-migration) proved get_callback_handler() silently falls
@@ -96,7 +96,16 @@ def test_langfuse_client_initialized_when_keys_present() -> None:
     invariant `type(handler) == CallbackHandler`; it is corrected to the measured
     reality — the DIRECT client (get_client) is the real EVAL-05 trace path, and the
     callback handler is environment-robust (real handler only if langchain present).
+
+    Gated on `--run-langfuse` (not just the env var): the langfuse v2 SDK auto-loads
+    `.env` on import, so LANGFUSE_PUBLIC_KEY is present on any box with a `.env` file.
+    Constructing the real client here spawns a background flusher whose `atexit` flush
+    to Langfuse Cloud stalls the whole pytest process at teardown (~15 s, uncovered by
+    the per-test signal timeout). Keep it strictly opt-in, like the live-attach test.
     """
+    if not request.config.getoption("--run-langfuse"):
+        pytest.skip("live Langfuse client init requires --run-langfuse")
+
     from app.observability.langfuse_client import (
         get_callback_handler,
         get_client,
@@ -116,14 +125,20 @@ def test_langfuse_client_initialized_when_keys_present() -> None:
 
 
 @_langfuse_skip
-def test_every_node_writes_a_span_with_claim_ids() -> None:
+def test_every_node_writes_a_span_with_claim_ids(request) -> None:
     """Invoke the agent and verify the Langfuse trace has the expected 9-span shape.
 
     Verifies the Phase 3 METHOD-01 consumer contract: every Claim span carries
     claim_id metadata so the methodology pane can query trace data.
 
     Requires: LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY, GEMINI_API_KEY, QDRANT_URL set.
+    Gated on `--run-langfuse` — building the run callbacks constructs the real Langfuse
+    client (same `.env` auto-load / teardown-flush hazard as the test above), so it must
+    stay opt-in rather than firing on every bare `pytest` run.
     """
+    if not request.config.getoption("--run-langfuse"):
+        pytest.skip("live Langfuse span test requires --run-langfuse")
+
     from unittest.mock import MagicMock, patch
 
     from app.observability.trace_decorators import build_callbacks_for_run
