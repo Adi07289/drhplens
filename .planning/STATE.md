@@ -15,6 +15,7 @@ progress:
 # STATE: DRHPLens
 
 **Last Updated:** 2026-07-31
+**Last activity:** 2026-07-31 — Phase 6.1 verified (UAT 6/6 pass, `06.1-VERIFICATION.md` status: pass) and **shipped as PR #2** (`phase6/6a-eval-harness` → `phase5/05-11-residuals`, stacked on open PR #1; auto-retargets to `main` on PR #1 merge). Deferred (non-blocking, disclosed): judge calibration, CI gate lane, gold-set span-tightening, WR-03.
 
 ## Project Reference
 
