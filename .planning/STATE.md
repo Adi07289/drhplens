@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-last_updated: "2026-07-27T00:00:00Z"
+status: verifying
+last_updated: "2026-07-30T17:11:18.939Z"
 progress:
-  total_phases: 6
-  completed_phases: 5
-  total_plans: 36
-  completed_plans: 36
-  percent: 83
+  total_phases: 8
+  completed_phases: 4
+  total_plans: 42
+  completed_plans: 40
+  percent: 50
 ---
 
 # STATE: DRHPLens
 
-**Last Updated:** 2026-07-27
+**Last Updated:** 2026-07-31
 
 ## Project Reference
 
@@ -256,3 +256,4 @@ Phase 5 Wave 3 feature layer (05-04) COMPLETE — the leakage-gated issue-struct
 | Quick ID | Slug | Requirement | Outcome |
 |----------|------|-------------|---------|
 | 260723-00e | cite-check-numeric-grounding | EVAL-03 (Job 2) | `agent/nodes/cite_check.py` decouple — numeric grounding is no longer gated behind the prose `token_set_ratio` (concise millions-denominated answers scored 16–49 vs the 52 gate → genuinely-grounded numbers marked ungrounded → `numeric_faithfulness` 0.08). Now: `numbers_grounded AND (claim_has_numbers OR prose_grounded)`; prose gate stays the antibody for no-number claims; P2 number-swap intact. TDD, +4 tests, **506 pass / 0 regressions**. **EVAL-03 STILL RED** (live throttled 50-Q run = 0.10): residual failure is now the broken section/page-anchoring (one 273,590-token "Preamble" section → wrong/empty cited windows: `{91,95907,56603}`, `set()`), NOT cite_check. Follow-up DONE same session: torch-free page-anchored re-parse (`pipelines.ingest.parse_drhp_pages`, PyMuPDF+pdfplumber, Docling can't run in-env) + Qdrant re-ingest = **1,885 single-page-anchored chunks** (was giant `(0,284)` spans); grounding materially improved (num-001/003/004/006/008 now ground). **EVAL-03 STILL not green** — full 50-Q re-measurement blocked by Gemini free-tier rate limits (~12/50 complete/run); residuals = retrieval/citation precision (number in index but not in cited chunk) + derived-number gold questions that can't ground by design. Then (2026-07-24): gold-set curated (24 disclosed / 26 derived, `NUMERIC_EVAL_SPLIT.md`, gate repointed) + **citation repair** added (`repair_citations` in cite_check re-anchors a mis-cited numeric claim to the retrieved chunk that actually holds its numbers; never repairs a hallucination; +3 TDD tests, 510 pass). Then gate1 recalibrated (0.0 refused answerable DRHP Qs — bge-reranker emits negative logits for relevant passages; topical-OOS scores higher so gate1 can't gate OOS → LLM+cite_check do; set to -3.0, empty→-inf). **Disclosed gate 0.08→0.21→0.79→0.917** (22/24, 0 refusals/crashes). STILL < 0.95: num-030 (NOT retrieval — the 75% chunk IS in top-5; the LLM over-answers with anchor/MF numbers not in context, an answer-quality issue) + num-033 (DEFECTIVE gold question — asks a computed implied value, gold is the price 390; flagged for human review, NOT gamed). ⚠️ Pre-existing honesty gap found in refusal verification: OOS swiggy-012 (Zomato listing cmp) answered not refused (scores +1.23, passes gate1 at both 0.0 and -3.0 — orthogonal to the calib); needs an OOS-relevance check before launch (P1/TRUST-04). Then num-033 reclassified disclosed→derived (human-approved; defective computed-value Q, redundant w/ num-005). **✅ EVAL-03 GATE PASSES: numeric_faithfulness = 0.957 ≥ 0.95** (disclosed 22/23, 0 crashes; official `eval/reports/2026-07-25-numeric-gate.md`). Also added a deterministic OOS refusal guard (swiggy-012 now refuses, live-verified). Remaining honest follow-ups (not gate blockers): num-030 (LLM over-answers), general-case OOS relevance judge. Detail: `.planning/quick/260723-00e-cite-check-numeric-grounding/`. |
+| 260731-gn7 | gate-hanging-live-integration-tests | Pre-`/gsd-ship` (6.1) | Isolated & fixed the >2 min pytest wedge. Live tests were gated on **env-var presence**, but the deepeval plugin + langfuse SDK **auto-load `.env`**, so a `.env` on disk (dev / `/gsd-ship` / CI) made them always-live. Confirmed: stripping shell env vars did NOT stop them — `test_agent_e2e.py` still ran live **72 s** (Qdrant+Gemini; `test_gold_set_smoke_subset` = 3 sequential invokes → full gold set >2 min); `test_langfuse_trace.py` added **~15 s `atexit` flush** to cloud.langfuse.com at teardown (uncovered by the per-test signal timeout). Fix: gated `test_agent_e2e.py` behind `--run-eval` (autouse fixture) and the 2 live langfuse-client tests behind `--run-langfuse` (mirroring the existing live-attach guard) — the CLI-flag pattern `.env` auto-load can't defeat (same as `NSE_LIVE_SMOKE`). Verified quota-free (live agent NOT run): full suite under `.env`, no flags = **605 passed, 17 skipped, 2 xfailed in 74 s, no wedge**; the two files skip in 0.46 s, teardown flush gone; `--collect-only` = 624 tests, 0 errors. Resolves the `/gsd-ship` "ISOLATE THE HANGING LIVE TEST" blocker. Detail: `.planning/quick/260731-gn7-gate-hanging-live-integration-tests/`. |
