@@ -31,6 +31,26 @@ from typing import Any
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+# ---------------------------------------------------------------------------
+# The ONE metric implementation (06.1-01/02) — imported here, never re-implemented,
+# so the committed eval_summary.json and scripts/release_gate.py can never diverge
+# (mirrors how release_gate imports compute_numeric_faithfulness below). These live
+# AFTER the sys.path insert above so `python scripts/run_eval.py` (sys.path[0]=scripts/)
+# still resolves the project packages.
+# ---------------------------------------------------------------------------
+from agent.policies import DRHP_ID_DEFAULT  # noqa: E402
+from app.observability.langfuse_client import get_client, is_enabled  # noqa: E402
+from app.observability.trace_enrichment import FAILURE_MODES, flush  # noqa: E402
+from eval.metrics import (  # noqa: E402
+    Aggregate,
+    Corpus,
+    EvalSummary,
+    citation_accuracy,
+    faithfulness_deepeval,
+    recall_at_k,
+)
+from eval.metrics.faithfulness_deepeval import JUDGE_MODEL, NOT_MEASURED  # noqa: E402
+
 
 def _check_env() -> None:
     """Fail fast with a clear error if required env vars are missing."""
@@ -60,43 +80,6 @@ def _answer_coverage(expected_substrings: list[str], answer_prose: str) -> float
     norm_prose = _normalize(answer_prose)
     hits = sum(1 for sub in expected_substrings if _normalize(sub) in norm_prose)
     return hits / len(expected_substrings)
-
-
-def _citation_accuracy(expected_sources: list[dict], reranked_chunks: list[dict]) -> float:
-    """Proportion of expected page ranges that overlap any returned chunk."""
-    if not expected_sources:
-        return 1.0
-    hits = 0
-    for exp_src in expected_sources:
-        exp_start = exp_src.get("page_start", 0)
-        exp_end = exp_src.get("page_end", 9999)
-        for chunk in reranked_chunks:
-            payload = chunk.get("payload", {})
-            chunk_start = payload.get("page_start", 0)
-            chunk_end = payload.get("page_end", 0)
-            if chunk_start <= exp_end and chunk_end >= exp_start:
-                hits += 1
-                break
-    return hits / len(expected_sources)
-
-
-def _recall_at_k(expected_sources: list[dict], reranked_chunks: list[dict], k: int = 5) -> float:
-    """Proportion of expected source page ranges appearing in top-k chunks."""
-    if not expected_sources:
-        return 1.0
-    top_k = reranked_chunks[:k]
-    hits = 0
-    for exp_src in expected_sources:
-        exp_start = exp_src.get("page_start", 0)
-        exp_end = exp_src.get("page_end", 9999)
-        for chunk in top_k:
-            payload = chunk.get("payload", {})
-            chunk_start = payload.get("page_start", 0)
-            chunk_end = payload.get("page_end", 0)
-            if chunk_start <= exp_end and chunk_end >= exp_start:
-                hits += 1
-                break
-    return hits / len(expected_sources)
 
 
 def _ragas_faithfulness(question: str, answer_prose: str, contexts: list[str]) -> float:
@@ -204,9 +187,10 @@ def run_eval(
                 continue
 
             prose = getattr(grounded_answer, "answer_prose", "") or ""
-            cite_acc = _citation_accuracy(expected_sources, reranked)
+            # ONE shared impl (eval.metrics) — the private copies were deleted (06.1-04).
+            cite_acc = citation_accuracy(expected_sources, reranked)
             ans_cov = _answer_coverage(expected_substrings, prose)
-            recall5 = _recall_at_k(expected_sources, reranked, k=5)
+            recall5 = recall_at_k(expected_sources, reranked, 5)
             contexts = [
                 chunk.get("payload", {}).get("chunk_text", "")[:500]
                 for chunk in reranked[:5]
@@ -229,8 +213,11 @@ def run_eval(
     # ---------------------------------------------------------------------------
     # Compute summary statistics
     # ---------------------------------------------------------------------------
-    grounded_results = [r for r in results if not r["refusal_expected"] and "citation_accuracy" in r and r["citation_accuracy"] is not None]
-    refusal_results = [r for r in results if r["refusal_expected"]]
+    # .get(): a crashed-question row (appended above with only qid/category/status/error) has no
+    # "refusal_expected" key — r["refusal_expected"] would KeyError and abort the whole report the
+    # moment any question crashes (WR-01). A crash row is neither grounded nor a refusal.
+    grounded_results = [r for r in results if not r.get("refusal_expected") and "citation_accuracy" in r and r["citation_accuracy"] is not None]
+    refusal_results = [r for r in results if r.get("refusal_expected")]
 
     avg_cite = sum(r["citation_accuracy"] for r in grounded_results) / len(grounded_results) if grounded_results else 0.0
     avg_cov = sum(r["answer_coverage"] for r in grounded_results) / len(grounded_results) if grounded_results else 0.0
@@ -303,6 +290,362 @@ def run_eval(
 
     report_path.write_text("\n".join(lines), encoding="utf-8")
     print(f"\nReport written to: {report_path}")
+    return report_path
+
+
+# ===========================================================================
+# RAG eval runner (06.1-04, EVAL-01) — the first-class committed runner.
+#
+# One pass over the gold set emits BOTH the pinned machine artifact
+# eval/reports/eval_summary.json (read by the inline UI surface + release gate)
+# and the human eval/reports/<date>-rag-eval.md (judge reasons + P10 interpretation).
+# It imports the ONE eval/metrics implementation, so the report and the gate can
+# never diverge (mirrors compute_numeric_faithfulness below).
+#
+# Two paths, one final_state shape:
+#   - default (with_faithfulness=False): recall + citation via retrieve+rerank only
+#     (NO Gemini generate — spike 003); faithfulness serialized as the -1 "not
+#     measured" sentinel. $0, never touches the free-tier daily quota. P10 honesty:
+#     a real judge number is withheld until the >=0.7 human calibration passes.
+#   - --with-faithfulness: invokes the full agent (invoke_with_tracing) and scores the
+#     DeepEval Gemini judge SERIALLY (5-RPM safe) over the top-5 reranked context (P18).
+# ===========================================================================
+
+
+def _retrieval_state(question: str, drhp_id: str) -> dict:
+    """Run retrieve + rerank ONLY (no Gemini generate) -> a final_state-shaped dict.
+
+    The deterministic metrics need only the retrieval candidates (recall over the 50
+    retrieved_chunks) and the reranked window (citation) — the generate node (Gemini)
+    is not required, so this pass costs $0 and never consumes the free-tier daily quota
+    (spike 003 validated this exact path). Returns {retrieved_chunks, reranked_top_k, ...}.
+    """
+    from agent.nodes import rerank, retrieve
+
+    state: dict = {"question": question, "drhp_id": drhp_id}
+    state = retrieve.run(state)
+    state = rerank.run(state)
+    return state
+
+
+def _retrieval_only_invoke(initial_state: dict, question: str) -> dict:
+    """Deterministic invoke_fn matching the invoke_with_tracing(initial_state, question)
+    signature, so run_rag_eval treats the retrieval-only and full-agent paths uniformly."""
+    return _retrieval_state(
+        initial_state.get("question", question),
+        initial_state.get("drhp_id", DRHP_ID_DEFAULT),
+    )
+
+
+def _attach_judge_flag(question: str, faithfulness: float, threshold: float = 0.95) -> None:
+    """Attach the eval-time `judge_flag` failure mode to Langfuse when a MEASURED
+    faithfulness falls below threshold (Wave 2 taxonomy — app/observability).
+
+    judge_flag is the one FAILURE_MODES entry only emittable at EVAL time: the judge runs
+    here in the runner, not in the agent, so trace_enrichment.classify_failure_mode never
+    returns it. It is wired here via the same direct-client score path. Inert on the default
+    run — faithfulness is the -1 "not measured" sentinel, so the < threshold branch fires
+    only under --with-faithfulness with a real judge score. No-op when Langfuse keys are
+    unset (is_enabled gate); every call is swallowed so tracing can never break the runner.
+    """
+    if faithfulness < 0 or faithfulness >= threshold:
+        return  # not measured, or at/above the target line — nothing to flag
+    if not is_enabled():
+        return
+    try:
+        lf = get_client()
+        if lf is None:
+            return
+        trace = lf.trace(
+            name="answer_question",
+            metadata={"question_preview": question[:80], "faithfulness": faithfulness},
+            tags=["eval-05", "eval-judge"],
+        )
+        trace.score(
+            name="failure_mode",
+            value=float(FAILURE_MODES.index("judge_flag") + 1),
+            comment="judge_flag",
+        )
+    except Exception:
+        # Tracing must never crash the runner (mirror emit_enriched_trace).
+        pass
+
+
+def run_rag_eval(
+    gold_set_path: str = "tests/eval/gold_set.jsonl",
+    output_dir: str = "eval/reports",
+    with_faithfulness: bool = False,
+    invoke_fn=None,
+    drhp_id: str = DRHP_ID_DEFAULT,
+) -> Path:
+    """First-class RAG eval runner: emit eval_summary.json + <date>-rag-eval.md in one pass.
+
+    Args:
+        gold_set_path: JSONL gold set (default the 13-Q Swiggy set).
+        output_dir: where both artifacts are written.
+        with_faithfulness: opt-in DeepEval judge pass (default OFF). When OFF the committed
+            faithfulness is the -1 "not measured" sentinel (P10 honesty guard + free-tier
+            daily-quota reality); the deterministic recall/citation are always REAL.
+        invoke_fn: dependency-injection hook for offline tests. Signature
+            ``invoke_fn(initial_state, question) -> final_state``. When None the live path is
+            built and _check_env fail-fast runs; when provided, no live services are touched.
+        drhp_id: the IPO whose gold set this is (Swiggy) — the sole per_ipo key.
+
+    Returns:
+        Path to the written eval_summary.json.
+    """
+    live = invoke_fn is None
+    if live:
+        _check_env()
+        if with_faithfulness:
+            from agent.graph import invoke_with_tracing
+
+            invoke_fn = invoke_with_tracing
+        else:
+            invoke_fn = _retrieval_only_invoke
+
+    gold_path = PROJECT_ROOT / gold_set_path
+    if not gold_path.exists():
+        print(f"ERROR: gold set not found at {gold_path}")
+        sys.exit(1)
+
+    entries = [
+        json.loads(line)
+        for line in gold_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    grounded = [e for e in entries if not e.get("is_refusal_expected", False)]
+    print(
+        f"Loaded {len(entries)} gold entries ({len(grounded)} grounded) from {gold_path}"
+    )
+
+    per_q: list[dict[str, Any]] = []
+    for entry in grounded:
+        qid = entry["qid"]
+        question = entry["question"]
+        category = entry.get("category", "")
+        expected_sources = entry.get("expected_sources", [])
+
+        print(f"\n[{qid}] {question[:60]}...")
+        final_state = invoke_fn({"question": question, "drhp_id": drhp_id}, question)
+
+        retrieved = final_state.get("retrieved_chunks", []) or []
+        reranked = final_state.get("reranked_top_k", []) or []
+
+        # recall over the 50 retrieved candidates (NOT reranked — RERANK_TOP_K=5 makes
+        # k=10/30 undefined on the reranked list, measured decision #2 / spike 003);
+        # citation over the reranked window the agent actually consumed.
+        r5 = recall_at_k(expected_sources, retrieved, 5)
+        r10 = recall_at_k(expected_sources, retrieved, 10)
+        r30 = recall_at_k(expected_sources, retrieved, 30)
+        cite = citation_accuracy(expected_sources, reranked)
+
+        faith: float = NOT_MEASURED
+        reason = (
+            "<reason: not measured — deterministic-only run; enable the judge with "
+            "--with-faithfulness (needs GEMINI_API_KEY + free-tier daily quota)>"
+        )
+        if with_faithfulness:
+            grounded_answer = final_state.get("grounded_answer")
+            prose = (getattr(grounded_answer, "answer_prose", "") or "") if grounded_answer else ""
+            # P18: judge only the top-5 reranked chunk text the generate node consumed,
+            # byte-identical (truncated to ~500 chars as in the legacy track). Serial call.
+            contexts = [
+                c.get("payload", {}).get("chunk_text", "")[:500] for c in reranked[:5]
+            ]
+            faith, reason = faithfulness_deepeval(question, prose, contexts)
+            _attach_judge_flag(question, faith)
+
+        faith_str = "—" if faith < 0 else f"{faith:.2f}"
+        print(
+            f"  recall@5/10/30={r5:.2f}/{r10:.2f}/{r30:.2f} "
+            f"citation={cite:.2f} faithfulness={faith_str}"
+        )
+        per_q.append({
+            "qid": qid,
+            "category": category,
+            "recall_at_5": r5,
+            "recall_at_10": r10,
+            "recall_at_30": r30,
+            "citation_accuracy": cite,
+            "faithfulness": faith,
+            "reason": reason,
+            "n_retrieved": len(retrieved),
+            "n_reranked": len(reranked),
+        })
+
+    if not per_q:
+        # A deterministic metric could not be computed (no grounded questions) — fail.
+        print("ERROR: no grounded gold entries to score")
+        sys.exit(1)
+
+    def _mean(key: str) -> float:
+        return sum(r[key] for r in per_q) / len(per_q)
+
+    # faithfulness aggregate: mean of the MEASURED (>= 0) values only; -1 if none measured.
+    faith_measured = [r["faithfulness"] for r in per_q if r["faithfulness"] >= 0]
+    agg_faith = (
+        sum(faith_measured) / len(faith_measured) if faith_measured else NOT_MEASURED
+    )
+
+    aggregate = Aggregate(
+        faithfulness_deepeval=agg_faith,
+        citation_accuracy=_mean("citation_accuracy"),
+        recall_at_5=_mean("recall_at_5"),
+        recall_at_10=_mean("recall_at_10"),
+        recall_at_30=_mean("recall_at_30"),
+    )
+    corpus = Corpus(
+        gold_set=gold_set_path,
+        ipo="Swiggy DRHP",
+        n_questions=len(entries),   # total gold entries
+        n_scored=len(per_q),        # grounded questions actually scored (refusals excluded)
+    )
+    report_rel = f"eval/reports/{date.today()}-rag-eval.md"
+    summary = EvalSummary(
+        generated=date.today().isoformat(),
+        judge_model=JUDGE_MODEL,  # single source of truth (eval.metrics.faithfulness_deepeval) — provenance can't drift from the real judge (WR-04)
+        corpus=corpus,
+        aggregate=aggregate,
+        # per_ipo carries ONLY Swiggy — the one IPO with a real gold set (honesty invariant;
+        # never fabricate a per-IPO figure for an IPO without one).
+        per_ipo={drhp_id: aggregate},
+        report=report_rel,
+    )
+
+    out_dir = PROJECT_ROOT / output_dir
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # model_dump_json validates against the pinned EvalSummary schema at write time —
+    # a schema violation raises here and fails the runner, which is correct.
+    json_path = out_dir / "eval_summary.json"
+    json_path.write_text(summary.model_dump_json(indent=2) + "\n", encoding="utf-8")
+    print(f"\neval_summary.json written to: {json_path}")
+
+    report_path = _write_rag_eval_report(
+        per_q, summary, len(entries), len(grounded), out_dir
+    )
+    print(f"rag-eval report written to: {report_path}")
+
+    # ship the enriched Langfuse traces (06.1-03) before this short-lived process exits.
+    flush()
+
+    return json_path
+
+
+def _write_rag_eval_report(
+    per_q: list[dict[str, Any]],
+    summary: EvalSummary,
+    n_total: int,
+    n_grounded: int,
+    out_dir: Path,
+) -> Path:
+    """Write the dated <date>-rag-eval.md: provenance header, summary table, a per-question
+    table carrying the judge `reason` strings, and the mandatory per-metric Interpretation
+    (P10) section — including the recall-saturation floor caveat + the gold-set follow-up."""
+    agg = summary.aggregate
+    report_path = out_dir / f"{date.today()}-rag-eval.md"
+
+    faith_val = (
+        "not measured (-1)"
+        if agg.faithfulness_deepeval < 0
+        else f"{agg.faithfulness_deepeval:.3f}"
+    )
+
+    lines = [
+        f"# RAG Eval — {date.today()}",
+        "",
+        f"> Measured over the {summary.corpus.n_questions}-question gold set "
+        f"({summary.corpus.ipo}; {n_grounded} grounded questions scored, "
+        f"{n_total - n_grounded} refusal-eligible excluded), generated "
+        f"{summary.generated}, judge = `{summary.judge_model}`. "
+        f"Machine artifact: `eval/reports/eval_summary.json`.",
+        "",
+        "## Summary",
+        "",
+        "| Metric | Value | Gate posture |",
+        "|---|---|---|",
+        f"| faithfulness_deepeval | {faith_val} | REPORTED (target >= 0.95, never gated) |",
+        f"| citation_accuracy | {agg.citation_accuracy:.3f} | HARD GATE >= 0.95 |",
+        f"| recall@5 | {agg.recall_at_5:.3f} | reported |",
+        f"| recall@10 | {agg.recall_at_10:.3f} | HARD GATE >= 0.85 (regression floor) |",
+        f"| recall@30 | {agg.recall_at_30:.3f} | reported |",
+        "",
+        "## Per-Question Results",
+        "",
+        "| qid | category | recall@5 | recall@10 | recall@30 | citation | faithfulness | judge reason |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
+    for r in per_q:
+        f_str = "—" if r["faithfulness"] < 0 else f"{r['faithfulness']:.2f}"
+        reason = (r.get("reason") or "").replace("|", "\\|").replace("\n", " ")
+        if len(reason) > 200:
+            reason = reason[:197] + "..."
+        lines.append(
+            f"| {r['qid']} | {r['category']} | {r['recall_at_5']:.2f} | "
+            f"{r['recall_at_10']:.2f} | {r['recall_at_30']:.2f} | "
+            f"{r['citation_accuracy']:.2f} | {f_str} | {reason} |"
+        )
+
+    lines += [
+        "",
+        "## Interpretation (P10)",
+        "",
+        "Every headline figure below carries an honest interpretation — no metric is "
+        "surfaced as a verdict, and a low score renders identically to a high one.",
+        "",
+        f"**Faithfulness (DeepEval LLM-judge, `{summary.judge_model}`) — REPORTED, not gated.** "
+        "This is an LLM-as-judge score: the fraction of the answer's claims the judge finds "
+        "supported by the top-5 reranked DRHP chunks the agent actually retrieved (P18). It is "
+        "non-deterministic (it drifts run-to-run even at temperature 0), so it is REPORTED "
+        "against a 0.95 target line and NEVER hard-gates a release — hard-gating a run-to-run "
+        "variable judge is itself a critical failure mode. A value of -1 means NOT MEASURED "
+        "(free-tier Gemini daily quota exhausted / key unset), never a real 0.0. The judge "
+        "figure must NOT be trusted or surfaced as a headline until a >= 50-example human "
+        "spot-check reaches >= 0.7 judge-vs-human correlation (AI-SPEC §5); this run withholds "
+        "it (-1) pending that calibration.",
+        "",
+        "**Citation accuracy — deterministic, HARD-GATED >= 0.95.** Pure page-range span "
+        "overlap: did the cited page actually contain the claim (CLAUDE.md's custom metric). It "
+        "is model-free, reproducible, computed over the reranked chunks the agent consumed, and "
+        "— with numeric_faithfulness — carries the release gate: a citation-accuracy regression "
+        "is a hard CI failure. **Honesty caveat (P10):** on the CURRENT gold set citation also "
+        "reads 1.00, saturated by the SAME coarse-span mechanism as recall (expected_sources are "
+        "10-101-page ranges, mean 44.5 — spike 003), so TODAY it is a regression FLOOR, not yet a "
+        "discriminating quality signal. It only becomes the finer-grained REAL retrieval-quality "
+        "signal once expected_sources are tightened to <= 2-3-page answer spans (gold-set "
+        "follow-up below); until then, read its 1.00 as a floor, not a headline win.",
+        "",
+        "**Recall@k — deterministic; a LABELLED REGRESSION FLOOR, NOT a headline quality "
+        "metric (P10).** recall@10 is gated at >= 0.85 ONLY as a conservative regression floor. "
+        "Recall reads high (1.00 at every k on the current gold set) because the gold "
+        "`expected_sources` are coarse 10-101-page section ranges (mean 44.5 pages — spike "
+        "003), which span-overlap satisfies trivially; a \"recall@10 = 1.00\" headline would be "
+        "evaluation theater. Recall is computed over the 50 `retrieved_chunks` (the Qdrant "
+        "candidates), NOT the 5 reranked chunks, because RERANK_TOP_K=5 makes k=10/30 undefined "
+        "on the reranked list. A discriminating retrieval-quality signal will emerge from "
+        "citation-accuracy (once the gold spans are tightened) and faithfulness (once the judge "
+        "is calibrated) — on today's coarse gold set, neither is a headline win either.",
+        "",
+        "**Gold-set follow-up (flagged, NOT executed in 6.1 — measured decision #7).** To make "
+        "recall discriminating, tighten the gold `expected_sources` to <= 2-3-page answer spans "
+        "and add labelled RPT-attribution + numeric unit/period coverage, then re-measure and "
+        "re-ratify the recall@10 threshold (AI-SPEC §5). Until then recall stays a coarse floor "
+        "and per-IPO figures are suppressed wherever a real gold set is absent.",
+        "",
+        "## Notes",
+        "",
+        f"- Gold set: `{summary.corpus.gold_set}` ({summary.corpus.ipo}); "
+        f"{n_grounded}/{n_total} grounded questions scored for the deterministic metrics.",
+        "- One metric implementation: the runner imports `recall_at_k` / `citation_accuracy` / "
+        "`faithfulness_deepeval` from `eval.metrics` — the same functions `scripts/release_gate.py` "
+        "imports, so the report and the gate can never diverge.",
+        f"- Machine artifact (UI + gate contract): `eval/reports/eval_summary.json` "
+        f"(schema-validated `EvalSummary`, judge = `{summary.judge_model}`).",
+        f"- Generated: {date.today()} by scripts/run_eval.py (run_rag_eval).",
+    ]
+
+    report_path.write_text("\n".join(lines), encoding="utf-8")
     return report_path
 
 
@@ -477,14 +820,26 @@ def _write_numeric_report(
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description="DRHPLens Phase 1 eval suite")
+    parser = argparse.ArgumentParser(description="DRHPLens RAG eval suite")
     parser.add_argument("--gold-set", default="tests/eval/gold_set.jsonl")
     parser.add_argument("--output-dir", default="eval/reports")
     parser.add_argument(
+        "--with-faithfulness",
+        action="store_true",
+        help="Opt-in: run the DeepEval Gemini judge (serial, 5-RPM safe) over the full "
+        "agent. Default OFF -> faithfulness is serialized as the -1 'not measured' "
+        "sentinel (P10 honesty guard + free-tier daily-quota reality), and the "
+        "deterministic recall/citation are computed via retrieve+rerank only (no Gemini).",
+    )
+    parser.add_argument(
+        "--legacy",
+        action="store_true",
+        help="Run the legacy Phase 1 baseline (run_eval) instead of the RAG eval runner.",
+    )
+    parser.add_argument(
         "--numeric",
         action="store_true",
-        help="Run the numeric-faithfulness track (D3-11/D3-13) instead of the "
-        "Phase 1 track.",
+        help="Run the numeric-faithfulness track (D3-11/D3-13) instead of the RAG eval runner.",
     )
     parser.add_argument(
         "--numeric-set", default="eval/gold/numeric_eval.jsonl"
@@ -494,5 +849,11 @@ if __name__ == "__main__":
         compute_numeric_faithfulness(
             numeric_set_path=args.numeric_set, output_dir=args.output_dir
         )
-    else:
+    elif args.legacy:
         run_eval(gold_set_path=args.gold_set, output_dir=args.output_dir)
+    else:
+        run_rag_eval(
+            gold_set_path=args.gold_set,
+            output_dir=args.output_dir,
+            with_faithfulness=args.with_faithfulness,
+        )

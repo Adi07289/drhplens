@@ -34,7 +34,15 @@ pydantic>=2.7,<3
 streamlit>=1.36
 
 # Observability
-langfuse
+langfuse<3
+
+# Evals — RAG metric frameworks (Phase 6.1). deepeval = faithfulness LLM-judge
+# (native GeminiModel judge, no OpenAI dep). langfuse is pinned <3 above because v4
+# is a full OTEL rewrite that still needs the `langchain` package (deliberately NOT
+# added). ragas is an OPTIONAL offline cross-check only; NEVER imported in CI or the
+# release gate (AI-SPEC Pitfall 5).
+deepeval>=4.1,<5
+ragas>=0.4,<0.5
 
 # Utilities
 tenacity

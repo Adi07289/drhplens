@@ -17,7 +17,7 @@ import os as _os
 
 import streamlit as st
 
-from agent.graph import build_graph
+from agent.graph import invoke_with_tracing
 from agent.schemas import GroundedAnswer, RefusalResponse
 from data.catalogue_loader import load_catalogue
 from ui.chip import render_answer_with_chips
@@ -175,12 +175,20 @@ def _render_input_and_invoke(drhp_id: str, issuer: str) -> None:
     loading_copy = LOADING_ANSWER_COPY_TEMPLATE.format(issuer=issuer)
     with st.status(loading_copy, state="running") as status:
         try:
-            graph = build_graph()
-            result_state = graph.invoke({
-                "question": question,
-                "drhp_id": drhp_id,
-                "regenerate_attempts": 0,
-            })
+            # EVAL-05: route the production chat through invoke_with_tracing so every
+            # real user query emits an enriched Langfuse trace (cost/latency/tool-calls
+            # + failure-mode score). A bare graph.invoke() here bypassed tracing entirely,
+            # so production got zero observability despite the phase's "+ Langfuse Ops".
+            # invoke_with_tracing returns the same final GraphState and no-ops when
+            # Langfuse keys are unset.
+            result_state = invoke_with_tracing(
+                {
+                    "question": question,
+                    "drhp_id": drhp_id,
+                    "regenerate_attempts": 0,
+                },
+                question,
+            )
             if result_state.get("grounded_answer") is not None:
                 assistant_content = result_state["grounded_answer"]
             elif result_state.get("refusal") is not None:

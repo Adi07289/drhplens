@@ -79,14 +79,67 @@ st.markdown(f'<div class="drhp-arch">{_stages_html}</div>', unsafe_allow_html=Tr
 st.markdown(render_section_head("Evaluation", "Measured, not vibed"), unsafe_allow_html=True)
 st.markdown(
     '<p class="drhp-method-note">Every metric is computed on a hand-curated gold set and committed '
-    'to the repo. Targets and release gates are shown below; the full harness '
-    '(RAGAS · DeepEval · Langfuse) lands in Phase 6.</p>',
+    'to the repo. Targets and release gates are shown below; the live values are read from the '
+    'committed eval report (DeepEval · custom span-overlap · Langfuse).</p>',
     unsafe_allow_html=True,
 )
+
+
+def _mc_num(value, nd: int = 3) -> str:
+    """Format a card / eval number honestly; NaN / non-numeric renders as an em-dash."""
+    try:
+        num = float(value)
+    except (TypeError, ValueError):
+        return "—"
+    return "—" if num != num else f"{num:.{nd}f}"
+
+
+# EVAL-02 (06.1-06) Surface 2 — fill the three eval rows with LIVE values from the
+# committed eval_summary.json, read with the SAME .is_file() + try/except guard used by
+# the model-card block below (render-only; this page imports no eval/agent module). The
+# live values render via the NEUTRAL .drhp-eval-live class (text-primary mono), NOT the
+# amber .m-status — amber on a live eval number would read as a verdict and breach the
+# honesty invariant. If the JSON is absent/unreadable the three rows fall back to their
+# honest "Phase 6" status text — never a fabricated number.
+_EVAL_SUMMARY_PATH = (
+    Path(__file__).resolve().parents[1] / "eval" / "reports" / "eval_summary.json"
+)
+_eval_agg = None
+if _EVAL_SUMMARY_PATH.is_file():
+    try:
+        _eval_agg = json.loads(
+            _EVAL_SUMMARY_PATH.read_text(encoding="utf-8")
+        ).get("aggregate", {})
+    except Exception:
+        _eval_agg = None
+
+
+def _eval_live(text: str) -> str:
+    """Neutral mono live-value cell (Surface 2) — NEVER the amber .m-status."""
+    return f'<span class="drhp-eval-live">{html.escape(text)}</span>'
+
+
+if _eval_agg is not None:
+    _faith_raw = _eval_agg.get("faithfulness_deepeval")
+    # -1.0 is the documented "not measured" sentinel — never a number (honesty invariant).
+    _faith_txt = "not measured" if _faith_raw in (-1, -1.0) else _mc_num(_faith_raw, 2)
+    _faith_status = _eval_live(_faith_txt)
+    _cite_status = _eval_live(_mc_num(_eval_agg.get("citation_accuracy"), 2))
+    _recall_status = _eval_live(
+        f'{_mc_num(_eval_agg.get("recall_at_5"), 2)} / '
+        f'{_mc_num(_eval_agg.get("recall_at_10"), 2)} / '
+        f'{_mc_num(_eval_agg.get("recall_at_30"), 2)}'
+    )
+else:
+    _faith_status = _cite_status = _recall_status = "Phase 6"
+
 _ROWS = [
-    ("Faithfulness", "RAGAS · answer grounded in retrieved context", "&ge; 0.95", "Phase 6"),
-    ("Citation accuracy", "custom · did the cited page contain the claim", "&ge; 0.95 · release gate", "Phase 6"),
-    ("Context recall@k", "RAGAS · k = 5 / 10 / 30", "reported", "Phase 6"),
+    ("Faithfulness", "DeepEval · LLM-judge · answer grounded in retrieved context",
+     "&ge; 0.95", _faith_status),
+    ("Citation accuracy", "custom · did the cited page contain the claim",
+     "&ge; 0.95 · release gate", _cite_status),
+    ("Context recall@k", "custom span-overlap · k = 5 / 10 / 30",
+     "recall@10 &ge; 0.85 · release gate", _recall_status),
     ("Extraction F1", "hand-labeled gold set · 20–30 DRHPs, per field", "reported", "Phase 3"),
     ("Forecast coverage", "MAPIE conformal · empirical interval coverage", "≈ 80%", "Phase 5"),
 ]
@@ -117,15 +170,6 @@ _MODEL_CARD_DIR = Path(__file__).resolve().parents[1] / "model_card"
 _card_data_path = _MODEL_CARD_DIR / "card_data.json"
 
 
-def _mc_num(value, nd: int = 3) -> str:
-    """Format a card number honestly; NaN / non-numeric renders as an em-dash."""
-    try:
-        num = float(value)
-    except (TypeError, ValueError):
-        return "—"
-    return "—" if num != num else f"{num:.{nd}f}"
-
-
 # ── Historical panel survivorship sanity (04-07 / SC-5) ──────────────────────
 # The forecaster's backtest universe is a survivorship-corrected panel; its median
 # listing-day return is sanity-checked against the ~7% MAAR baseline (P3). Render-only:
@@ -135,8 +179,13 @@ def _mc_num(value, nd: int = 3) -> str:
 _panel_sanity_path = (
     Path(__file__).resolve().parents[1] / "data" / "historical" / "panel_sanity.json"
 )
+_ps = None
 if _panel_sanity_path.is_file():
-    _ps = json.loads(_panel_sanity_path.read_text(encoding="utf-8"))
+    try:  # a corrupt/unreadable artifact degrades to no note, never crashes the page (WR-05)
+        _ps = json.loads(_panel_sanity_path.read_text(encoding="utf-8"))
+    except (ValueError, OSError):
+        _ps = None
+if _ps is not None:
     if _ps.get("flag"):
         _ps_verdict = (
             f'<span class="drhp-not-disclosed">{html.escape(str(_ps["flag"]))}</span>'
@@ -166,7 +215,15 @@ if not _card_data_path.is_file():
         unsafe_allow_html=True,
     )
 else:
-    _card = json.loads(_card_data_path.read_text(encoding="utf-8"))
+    try:  # corrupt/unreadable card degrades to the same fallback, never crashes (WR-05)
+        _card = json.loads(_card_data_path.read_text(encoding="utf-8"))
+    except (ValueError, OSError):
+        st.markdown(
+            '<p class="drhp-method-note drhp-not-disclosed">'
+            "The forecaster model card could not be read (corrupt artifact).</p>",
+            unsafe_allow_html=True,
+        )
+        st.stop()
 
     if _card.get("seed"):
         st.markdown(

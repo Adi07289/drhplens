@@ -41,6 +41,29 @@ if _MISSING:
 
 
 # ---------------------------------------------------------------------------
+# Live-opt-in gate — REQUIRE --run-eval (env-var presence is NOT a real gate)
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture(autouse=True)
+def _require_run_eval_flag(request) -> None:
+    """Skip every test in this module unless the explicit ``--run-eval`` flag is set.
+
+    Env-var presence (QDRANT_URL / GEMINI_API_KEY) cannot gate these tests: the
+    deepeval pytest plugin and the langfuse SDK auto-load ``.env`` at session start,
+    so ``_MISSING`` is empty on any box that has a ``.env`` file — including dev,
+    ``/gsd-ship``, and CI. Without an explicit opt-in, a bare ``pytest`` run then
+    executes the full live agent (live Qdrant + Gemini, ~72 s for 3 tests;
+    ``test_gold_set_smoke_subset`` alone is 3 sequential live invokes), wedging the
+    suite past 2 min (pytest-timeout is method=signal / per-test and tenacity retries
+    stall past it). ``--run-eval`` is the repo's live-eval opt-in (see
+    tests/conftest.py) and is the only gate ``.env`` auto-load cannot defeat.
+    """
+    if not request.config.getoption("--run-eval"):
+        pytest.skip("live agent e2e requires --run-eval (live Qdrant + Gemini)")
+
+
+# ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 

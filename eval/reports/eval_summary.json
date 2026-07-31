@@ -1,0 +1,27 @@
+{
+  "generated": "2026-07-29",
+  "judge_model": "gemini-3.5-flash",
+  "corpus": {
+    "gold_set": "tests/eval/gold_set.jsonl",
+    "ipo": "Swiggy DRHP",
+    "n_questions": 13,
+    "n_scored": 11
+  },
+  "aggregate": {
+    "faithfulness_deepeval": -1.0,
+    "citation_accuracy": 1.0,
+    "recall_at_5": 1.0,
+    "recall_at_10": 1.0,
+    "recall_at_30": 1.0
+  },
+  "per_ipo": {
+    "swiggy_2024_11": {
+      "faithfulness_deepeval": -1.0,
+      "citation_accuracy": 1.0,
+      "recall_at_5": 1.0,
+      "recall_at_10": 1.0,
+      "recall_at_30": 1.0
+    }
+  },
+  "report": "eval/reports/2026-07-29-rag-eval.md"
+}

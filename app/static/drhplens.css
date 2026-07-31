@@ -1690,6 +1690,38 @@ a.drhp-ipo-card:hover { border-color: rgba(224, 162, 78, 0.4) !important; }
 .drhp-metrics .m-target { font-family: var(--drhp-font-mono); color: var(--drhp-text-primary); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .drhp-metrics .m-status { font-family: var(--drhp-font-mono); font-size: 12px; color: var(--drhp-accent-link); white-space: nowrap; }
 
+/* ── EVAL-02 · honest inline eval figure (06.1-UI-SPEC, HONESTY INVARIANT) ──── */
+/* Plain IBM-Plex-Mono figures — NO red/green, NO badge, NO severity icon, NO
+   verdict UX. A high score and a low score render byte-identically except the
+   digits; accent amber is reserved for the report link alone. Inherited tokens only. */
+.drhp-eval-inline {
+  font-size: 14px; color: var(--drhp-text-muted); line-height: 1.6;
+  margin: var(--drhp-space-md) 0;
+}
+.drhp-eval-figure {
+  font-family: var(--drhp-font-mono); font-variant-numeric: tabular-nums;
+  color: var(--drhp-text-primary); font-weight: 400;
+}
+.drhp-eval-per-ipo {
+  font-size: 14px; color: var(--drhp-text-muted); line-height: 1.6;
+  margin-top: var(--drhp-space-xs);
+}
+.drhp-eval-report-link { color: var(--drhp-accent-link); text-decoration: underline; }
+/* Plain neutral mono report reference (NOT a link — the committed report path is not
+   served by Streamlit; a real link returns at deploy-time, OPS-02). Muted, never accent. */
+.drhp-eval-report-ref { font-family: var(--drhp-font-mono); color: var(--drhp-text-muted); }
+.drhp-eval-empty {
+  font-size: 14px; color: var(--drhp-text-muted); font-style: italic;
+  line-height: 1.6; margin: var(--drhp-space-md) 0;
+}
+/* Surface 2 — methodology status-cell live value: neutral mono, NOT .m-status amber
+   (amber on a live eval number would read as a verdict and breach the invariant). */
+.drhp-eval-live {
+  font-family: var(--drhp-font-mono); font-variant-numeric: tabular-nums;
+  color: var(--drhp-text-primary); font-weight: 400; font-size: 12px;
+  white-space: nowrap;
+}
+
 .drhp-guard-grid { grid-template-columns: 1fr 1fr !important; max-width: 880px; margin: 0 auto; }
 
 .drhp-stack { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 780px; margin: 0 auto; }
