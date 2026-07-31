@@ -1,0 +1,245 @@
+{
+  "drhp_id": "swiggy_2024_11",
+  "computed_at": "2026-07-05T00:00:00Z",
+  "fields": {
+    "rpt_pct": {
+      "value": {
+        "answer_prose": "Related-party transactions were 3.4% of revenue in FY24 {{c_rpt001}}.",
+        "claims": [
+          {
+            "claim_id": "c_rpt001",
+            "text": "Related-party transactions were 3.4% of revenue in FY24",
+            "source_chunk_id": "chunk_c_rpt001",
+            "drhp_page": 212,
+            "section": "Related Party Transactions",
+            "verbatim_span": "Related-party transactions aggregated ₹120 crore, 3.4% of revenue",
+            "span_offsets": [
+              0,
+              65
+            ],
+            "sources": [
+              {
+                "chunk_id": "chunk_c_rpt001",
+                "page_start": 212,
+                "page_end": 212,
+                "printed_page_label": "212",
+                "section": "Related Party Transactions",
+                "score": 0.88,
+                "verbatim_span": "Related-party transactions aggregated ₹120 crore, 3.4% of revenue",
+                "span_offsets": [
+                  0,
+                  65
+                ]
+              }
+            ]
+          }
+        ],
+        "sub_question_addressed": [],
+        "sub_question_unaddressed": []
+      },
+      "confidence_tier": "high",
+      "confidence_score": 0.91
+    },
+    "ofs_vs_fresh": {
+      "value": {
+        "answer_prose": "₹6,828 crore of the issue is an offer for sale by existing shareholders {{c_ofs001}}.",
+        "claims": [
+          {
+            "claim_id": "c_ofs001",
+            "text": "₹6,828 crore of the issue is an offer for sale by existing shareholders",
+            "source_chunk_id": "chunk_c_ofs001",
+            "drhp_page": 88,
+            "section": "The Offer",
+            "verbatim_span": "The offer comprises a fresh issue of ₹4,499 crore and an offer for sale of ₹6,828 crore",
+            "span_offsets": [
+              0,
+              87
+            ],
+            "sources": [
+              {
+                "chunk_id": "chunk_c_ofs001",
+                "page_start": 88,
+                "page_end": 88,
+                "printed_page_label": "88",
+                "section": "The Offer",
+                "score": 0.79,
+                "verbatim_span": "The offer comprises a fresh issue of ₹4,499 crore and an offer for sale of ₹6,828 crore",
+                "span_offsets": [
+                  0,
+                  87
+                ]
+              }
+            ]
+          }
+        ],
+        "sub_question_addressed": [],
+        "sub_question_unaddressed": []
+      },
+      "confidence_tier": "medium",
+      "confidence_score": 0.68
+    },
+    "promoter_pledge_pct": {
+      "value": {
+        "refusal": {
+          "reason": "unsupported_claim",
+          "explanation": "Not disclosed in DRHP",
+          "reformulation_suggestions": []
+        }
+      },
+      "confidence_tier": null,
+      "confidence_score": null
+    },
+    "customer_concentration": {
+      "value": {
+        "answer_prose": "The top 10 customers contributed 46% of FY24 revenue {{c_cust01}}.",
+        "claims": [
+          {
+            "claim_id": "c_cust01",
+            "text": "The top 10 customers contributed 46% of FY24 revenue",
+            "source_chunk_id": "chunk_c_cust01",
+            "drhp_page": 141,
+            "section": "Risk Factors",
+            "verbatim_span": "Our top ten customers accounted for 46% of revenue from operations in Fiscal 2024",
+            "span_offsets": [
+              0,
+              81
+            ],
+            "sources": [
+              {
+                "chunk_id": "chunk_c_cust01",
+                "page_start": 141,
+                "page_end": 141,
+                "printed_page_label": "141",
+                "section": "Risk Factors",
+                "score": 0.84,
+                "verbatim_span": "Our top ten customers accounted for 46% of revenue from operations in Fiscal 2024",
+                "span_offsets": [
+                  0,
+                  81
+                ]
+              }
+            ]
+          }
+        ],
+        "sub_question_addressed": [],
+        "sub_question_unaddressed": []
+      },
+      "confidence_tier": "high",
+      "confidence_score": 0.88
+    },
+    "auditor_history": {
+      "value": {
+        "refusal": {
+          "reason": "unsupported_claim",
+          "explanation": "Could not ground this number to a cited DRHP page, so it is not shown.",
+          "reformulation_suggestions": []
+        }
+      },
+      "confidence_tier": null,
+      "confidence_score": null
+    },
+    "debt_trajectory": {
+      "value": {
+        "answer_prose": "Total borrowings rose from ₹210 crore to ₹512 crore over three fiscals {{c_debt01}}.",
+        "claims": [
+          {
+            "claim_id": "c_debt01",
+            "text": "Total borrowings rose from ₹210 crore to ₹512 crore over three fiscals",
+            "source_chunk_id": "chunk_c_debt01",
+            "drhp_page": 268,
+            "section": "Financial Indebtedness",
+            "verbatim_span": "Total borrowings increased from ₹210 crore in Fiscal 2022 to ₹512 crore in Fiscal 2024",
+            "span_offsets": [
+              0,
+              86
+            ],
+            "sources": [
+              {
+                "chunk_id": "chunk_c_debt01",
+                "page_start": 268,
+                "page_end": 268,
+                "printed_page_label": "268",
+                "section": "Financial Indebtedness",
+                "score": 0.61,
+                "verbatim_span": "Total borrowings increased from ₹210 crore in Fiscal 2022 to ₹512 crore in Fiscal 2024",
+                "span_offsets": [
+                  0,
+                  86
+                ]
+              }
+            ]
+          }
+        ],
+        "sub_question_addressed": [],
+        "sub_question_unaddressed": []
+      },
+      "confidence_tier": "low",
+      "confidence_score": 0.52
+    },
+    "going_concern": {
+      "value": {
+        "answer_prose": "The company has incurred losses in each of the last three fiscal years {{c_gc0001}}.",
+        "claims": [
+          {
+            "claim_id": "c_gc0001",
+            "text": "The company has incurred losses in each of the last three fiscal years",
+            "source_chunk_id": "chunk_c_gc0001",
+            "drhp_page": 37,
+            "section": "Risk Factors",
+            "verbatim_span": "We have incurred net losses in Fiscal 2022, 2023 and 2024 and may continue to do so",
+            "span_offsets": [
+              0,
+              83
+            ],
+            "sources": [
+              {
+                "chunk_id": "chunk_c_gc0001",
+                "page_start": 37,
+                "page_end": 37,
+                "printed_page_label": "37",
+                "section": "Risk Factors",
+                "score": 0.72,
+                "verbatim_span": "We have incurred net losses in Fiscal 2022, 2023 and 2024 and may continue to do so",
+                "span_offsets": [
+                  0,
+                  83
+                ]
+              }
+            ]
+          }
+        ],
+        "sub_question_addressed": [],
+        "sub_question_unaddressed": []
+      },
+      "confidence_tier": "medium",
+      "confidence_score": 0.7
+    }
+  },
+  "ranked_risks": [
+    {
+      "claim_id": "c_rpt001",
+      "idf_score": 4.3,
+      "specificity_band": "issuer_specific"
+    },
+    {
+      "claim_id": "c_gc0001",
+      "idf_score": 3.2,
+      "specificity_band": "mostly_issuer_specific"
+    },
+    {
+      "claim_id": "c_cust01",
+      "idf_score": 2.4,
+      "specificity_band": "mostly_issuer_specific"
+    },
+    {
+      "claim_id": "c_debt01",
+      "idf_score": 1.3,
+      "specificity_band": "industry_standard"
+    },
+    {
+      "claim_id": "c_ofs001",
+      "idf_score": 0.5,
+      "specificity_band": "industry_standard"
+    }
+  ]
+}

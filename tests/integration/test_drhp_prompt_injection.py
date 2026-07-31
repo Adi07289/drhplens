@@ -113,7 +113,7 @@ def _invoke_with_adversarial_chunks(question: str, adversarial_chunks: list[dict
         mock_llm_factory.return_value = mock_client
 
         with patch("agent.nodes.retrieve.search", return_value=adversarial_chunks):
-            with patch("agent.nodes.retrieve.embed_query", return_value=[0.1] * 1024):
+            with patch("agent.nodes.retrieve.embed_query", return_value=[0.1] * 384):
                 with patch("agent.nodes.rerank.rerank", return_value=[(0, 0.95)]):
                     with patch(
                         "agent.nodes.refuse_with_reformulation.search_relaxed",
@@ -121,7 +121,7 @@ def _invoke_with_adversarial_chunks(question: str, adversarial_chunks: list[dict
                     ):
                         with patch(
                             "agent.nodes.refuse_with_reformulation.embed_query",
-                            return_value=[0.1] * 1024,
+                            return_value=[0.1] * 384,
                         ):
                             final = graph.invoke(_initial_state(question), config=config)
 

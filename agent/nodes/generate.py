@@ -89,7 +89,7 @@ def get_llm_client():
         )
 
     genai_client = genai.Client(api_key=api_key)
-    return instructor.from_genai(genai_client, mode=instructor.Mode.GENAI_JSON)
+    return instructor.from_genai(genai_client, mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS)
 
 
 # ---------------------------------------------------------------------------
@@ -166,20 +166,29 @@ def _call_llm_with_retry(state: GraphState) -> GroundedAnswer:
     system_prompt = _load_system_prompt()
     user_message = _build_user_message(state)
 
-    try:
-        import instructor
-        result = client.chat.completions.create(
-            model="gemini-2.5-flash",
-            response_model=GroundedAnswer,
-            max_retries=3,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_message},
-            ],
-        )
-        return result
-    except instructor.exceptions.InstructorRetryException:
-        raise  # Let tenacity handle it, or bubble to run() for graceful refusal
+    from agent.policies import GEMINI_MODELS
+
+    # Fold the system prompt into the user message: instructor's GenAI provider
+    # rejects Jinja markers ({{claim_id}}) in SYSTEM messages but allows them
+    # (passed through literally, since no context= is supplied) in USER messages.
+    content = f"{system_prompt}\n\n{user_message}"
+
+    # Try each model in order; a 503/quota/validation failure on the primary falls
+    # through to the reliable fallback rather than surfacing as a refusal.
+    last_exc: Exception | None = None
+    for model in GEMINI_MODELS:
+        try:
+            return client.chat.completions.create(
+                model=model,
+                response_model=GroundedAnswer,
+                max_retries=3,
+                messages=[{"role": "user", "content": content}],
+            )
+        except Exception as exc:  # noqa: BLE001 - fall through to the next model
+            last_exc = exc
+            continue
+    # Every model failed → re-raise for tenacity, then graceful refusal in run().
+    raise last_exc if last_exc is not None else RuntimeError("no generation model available")
 
 
 # ---------------------------------------------------------------------------

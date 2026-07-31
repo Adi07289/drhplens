@@ -10,39 +10,34 @@ Run all including model: pytest tests/unit/test_embedder.py --run-slow
 from __future__ import annotations
 
 import math
+import os
 from unittest.mock import MagicMock, patch
 
 import pytest
+
+from tools.embedder import EMBEDDING_DIM
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _make_fake_embedder(dim: int = 1024):
-    """Return a mock SentenceTransformer that produces deterministic dim-d vectors."""
+def _make_fake_embedder(dim: int = EMBEDDING_DIM):
+    """Return a mock fastembed TextEmbedding producing deterministic dim-d vectors.
+
+    fastembed's ``embed(texts)`` returns a GENERATOR of (unnormalized) np arrays in
+    input order; the ``tools.embedder`` wrapper L2-normalizes them. The fake mirrors
+    that contract so the wrapper's normalization is exercised, not bypassed.
+    """
     import numpy as np
 
     class FakeModel:
-        def encode(self, texts, *, max_length=512, normalize_embeddings=True,
-                   batch_size=4, show_progress_bar=False):
-            if isinstance(texts, str):
-                # Single string — return 1-d array of shape (dim,)
-                rng = sum(ord(c) for c in texts) % 997  # deterministic seed from text
-                vec = np.full(dim, 0.5 + rng * 0.0001, dtype=np.float32)
-                if normalize_embeddings:
-                    vec = vec / np.linalg.norm(vec)
-                return vec
-            else:
-                # List of strings
-                results = []
-                for text in texts:
-                    rng = sum(ord(c) for c in text) % 997
-                    vec = np.full(dim, 0.5 + rng * 0.0001, dtype=np.float32)
-                    if normalize_embeddings:
-                        vec = vec / np.linalg.norm(vec)
-                    results.append(vec)
-                return np.array(results)
+        def embed(self, texts, *, batch_size=32, **kwargs):
+            for text in texts:
+                rng = sum(ord(c) for c in text) % 997  # deterministic seed from text
+                # Deliberately UN-normalized (magnitude 2.0) so the wrapper's
+                # _normalize is what brings the vector to unit norm.
+                yield np.full(dim, 2.0 + rng * 0.0001, dtype=np.float32)
 
     return FakeModel()
 
@@ -57,7 +52,7 @@ def test_get_embedder_returns_singleton_across_calls() -> None:
     from tools.embedder import get_embedder
 
     fake = _make_fake_embedder()
-    with patch("tools.embedder.SentenceTransformer", return_value=fake):
+    with patch("tools.embedder.TextEmbedding", return_value=fake):
         # Clear the cache before testing
         get_embedder.cache_clear()
         a = get_embedder()
@@ -75,12 +70,12 @@ def test_embed_query_returns_1024_dim() -> None:
     """embed_query('test') must return a list of exactly 1024 floats."""
     from tools.embedder import embed_query, get_embedder
 
-    fake = _make_fake_embedder(1024)
-    with patch("tools.embedder.SentenceTransformer", return_value=fake):
+    fake = _make_fake_embedder()
+    with patch("tools.embedder.TextEmbedding", return_value=fake):
         get_embedder.cache_clear()
         vec = embed_query("test")
         assert isinstance(vec, list), "embed_query must return a Python list"
-        assert len(vec) == 1024, f"Expected 1024-dim vector, got {len(vec)}"
+        assert len(vec) == EMBEDDING_DIM, f"Expected {EMBEDDING_DIM}-dim vector, got {len(vec)}"
         get_embedder.cache_clear()
 
 
@@ -93,8 +88,8 @@ def test_embed_query_normalized() -> None:
     """embed_query result must be L2-normalized: norm in [0.99, 1.01]."""
     from tools.embedder import embed_query, get_embedder
 
-    fake = _make_fake_embedder(1024)
-    with patch("tools.embedder.SentenceTransformer", return_value=fake):
+    fake = _make_fake_embedder()
+    with patch("tools.embedder.TextEmbedding", return_value=fake):
         get_embedder.cache_clear()
         vec = embed_query("normalize me")
         norm = math.sqrt(sum(x * x for x in vec))
@@ -111,8 +106,8 @@ def test_embed_query_deterministic() -> None:
     """Same input must produce the same output on consecutive calls."""
     from tools.embedder import embed_query, get_embedder
 
-    fake = _make_fake_embedder(1024)
-    with patch("tools.embedder.SentenceTransformer", return_value=fake):
+    fake = _make_fake_embedder()
+    with patch("tools.embedder.TextEmbedding", return_value=fake):
         get_embedder.cache_clear()
         v1 = embed_query("deterministic test input")
         v2 = embed_query("deterministic test input")
@@ -129,14 +124,14 @@ def test_embed_batch_shape() -> None:
     """embed_batch(['a','b','c']) must return a 3x1024 list-of-lists."""
     from tools.embedder import embed_batch, get_embedder
 
-    fake = _make_fake_embedder(1024)
-    with patch("tools.embedder.SentenceTransformer", return_value=fake):
+    fake = _make_fake_embedder()
+    with patch("tools.embedder.TextEmbedding", return_value=fake):
         get_embedder.cache_clear()
         vecs = embed_batch(["a", "b", "c"])
         assert len(vecs) == 3, f"Expected 3 vectors, got {len(vecs)}"
         for i, v in enumerate(vecs):
             assert isinstance(v, list), f"Vector {i} must be a list"
-            assert len(v) == 1024, f"Vector {i} must be 1024-dim, got {len(v)}"
+            assert len(v) == EMBEDDING_DIM, f"Vector {i} must be {EMBEDDING_DIM}-dim, got {len(v)}"
         get_embedder.cache_clear()
 
 
@@ -181,7 +176,7 @@ def test_chunk_payload_field_names_match_retrieved_chunk_ref() -> None:
     assert ref.page_start == cp.page_start
     assert ref.page_end == cp.page_end
     assert ref.section == cp.section
-    assert ref.span_offsets == cp.span_offsets
+    assert ref.span_offsets == list(cp.span_offsets)  # RetrievedChunkRef span_offsets is list[int]
     assert ref.printed_page_label == cp.printed_page_label
 
     # Verify JSON serialization works (no unexpected fields)
@@ -210,16 +205,21 @@ def test_qdrant_collection_name_constant() -> None:
 
 
 @pytest.mark.slow
-def test_bge_m3_real_embed_query_1024_dim() -> None:
-    """Integration: embed_query with real bge-m3 model returns 1024-dim normalized vector.
+@pytest.mark.skipif(
+    not os.environ.get("RUN_SLOW_EMBED"),
+    reason="requires ~1.3 GB ONNX model download; set RUN_SLOW_EMBED=1 to run",
+)
+def test_real_embed_query_1024_dim() -> None:
+    """Integration: embed_query with the real fastembed model (BAAI/bge-large-en-v1.5)
+    returns a 1024-dim L2-normalized vector.
 
-    Marked @pytest.mark.slow — requires ~1.1 GB model download on first run.
-    Run with: pytest tests/unit/test_embedder.py --run-slow
+    Downloads the ONNX weights (~1.3 GB) on first run. Opt-in:
+        RUN_SLOW_EMBED=1 pytest tests/unit/test_embedder.py -k real_embed
     """
-    from tools.embedder import embed_query, get_embedder
+    from tools.embedder import EMBEDDING_DIM, embed_query, get_embedder
 
     get_embedder.cache_clear()
     vec = embed_query("What are the risk factors for Swiggy IPO?")
-    assert len(vec) == 1024, f"Expected 1024-dim, got {len(vec)}"
+    assert len(vec) == EMBEDDING_DIM, f"Expected {EMBEDDING_DIM}-dim, got {len(vec)}"
     norm = math.sqrt(sum(x * x for x in vec))
     assert 0.99 <= norm <= 1.01, f"Expected L2 norm ≈ 1.0, got {norm:.6f}"

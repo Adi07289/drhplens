@@ -263,6 +263,98 @@ def load_or_parse_drhp(pdf_path: Path, json_cache_path: Path) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Step 1b: Torch-free page-anchored parse (PyMuPDF text + pdfplumber tables)
+#
+# Docling's layout/table models require torch>=2.4 + torchvision, which conflict
+# with the pinned Phase-5 numpy/shap/numba stack, so Docling cannot run in this
+# environment. The committed *.docling.json is a degenerate PyMuPDF-fallback that
+# flattened the whole prospectus into one text node (all chunks inherit page span
+# (0,284), poisoning cite-check windows). This parser fixes that by anchoring every
+# chunk to its real page: it emits ONE Section per PDF page so chunk_sections()
+# stamps page_start == page_end == the page index. pdfplumber table rows are
+# appended per page so each figure stays next to its row label (e.g. the cover
+# "The Issue" table and the restated financials) — critical for numeric grounding.
+# ---------------------------------------------------------------------------
+
+
+def _detect_section_name(page_text: str, fallback: str) -> str:
+    """Best-effort running DRHP section header for citation metadata.
+
+    Not load-bearing for retrieval (that runs on chunk_text embeddings); it only
+    labels the citation. Returns the first plausible header line on the page
+    (short, majority-uppercase letters) else the carried-forward fallback.
+    """
+    for raw in page_text.splitlines()[:8]:
+        line = raw.strip()
+        if not (6 <= len(line) <= 80):
+            continue
+        letters = [c for c in line if c.isalpha()]
+        if len(letters) >= 4 and sum(c.isupper() for c in letters) / len(letters) >= 0.8:
+            return line.title()
+    return fallback
+
+
+def parse_drhp_pages(
+    pdf_path: Path, front_matter_pages: int = DEFAULT_FRONT_MATTER_PAGES
+) -> list["Section"]:
+    """Page-anchored parse: one Section per PDF page (PyMuPDF text + pdfplumber tables).
+
+    Torch-free replacement for the Docling parse. Each page becomes a Section with
+    page_indices=[idx] so downstream chunk_sections() yields single-page-anchored
+    chunks. pdfplumber tables are appended as "cell | cell" rows so numeric figures
+    keep their row labels inside the same chunk window the cite-check reads.
+    """
+    import fitz  # PyMuPDF
+    import pdfplumber
+
+    if not pdf_path.exists():
+        raise FileNotFoundError(f"DRHP PDF not found at: {pdf_path}")
+
+    sections: list[Section] = []
+    current_section = "Preamble"
+    doc = fitz.open(str(pdf_path))
+    try:
+        with pdfplumber.open(str(pdf_path)) as pl:
+            for idx in range(doc.page_count):
+                text = doc[idx].get_text("text") or ""
+                current_section = _detect_section_name(text, current_section)
+
+                table_lines: list[str] = []
+                try:
+                    for tbl in (pl.pages[idx].extract_tables() or []):
+                        for row in tbl:
+                            cells = [
+                                (c or "").strip().replace("\n", " ") for c in row
+                            ]
+                            if any(cells):
+                                table_lines.append(" | ".join(cells))
+                except Exception:  # pragma: no cover - per-page table isolation
+                    pass
+
+                page_text = text
+                if table_lines:
+                    page_text = f"{text}\n\n[TABLES]\n" + "\n".join(table_lines)
+                if not page_text.strip():
+                    continue
+
+                sections.append(
+                    Section(
+                        name=current_section,
+                        level=2,
+                        page_indices=[idx],
+                        printed_page_labels=[
+                            _infer_printed_label(idx, None, front_matter_pages)
+                        ],
+                        text=page_text.strip(),
+                    )
+                )
+    finally:
+        doc.close()
+
+    return sections
+
+
+# ---------------------------------------------------------------------------
 # Step 2: Section extraction from Docling JSON
 # ---------------------------------------------------------------------------
 
@@ -687,10 +779,12 @@ def embed_chunks(chunks: list[ChunkPayload]) -> list[list[float]]:
     texts = [c.chunk_text for c in chunks]
     total = len(texts)
 
-    console.print(f"  Embedding {total} chunks (batch_size=4, ~3 sec/batch on CPU)...")
+    # batch_size=64 suits the fastembed/ONNX backend (the old batch_size=4 was
+    # tuned for torch/bge-m3 on a 2vCPU box); larger batches cut Python-loop overhead.
+    console.print(f"  Embedding {total} chunks (batch_size=64, ONNX CPU)...")
 
     start = time.time()
-    vectors = embed_batch(texts, batch_size=4)
+    vectors = embed_batch(texts, batch_size=64)
     elapsed = time.time() - start
 
     console.print(

@@ -122,10 +122,53 @@ def _is_nan(x: float) -> bool:
     return isinstance(x, float) and math.isnan(x)
 
 
+def panel_sanity_summary(
+    df: pd.DataFrame,
+    *,
+    baseline: float = MAAR_BASELINE,
+    band_lower: float = BAND_LOWER,
+    band_upper: float = BAND_UPPER,
+) -> dict:
+    """A JSON-serialisable, `/methodology`-ready survivorship sanity summary (SC-5).
+
+    Wraps ``sanity_check_median`` + ``band_text`` into the render-ready record the
+    committed ``data/historical/panel_sanity.json`` is built from, so the page can
+    surface the sanity RESULT without importing this (Phase-4) module at render
+    (T-05-10-ISO). ``within_band`` is True only when a median exists AND no flag
+    fired — the honest verdict, never a fabricated divergence.
+
+    Returns a dict with ``median_return`` (fraction, or None when unscored),
+    ``median_pct``, ``n_scored``, ``baseline_pct``, ``band_lower_pct`` /
+    ``band_upper_pct``, ``within_band`` (bool), ``flag`` (the plain-text divergence
+    note or None), and ``methodology`` (the ``band_text`` description).
+    """
+    median, flag = sanity_check_median(
+        df, baseline=baseline, band_lower=band_lower, band_upper=band_upper
+    )
+    scored = 0
+    if "listing_day_return" in df.columns:
+        scored = int(df["listing_day_return"].dropna().shape[0])
+
+    median_is_nan = _is_nan(median)
+    within_band = (flag is None) and (not median_is_nan)
+    return {
+        "median_return": None if median_is_nan else round(median, 4),
+        "median_pct": None if median_is_nan else round(median * 100, 2),
+        "n_scored": scored,
+        "baseline_pct": round(baseline * 100, 2),
+        "band_lower_pct": round(band_lower * 100, 2),
+        "band_upper_pct": round(band_upper * 100, 2),
+        "within_band": within_band,
+        "flag": flag,
+        "methodology": band_text(baseline),
+    }
+
+
 __all__ = [
     "MAAR_BASELINE",
     "BAND_UPPER",
     "BAND_LOWER",
     "sanity_check_median",
     "band_text",
+    "panel_sanity_summary",
 ]

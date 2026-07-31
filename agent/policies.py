@@ -35,12 +35,15 @@ RERANK_TOP_K: int = 5
 # Gate 1 — pre-LLM retrieval score floor (D-05)
 # ---------------------------------------------------------------------------
 
-GATE1_THRESHOLD: float = 0.0  # Calibrated value pending: run scripts/calibrate_gate1.py against tests/eval/gold_set.jsonl (n=13), then update this line with recommended value + inline comment per RESEARCH Open Question 1 procedure
+GATE1_THRESHOLD: float = -3.0  # Calibrated 2026-07-24 (EVAL-03). The bge-reranker-v2 cross-encoder emits NEGATIVE logits for genuinely-relevant DRHP passages (answerable DRHP questions measured at -0.5 to -2.54; worst answerable num-033 = -2.54), so the old 0.0 refused answerable questions BEFORE the LLM. Meanwhile topical-out-of-scope questions score HIGHER (Zomato-listing +1.23, market-cap +2.81), so the reranker score CANNOT separate in-scope from out-of-scope — refusal is (and must be) done by the LLM + cite_check downstream, not gate1. Gate1 now only screens genuine garbage retrieval (e.g. an unrelated "weather" query scored -8.8). -3.0 sits below the worst answerable (-2.54) and above garbage.
 """
-Reranker score threshold. Wave 5 default: 0.0 (any positive reranker score passes).
-Run `python scripts/calibrate_gate1.py` to sweep -2.0..+2.0 and obtain the
-calibrated value. Update this constant with the recommended value + inline comment.
-Example: GATE1_THRESHOLD: float = -0.5  # Calibrated 2026-05-28 against gold_set.jsonl (n=13), correct=11/13
+Reranker score threshold — a pre-LLM screen for GARBAGE retrieval only, not the
+refusal antibody. The bge-reranker cross-encoder returns unbounded logits (often
+negative for relevant passages), and topical out-of-scope questions can outscore
+answerable ones, so out-of-scope refusal is handled by the LLM ("this DRHP does not
+address X") + the deterministic cite_check, never by this score. Empty/scoreless
+retrieval refuses unconditionally (gate1_check uses -inf). Re-run
+`scripts/calibrate_gate1.py` if the reranker model or corpus changes.
 """
 
 # ---------------------------------------------------------------------------
@@ -66,7 +69,13 @@ this via the SubQuestions.questions Field(max_length=4) constraint."""
 # Cite-check algorithm (RESEARCH Pattern 3)
 # ---------------------------------------------------------------------------
 
-CITE_CHECK_TOKEN_RATIO: int = 80
+# Gemini generation models, tried in order (primary first). gemini-3.5-flash grounds
+# more faithfully but intermittently 503s under load; gemini-3.1-flash-lite is reliably
+# available. The LLM nodes fall through this list so a 503 degrades to a working model
+# instead of a refusal.
+GEMINI_MODELS: tuple[str, ...] = ("gemini-3.5-flash", "gemini-3.1-flash-lite")
+
+CITE_CHECK_TOKEN_RATIO: int = 52  # Calibrated via scripts/calibrate_cite_check.py: on a labeled grounded/hallucinated set the classes separate cleanly (grounded 60-78, hallucinated 35-46); 52 is the gap midpoint — max grounded recall while staying above every hallucination. Was 80, which rejected even gemini-3.5-flash's legitimately-grounded paraphrases.
 """
 token_set_ratio threshold for the deterministic cite-check. A claim's text must
 achieve >= 80% fuzzy-token overlap with the cited chunk window to be grounded.

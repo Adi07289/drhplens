@@ -98,7 +98,12 @@ def _render_expanders(content: GroundedAnswer, chip_map: dict[str, int]) -> None
             )
 
 
-def render_grounded_block(field: GroundedAnswer | RefusalResponse, heading: str) -> None:
+def render_grounded_block(
+    field: GroundedAnswer | RefusalResponse,
+    heading: str,
+    *,
+    card_key: str | None = None,
+) -> None:
     """Render one of the 6 snapshot blocks (business/financials/risks/promoter/...).
 
     When `field` is a GroundedAnswer, reuses the Phase 1 chip + expander +
@@ -110,21 +115,25 @@ def render_grounded_block(field: GroundedAnswer | RefusalResponse, heading: str)
         field: the SnapshotRecord field value.
         heading: the block's display heading (e.g. "Business").
     """
-    st.markdown('<div class="drhp-snapshot-block">', unsafe_allow_html=True)
-    st.markdown(
-        f'<h2 class="drhp-snapshot-block-heading">{_html.escape(heading)}</h2>',
-        unsafe_allow_html=True,
-    )
+    # Real Streamlit container as the card (never a split open/close <div> across
+    # two st.markdown calls — that renders an EMPTY styled box; the Phase 3
+    # white-bar lesson). The key= stamps a stable `st-key-drhpcard-*` class the
+    # global CSS targets for the lifted-depth card treatment.
+    key = card_key or (heading.lower().replace(" ", "-") if heading else "metadata")
+    with st.container(border=True, key=f"drhpcard-{key}"):
+        if heading:
+            st.markdown(
+                f'<h2 class="drhp-snapshot-block-heading">{_html.escape(heading)}</h2>',
+                unsafe_allow_html=True,
+            )
 
-    if isinstance(field, GroundedAnswer):
-        rendered_html, chip_map = render_answer_with_chips(field)
-        st.markdown(rendered_html, unsafe_allow_html=True)
-        _render_expanders(field, chip_map)
-        st.markdown(render_per_answer_footer(), unsafe_allow_html=True)
-    else:
-        _render_not_disclosed()
-
-    st.markdown('</div>', unsafe_allow_html=True)
+        if isinstance(field, GroundedAnswer):
+            rendered_html, chip_map = render_answer_with_chips(field)
+            st.markdown(rendered_html, unsafe_allow_html=True)
+            _render_expanders(field, chip_map)
+            st.markdown(render_per_answer_footer(), unsafe_allow_html=True)
+        else:
+            _render_not_disclosed()
 
 
 def render_use_of_proceeds_body(field: GroundedAnswer | RefusalResponse) -> None:
@@ -379,7 +388,7 @@ def render_redflag_table(record: RedFlagRecord) -> None:
     # st.markdown calls renders an EMPTY styled box (Streamlit isolates each
     # markdown in its own DOM block), which is why a raw wrapper showed a blank
     # white bar. st.container(border=True) actually wraps the rows.
-    with st.container(border=True):
+    with st.container(border=True, key="drhpcard-redflag"):
         st.markdown(
             f'<h2 class="drhp-snapshot-block-heading">{_html.escape(REDFLAG_BLOCK_HEADING)}</h2>',
             unsafe_allow_html=True,
@@ -388,7 +397,7 @@ def render_redflag_table(record: RedFlagRecord) -> None:
 
         for field_key, label in REDFLAG_FIELD_LABELS.items():
             field = record.fields.get(field_key)
-            with st.container():
+            with st.container(key=f"redflag-field-{field_key}"):
                 st.markdown(
                     f'<div class="drhp-redflag-label">{_html.escape(label)}</div>',
                     unsafe_allow_html=True,
@@ -459,65 +468,65 @@ def render_idf_risk_list(ranked_risks: list[RankedRisk], record: RedFlagRecord) 
     lookup = _claim_lookup(record)
     total = len(ranked_risks)
 
-    st.markdown('<div class="drhp-snapshot-block">', unsafe_allow_html=True)
-    st.markdown(
-        f'<h2 class="drhp-snapshot-block-heading">{_html.escape(RISK_BLOCK_HEADING)}</h2>',
-        unsafe_allow_html=True,
-    )
-    st.caption(RISK_BLOCK_SUBLINE)
-
-    # ranked_risks arrives ordered by descending idf_score (pipeline contract);
-    # re-sort defensively so the render never depends on caller ordering.
-    ordered = sorted(ranked_risks, key=lambda r: r.idf_score, reverse=True)
-
-    for i, risk in enumerate(ordered, start=1):
-        specificity = SPECIFICITY_BAND_WORDS.get(
-            risk.specificity_band, risk.specificity_band
-        )
-        counter = RISK_SPECIFICITY_COUNTER_TEMPLATE.format(
-            n=i, m=total, specificity=specificity
-        )
-        pct = _spec_meter_pct(risk.idf_score)
-
-        st.markdown('<div class="drhp-risk-item">', unsafe_allow_html=True)
+    # Real container card (never a split open/close <div> — the empty-white-bar
+    # lesson). Keyed for the lifted-depth card CSS.
+    with st.container(border=True, key="drhpcard-risk"):
         st.markdown(
-            f'<div class="drhp-risk-item-counter">{_html.escape(counter)}</div>',
+            f'<h2 class="drhp-snapshot-block-heading">{_html.escape(RISK_BLOCK_HEADING)}</h2>',
             unsafe_allow_html=True,
         )
+        st.caption(RISK_BLOCK_SUBLINE)
 
-        # Monochrome specificity meter — accent fill on neutral track (copies the
-        # render_split_bar grammar), always accompanied by a text % + word label.
-        aria_label = SPEC_METER_ARIA_TEMPLATE.format(pct=pct)
-        st.markdown(
-            f'<div class="drhp-spec-meter" role="img" '
-            f'aria-label="{_html.escape(aria_label, quote=True)}">'
-            f'<div class="drhp-spec-meter-fill" style="width:{pct}%;"></div>'
-            f'</div>'
-            f'<div class="drhp-spec-meter-label">{pct}% · {_html.escape(specificity)}</div>',
-            unsafe_allow_html=True,
-        )
+        # ranked_risks arrives ordered by descending idf_score (pipeline contract);
+        # re-sort defensively so the render never depends on caller ordering.
+        ordered = sorted(ranked_risks, key=lambda r: r.idf_score, reverse=True)
 
-        entry = lookup.get(risk.claim_id)
-        if entry is not None:
-            claim, _parent, _field_key = entry
-            # Isolate this risk's citation to a single-claim GroundedAnswer so the
-            # chip numbering + its expander are scoped to this one item; reuses the
-            # UNCHANGED render_answer_with_chips / expander renderers.
-            single = GroundedAnswer(
-                answer_prose=f"{{{{{claim.claim_id}}}}}",
-                claims=[claim],
+        for i, risk in enumerate(ordered, start=1):
+            specificity = SPECIFICITY_BAND_WORDS.get(
+                risk.specificity_band, risk.specificity_band
             )
-            _rendered, chip_map = render_answer_with_chips(single)
+            counter = RISK_SPECIFICITY_COUNTER_TEMPLATE.format(
+                n=i, m=total, specificity=specificity
+            )
+            pct = _spec_meter_pct(risk.idf_score)
+
+            st.markdown('<div class="drhp-risk-item">', unsafe_allow_html=True)
             st.markdown(
-                f'<div class="drhp-risk-item-text">{_html.escape(claim.text)}'
-                f'{_chip_for(claim.claim_id, chip_map)}</div>',
+                f'<div class="drhp-risk-item-counter">{_html.escape(counter)}</div>',
                 unsafe_allow_html=True,
             )
-            _render_expanders(single, chip_map)
 
-        st.markdown('</div>', unsafe_allow_html=True)
+            # Monochrome specificity meter — accent fill on neutral track (copies the
+            # render_split_bar grammar), always accompanied by a text % + word label.
+            aria_label = SPEC_METER_ARIA_TEMPLATE.format(pct=pct)
+            st.markdown(
+                f'<div class="drhp-spec-meter" role="img" '
+                f'aria-label="{_html.escape(aria_label, quote=True)}">'
+                f'<div class="drhp-spec-meter-fill" style="width:{pct}%;"></div>'
+                f'</div>'
+                f'<div class="drhp-spec-meter-label">{pct}% · {_html.escape(specificity)}</div>',
+                unsafe_allow_html=True,
+            )
 
-    st.markdown('</div>', unsafe_allow_html=True)
+            entry = lookup.get(risk.claim_id)
+            if entry is not None:
+                claim, _parent, _field_key = entry
+                # Isolate this risk's citation to a single-claim GroundedAnswer so the
+                # chip numbering + its expander are scoped to this one item; reuses the
+                # UNCHANGED render_answer_with_chips / expander renderers.
+                single = GroundedAnswer(
+                    answer_prose=f"{{{{{claim.claim_id}}}}}",
+                    claims=[claim],
+                )
+                _rendered, chip_map = render_answer_with_chips(single)
+                st.markdown(
+                    f'<div class="drhp-risk-item-text">{_html.escape(claim.text)}'
+                    f'{_chip_for(claim.claim_id, chip_map)}</div>',
+                    unsafe_allow_html=True,
+                )
+                _render_expanders(single, chip_map)
+
+            st.markdown('</div>', unsafe_allow_html=True)
 
 
 # ===========================================================================
@@ -716,7 +725,7 @@ def render_peer_table(record: PeerRecord) -> None:
 
     No red/green anywhere; a low and a high multiple render identically (D4-09).
     """
-    with st.container(border=True):
+    with st.container(border=True, key="drhpcard-peer"):
         st.markdown(
             f'<h2 class="drhp-snapshot-block-heading">'
             f'{_html.escape(PEER_BLOCK_HEADING)}</h2>',
@@ -854,7 +863,7 @@ def render_gmp_block(record: GmpRecord) -> None:
         `st.expander` with a UNIQUE key;
       - the inherited per-block disclaimer.
     """
-    with st.container(border=True):
+    with st.container(border=True, key="drhpcard-gmp"):
         # Heading + persistent caveat in ONE self-contained markdown. The GMP
         # glossary term (04-05 helper) rides the heading; glossary_term returns
         # trusted CSS-tooltip HTML (already escaped internally) so it is not

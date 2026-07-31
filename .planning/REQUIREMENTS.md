@@ -25,9 +25,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### RAG (Q&A with Citations)
 
-- [ ] **RAG-01**: User can ask plain-English questions about a specific covered IPO and receive a grounded answer
-- [ ] **RAG-02**: Every claim in an answer carries a clickable, span-level citation that anchors back to its DRHP page or peer-data source
-- [ ] **RAG-03**: System refuses ungrounded queries and surfaces "This DRHP does not address X" rather than hallucinating
+- [x] **RAG-01**: User can ask plain-English questions about a specific covered IPO and receive a grounded answer
+- [x] **RAG-02**: Every claim in an answer carries a clickable, span-level citation that anchors back to its DRHP page or peer-data source
+- [x] **RAG-03**: System refuses ungrounded queries and surfaces "This DRHP does not address X" rather than hallucinating
 
 ### Extract (NLP Structured Signals)
 
@@ -42,23 +42,23 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Forecast (Calibrated Listing-Day Return)
 
-- [ ] **FCAST-01**: System produces a calibrated listing-day return range with an 80% prediction interval for each covered IPO
-- [ ] **FCAST-02**: Forecast model uses only features available at T−1 of listing day; explicit `available_at` enforced (no GMP, no subscription-at-close)
-- [ ] **FCAST-03**: Forecast is backtested using walk-forward CV on a historical Indian mainboard IPO universe sourced from SEBI/issuer-side filings (survivorship eliminated; includes withdrawn / delisted)
-- [ ] **FCAST-04**: Forecast page displays empirical interval coverage, MAE, and per-year RMSE from the backtest
-- [ ] **FCAST-05**: Forecast model card is committed to the repo (data, features, baselines, significance tests, calibration plots, limitations)
+- [x] **FCAST-01**: System produces a calibrated listing-day return range with an 80% prediction interval for each covered IPO
+- [x] **FCAST-02**: Forecast model uses only features available at T−1 of listing day; explicit `available_at` enforced (no GMP, no subscription-at-close)
+- [x] **FCAST-03**: Forecast is backtested using walk-forward CV on a historical Indian mainboard IPO universe sourced from SEBI/issuer-side filings (survivorship eliminated; includes withdrawn / delisted)
+- [x] **FCAST-04**: Forecast page displays empirical interval coverage, MAE, and per-year RMSE from the backtest
+- [x] **FCAST-05**: Forecast model card is committed to the repo (data, features, baselines, significance tests, calibration plots, limitations)
 
 ### GMP (Grey Market Premium Display)
 
 - [x] **GMP-01**: System displays read-only GMP scraped from public aggregators, with explicit caveats about provenance and reliability
 - [x] **GMP-02**: GMP is computationally isolated from the forecast model — no model feature is derived from GMP
-- [ ] **GMP-03**: UI shows the gap between GMP and the GMP-free model forecast as a transparent comparative signal
+- [x] **GMP-03**: UI shows the gap between GMP and the GMP-free model forecast as a transparent comparative signal
 
 ### Eval (Evaluation Harness)
 
 - [ ] **EVAL-01**: System reports RAG faithfulness, retrieval recall@k, and citation accuracy per IPO using a committed eval suite (RAGAS / DeepEval / custom citation metric)
 - [ ] **EVAL-02**: A subset of eval metrics is surfaced in the UI ("This page's RAG faithfulness: 0.91", retrieval coverage, citation accuracy)
-- [ ] **EVAL-03**: Numeric-faithfulness has a dedicated eval track with a release gate of ≥0.95 (no shipping below threshold)
+- [x] **EVAL-03**: Numeric-faithfulness has a dedicated eval track with a release gate of ≥0.95 (no shipping below threshold)
 - [ ] **EVAL-04**: A "show your work" pane reveals retrieval query, retrieved chunks, prompt, sources, and eval scores for any claim
 - [ ] **EVAL-05**: Agent traces are captured via Langfuse (or equivalent) and reviewable
 
@@ -67,13 +67,13 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **TRUST-01**: Persistent disclaimer + first-use modal + per-answer footer frame the product as informational / educational, never as investment advice
 - [x] **TRUST-02**: A banned-token scrubber prevents prescriptive language ("subscribe", "avoid", "buy", "sell", "target", "recommend") in any generated output
 - [x] **TRUST-03**: AI usage and methodology disclosure complies with SEBI January-2025 Research Analyst guidelines (font size, prominence, content)
-- [ ] **TRUST-04**: A non-LLM cite-check node validates every claim against the retrieved evidence set before any answer is shown to the user
+- [x] **TRUST-04**: A non-LLM cite-check node validates every claim against the retrieved evidence set before any answer is shown to the user
 
 ### UI (Web Frontend)
 
 - [x] **UI-01**: Web app is mobile-responsive and renders cleanly on a phone (Indian retail is mobile-first)
 - [x] **UI-02**: UI renders citations as superscript chips that expand to source-text snippets and link to the DRHP page
-- [ ] **UI-03**: Uncertainty is rendered as a first-class visual element (interval widths, confidence tags, GMP-vs-model gap)
+- [x] **UI-03**: Uncertainty is rendered as a first-class visual element (interval widths, confidence tags, GMP-vs-model gap)
 - [x] **UI-04**: Indian-context formatting (lakh/crore numbers, INR symbols, RPT/QIB/NII/RII tooltips) is correct throughout
 
 ### Ops (Coverage & Deployment)
@@ -154,34 +154,34 @@ Which phases cover which requirements. Updated by roadmap creation.
 | SNAP-05 | Phase 2 | Complete |
 | SNAP-06 | Phase 2 | Complete |
 | SNAP-07 | Phase 2 | Complete |
-| RAG-01 | Phase 1 | Pending |
-| RAG-02 | Phase 1 | Pending |
-| RAG-03 | Phase 1 | Pending |
+| RAG-01 | Phase 1 | Complete — LangGraph cited-Q&A pipeline (agent/graph.py: intake→retrieve→rerank→generate→cite_check→emit) + snapshot chat; exercised end-to-end by the EVAL-03 gate run; live-verified 2026-07-27 (agent.demo: issue-size Q → grounded answer) |
+| RAG-02 | Phase 1 | Complete — span-level citation chips (ui/chip.py) over page-anchored chunks (parse_drhp_pages, 1,885 single-page chunks) via GroundedAnswer citations; live-verified 2026-07-27 (agent.demo: citation "Swiggy Limited, page 3") |
+| RAG-03 | Phase 1 | Complete — refusal node (agent/nodes/refuse_with_reformulation.py) + gate1 + deterministic OOS guard (swiggy-012 refuses); live-verified 2026-07-27 (agent.demo: out-of-scope Q refused "does not address"; advice Q refused banned_token) |
 | EXTRACT-01 | Phase 3 | Complete |
 | EXTRACT-02 | Phase 3 | Complete |
 | EXTRACT-03 | Phase 3 | Complete |
 | PEER-01 | Phase 4 | Complete |
 | PEER-02 | Phase 4 | Complete |
-| FCAST-01 | Phase 5 | Pending |
-| FCAST-02 | Phase 5 | Pending |
-| FCAST-03 | Phase 5 | Pending |
-| FCAST-04 | Phase 5 | Pending |
-| FCAST-05 | Phase 5 | Pending |
+| FCAST-01 | Phase 5 | Complete |
+| FCAST-02 | Phase 5 | Complete — available_at≤T0 LeakageError gate (pipelines/features/build.py) + EXCLUDED_FROM_MODEL (GMP/subscription); isolation audit green |
+| FCAST-03 | Phase 5 | Complete — as-of-T0 walk-forward (pipelines/forecast/walkforward.py) over the live SEBI/NSE survivorship panel (1,378 IPOs, 5 withdrawn; 1,132 scored OOS) |
+| FCAST-04 | Phase 5 | Complete — coverage/MAE/per-year-RMSE strip (ui/forecast_block.py) verified live on /snapshot (80.0% / MAE 0.4 / 2003-2026 / n=1132) |
+| FCAST-05 | Phase 5 | Complete — committed model_card/MODEL_CARD.md (data, lean features, 4 baselines + DM P9 gate, calibration/PIT/SHAP plots, limitations); renders on /methodology |
 | GMP-01 | Phase 4 | Complete |
 | GMP-02 | Phase 4 | Complete |
-| GMP-03 | Phase 5 | Pending |
+| GMP-03 | Phase 5 | Complete — GMP-vs-model gap line (ui/forecast_block._gap_html) on the band's axis; test_gmp_implied_conversion pins "implies X% above/below the GMP-free median" |
 | EVAL-01 | Phase 6 | Pending |
 | EVAL-02 | Phase 6 | Pending |
-| EVAL-03 | Phase 3 | Pending |
+| EVAL-03 | Phase 3 | Complete |
 | EVAL-04 | Phase 6 | Pending |
 | EVAL-05 | Phase 6 | Pending |
 | TRUST-01 | Phase 1 | Complete |
 | TRUST-02 | Phase 1 | Complete |
 | TRUST-03 | Phase 1 | Complete |
-| TRUST-04 | Phase 1 | Pending |
+| TRUST-04 | Phase 1 | Complete — non-LLM cite_check node (agent/nodes/cite_check.py, rapidfuzz; no LLM imports, pinned by test_no_llm_judge_fallback) drops/repairs unsupported claims before emit |
 | UI-01 | Phase 1 | Complete |
 | UI-02 | Phase 1 | Complete |
-| UI-03 | Phase 5 | Pending |
+| UI-03 | Phase 5 | Complete — uncertainty as the dominant visual: adaptive interval band (width = the message, P21, no point headline) verified live on /snapshot |
 | UI-04 | Phase 4 | Complete |
 | OPS-01 | Phase 2 | Complete |
 | OPS-02 | Phase 1 | Pending |

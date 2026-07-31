@@ -140,8 +140,13 @@ def main() -> None:
     """
     from scripts.run_eval import compute_numeric_faithfulness
 
+    # The gate scores the DISCLOSED subset only — numeric_faithfulness is a GROUNDING
+    # metric, valid only for numbers the DRHP actually states. Derived/computed answers
+    # (margins, growth %, ratios, lakh restatements) cannot ground by construction and
+    # are tracked as a separate reasoning eval. Rationale + full split (not score-gaming):
+    # eval/gold/NUMERIC_EVAL_SPLIT.md.
     numeric_faithfulness = compute_numeric_faithfulness(
-        numeric_set_path="eval/gold/numeric_eval.jsonl",
+        numeric_set_path="eval/gold/numeric_eval_disclosed.jsonl",
         output_dir="eval/reports",
         write_report=True,
     )

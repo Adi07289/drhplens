@@ -24,7 +24,7 @@ from agent.policies import (
     CITE_CHECK_TOKEN_RATIO,
     NUMERIC_GROUNDING_REL_TOLERANCE,
 )
-from agent.schemas import GroundedAnswer, RefusalResponse
+from agent.schemas import GroundedAnswer, RefusalResponse, RetrievedChunkRef
 from agent.state import GraphState
 from app.observability.cite_check_metric import score_cite_check
 from app.observability.trace_decorators import attach_claim_ids_to_span
@@ -224,36 +224,50 @@ def cite_check(
             claim_norm = _normalize(claim.text)
             window_norm = _normalize(window)
 
-            # Fuzzy token overlap check
-            ratio = fuzz.token_set_ratio(claim_norm, window_norm)
-            if ratio < CITE_CHECK_TOKEN_RATIO:
-                failure_reason = (
-                    f"claim {claim.claim_id!r}: token_set_ratio={ratio} < "
-                    f"{CITE_CHECK_TOKEN_RATIO} (claim={claim.text!r})"
-                )
-                continue  # Try next source
-
-            # Numeric grounding (PITFALL P2 antibody + D3-10 unit reconciliation).
-            # Fast path: exact-string subset short-circuits to grounded (no
-            # regression to existing cite-check tests). Slow path: per-number
-            # unit-aware + tolerance reconciliation so "₹11,247 crore" grounds
-            # against "1,12,470 lakh" instead of false-failing the 0.95 gate.
+            # Two ORTHOGONAL antibodies, evaluated independently (EVAL-03 fix):
+            #
+            #  * Numeric antibody (PITFALL P2 + D3-10 unit reconciliation): every
+            #    number the claim emits must reconcile to some window number.
+            #    Fast path exact-string subset; slow path per-number unit-aware
+            #    tolerance so "₹11,247 crore" grounds against "112,473.90 million"
+            #    / "1,12,470 lakh". Trivially satisfied when the claim has no
+            #    numbers (a qualitative claim can't fail P2).
+            #  * Prose antibody (RESEARCH Pattern 3): fuzzy token overlap.
+            #
+            # A source grounds the claim when its numbers reconcile AND EITHER the
+            # claim is numeric OR the prose overlaps. Numeric reconciliation is
+            # itself the grounding proof for a numeric claim: a concise numeric
+            # answer legitimately shares few tokens with a dense ~500-token
+            # financial window, so requiring the prose gate too would false-reject
+            # a genuinely-grounded number (this drove numeric_faithfulness to 0.08,
+            # EVAL-03). Number-swaps still fail (numbers_grounded=False); purely
+            # qualitative hallucinations still fail the prose gate (no claim
+            # numbers → prose overlap is the only path to grounded).
             claim_numbers = _extract_numbers(claim_norm)
             window_numbers = _extract_numbers(window_norm)
-            if not _numbers_subset(claim_numbers, window_numbers) and not (
+            numbers_grounded = _numbers_subset(claim_numbers, window_numbers) or (
                 _scaled_numbers_grounded(claim_norm, window_norm)
-            ):
+            )
+            ratio = fuzz.token_set_ratio(claim_norm, window_norm)
+            prose_grounded = ratio >= CITE_CHECK_TOKEN_RATIO
+
+            if numbers_grounded and (bool(claim_numbers) or prose_grounded):
+                grounded = True
+                break
+
+            if not numbers_grounded:
                 failure_reason = (
                     f"claim {claim.claim_id!r}: numeric grounding failed — "
                     f"claim has {claim_numbers} but window has {window_numbers}; "
                     f"no unit-reconcilable match within tolerance "
                     f"(PITFALL P2 / D3-10)"
                 )
-                continue  # Try next source
-
-            # Both checks passed — claim is grounded
-            grounded = True
-            break
+            else:
+                failure_reason = (
+                    f"claim {claim.claim_id!r}: token_set_ratio={ratio} < "
+                    f"{CITE_CHECK_TOKEN_RATIO} (claim={claim.text!r})"
+                )
+            continue  # Try next source
 
         if not grounded:
             failures.append(
@@ -262,6 +276,117 @@ def cite_check(
 
     all_grounded = len(failures) == 0
     return all_grounded, failures
+
+
+# ---------------------------------------------------------------------------
+# Citation repair (EVAL-03) — re-anchor a mis-cited numeric claim to the
+# retrieved chunk that ACTUALLY contains its numbers.
+#
+# The LLM reliably retrieves the right evidence but inconsistently cites the wrong
+# sibling chunk (e.g. attaching a fresh-issue figure to the total-issue chunk), so a
+# genuinely-supported number is scored ungrounded. This deterministic, non-LLM step
+# re-anchors such a claim to the retrieved top-k chunk that contains its numbers,
+# improving citation accuracy (the user's citation now truly holds the number). It
+# NEVER repairs a number absent from every retrieved chunk, so hallucinations still
+# fail the gate.
+# ---------------------------------------------------------------------------
+
+
+def _chunk_supports_numbers(
+    claim_norm: str, claim_numbers: set[str], window_norm: str
+) -> bool:
+    """True iff every number in the claim reconciles to some number in the window."""
+    if not claim_numbers:
+        return False
+    return _numbers_subset(claim_numbers, _extract_numbers(window_norm)) or (
+        _scaled_numbers_grounded(claim_norm, window_norm)
+    )
+
+
+def _find_supporting_chunk(claim, reranked_chunks: list[dict]) -> dict | None:
+    """Retrieved chunk that contains ALL the claim's numbers, best topical overlap.
+
+    Returns the chunk payload, or None if NO retrieved chunk supports every number
+    the claim emits (so a hallucinated number is never repaired).
+    """
+    claim_norm = _normalize(claim.text)
+    claim_numbers = _extract_numbers(claim_norm)
+    if not claim_numbers:
+        return None
+    best_payload: dict | None = None
+    best_ratio = -1.0
+    for chunk in reranked_chunks:
+        payload = chunk.get("payload", {})
+        text = payload.get("chunk_text", "")
+        if not text or not payload.get("chunk_id"):
+            continue
+        window_norm = _normalize(text)
+        if not _chunk_supports_numbers(claim_norm, claim_numbers, window_norm):
+            continue
+        ratio = fuzz.token_set_ratio(claim_norm, window_norm)
+        if ratio > best_ratio:
+            best_ratio = ratio
+            best_payload = payload
+    return best_payload
+
+
+def repair_citations(
+    answer: GroundedAnswer, reranked_chunks: list[dict]
+) -> GroundedAnswer:
+    """Re-anchor mis-cited numeric claims to the retrieved chunk that holds their numbers.
+
+    For each numeric claim that does NOT already ground to its cited sources, prepend a
+    citation to the retrieved top-k chunk whose window contains every number the claim
+    emits (best topical overlap). Claims whose numbers are in no retrieved chunk are
+    left untouched (they must fail cite_check — no hallucination is repaired).
+    Non-numeric claims are never touched.
+    """
+    text_by_id: dict[str, str] = {}
+    for chunk in reranked_chunks:
+        payload = chunk.get("payload", {})
+        cid = payload.get("chunk_id", chunk.get("id", ""))
+        if cid:
+            text_by_id[cid] = payload.get("chunk_text", "")
+
+    repaired_claims = []
+    changed = False
+    for claim in answer.claims:
+        if not _extract_numbers(_normalize(claim.text)):
+            repaired_claims.append(claim)
+            continue
+        already_ok, _ = cite_check(
+            GroundedAnswer(answer_prose=f"x {{{{{claim.claim_id}}}}}", claims=[claim]),
+            text_by_id,
+        )
+        if already_ok:
+            repaired_claims.append(claim)
+            continue
+        support = _find_supporting_chunk(claim, reranked_chunks)
+        if support is None:
+            repaired_claims.append(claim)  # genuinely ungrounded — leave to fail
+            continue
+        new_ref = RetrievedChunkRef(
+            chunk_id=support["chunk_id"],
+            page_start=int(support.get("page_start", 0) or 0),
+            page_end=int(support.get("page_end", 0) or 0),
+            printed_page_label=support.get("printed_page_label"),
+            section=support.get("section") or "Unknown",
+            span_offsets=None,  # the whole supporting chunk is the window
+        )
+        repaired_claims.append(
+            claim.model_copy(
+                update={
+                    "sources": [new_ref, *claim.sources],
+                    "source_chunk_id": support["chunk_id"],
+                    "drhp_page": int(support.get("page_start", 0) or 0),
+                }
+            )
+        )
+        changed = True
+
+    if not changed:
+        return answer
+    return answer.model_copy(update={"claims": repaired_claims})
 
 
 # ---------------------------------------------------------------------------
@@ -291,9 +416,16 @@ def run(state: GraphState) -> GraphState:
         # No answer to check (refusal already set upstream)
         return {**state, "all_claims_grounded": False, "cite_check_failures": []}
 
+    reranked = state.get("reranked_top_k", [])
+
+    # Repair mis-cited numeric claims: re-anchor each to the retrieved chunk that
+    # actually contains its numbers BEFORE checking, so a genuinely-supported number
+    # grounds to an accurate citation (EVAL-03). Never repairs an unsupported number.
+    grounded_answer = repair_citations(grounded_answer, reranked)
+
     # Build chunk_id → chunk_text map from reranked_top_k
     retrieved_chunks: dict[str, str] = {}
-    for chunk in state.get("reranked_top_k", []):
+    for chunk in reranked:
         payload = chunk.get("payload", {})
         chunk_id = payload.get("chunk_id", chunk.get("id", ""))
         chunk_text = payload.get("chunk_text", "")
@@ -320,6 +452,7 @@ def run(state: GraphState) -> GraphState:
 
     updated = {
         **state,
+        "grounded_answer": grounded_answer,  # persist repaired citations downstream
         "all_claims_grounded": all_grounded,
         "cite_check_failures": failures,
     }

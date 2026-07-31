@@ -80,24 +80,102 @@ def derive_status(row: dict) -> str:
 # ---------------------------------------------------------------------------
 
 
+def _row_key(row: dict) -> tuple:
+    """Dedupe key for the two-source merge: normalized issuer + issue_date."""
+    issuer = row.get("issuer")
+    issuer_key = issuer.strip().lower() if isinstance(issuer, str) else issuer
+    return (issuer_key, row.get("issue_date"))
+
+
+def _merge_sources(
+    listed_rows: list[dict], withdrawn_rows: list[dict]
+) -> list[dict]:
+    """Merge Source A (listed core) ∪ Source B (withdrawn overlay), deduped by
+    (issuer, issue_date).
+
+    P3 survivorship rule: the listed-core row WINS a collision (its listing prices
+    + status are kept — a company that actually listed is not "withdrawn"); a
+    withdrawn overlay row survives ONLY when its issuer is absent from the listed
+    core. That is exactly the withdrawn/pulled control the survivor-only feeds drop.
+    """
+    merged: dict[tuple, dict] = {}
+    for row in listed_rows:
+        merged[_row_key(row)] = row
+    for row in withdrawn_rows:
+        key = _row_key(row)
+        if key not in merged:  # overlay-only issuer -> keep it (withdrawn survives)
+            merged[key] = row
+    return list(merged.values())
+
+
+def _enrich_listing_closes(rows: list[dict]) -> None:  # pragma: no cover - live
+    """Fill the listing-day EOD close (the target input) for listed rows, in place.
+
+    NSE ``public-past-issues`` carries the issue price + listing date but NOT the
+    listing-day close, so the target (``listing_day_return``) is unknown until the
+    close is fetched per symbol (jugaad-data bhavcopy → yfinance → None). Without
+    this step the whole panel's target is NaN and the walk-forward has zero scorable
+    rows. Only rows with a ``symbol`` + ``listing_date`` and no close yet are
+    fetched; a miss leaves ``listing_day_close`` None (→ NaN return, RETAINED —
+    never fabricated, P15). LIVE network — the deferred 05-11 crawl; the offline
+    unit suite monkeypatches ``_sources.fetch_listing_day_close``.
+    """
+    todo = [
+        r
+        for r in rows
+        if r.get("listing_day_close") is None
+        and r.get("symbol")
+        and r.get("listing_date") is not None
+    ]
+    console.print(
+        f"[blue]Enriching listing-day closes for {len(todo)} listed IPOs "
+        f"(jugaad-data → yfinance; misses stay NaN)...[/blue]"
+    )
+    for i, row in enumerate(todo, 1):
+        try:
+            row["listing_day_close"] = _sources.fetch_listing_day_close(
+                str(row["symbol"]), row["listing_date"]
+            )
+        except Exception as exc:  # noqa: BLE001 - honest miss => None (retained)
+            logger.info("listing-day close miss for %s: %s", row.get("symbol"), exc)
+            row["listing_day_close"] = None
+        if i % 50 == 0:
+            console.print(f"  ...{i}/{len(todo)} closes fetched")
+
+
 def build_panel(*, write: bool = True) -> pd.DataFrame:  # pragma: no cover - live
     """Build the full survivorship-corrected panel from live issuer-side sources.
 
-    LIVE NETWORK. Deferred to the 04-07 human/network checkpoint — do NOT call
-    from the executor sandbox or from any test. Per-source failure isolation
-    keeps one flaky source from aborting the batch.
+    LIVE NETWORK. Deferred to the 05-11 human/network checkpoint — do NOT call
+    from the executor sandbox. Per-source failure isolation keeps one flaky source
+    from aborting the batch.
+
+    Two-source merge (D5-04): Source A = NSE ``public-past-issues`` (the listed
+    core, replacing the dead chittorgarh HTML scraper); Source B =
+    ``fetch_sebi_withdrawn`` (the P3 withdrawn/pulled overlay). Merged + deduped by
+    (issuer, issue_date) before the window filter + status derivation.
     """
     console.rule("[bold blue]Building historical IPO panel (LIVE)[/bold blue]")
 
-    raw_rows: list[dict] = []
+    # Source A — listed core (NSE past-issues). Own failure-isolated block.
+    listed_rows: list[dict] = []
     try:
-        raw_rows.extend(_sources.fetch_chittorgarh_index())
+        listed_rows = _sources.fetch_nse_past_issues(UNIVERSE_START, _dt.date.today())
     except Exception as exc:  # noqa: BLE001 - per-source isolation (P14)
-        console.print(f"[red]chittorgarh index failed: {exc}[/red]")
+        console.print(f"[red]NSE past-issues (Source A) failed: {exc}[/red]")
+
+    # Source B — withdrawn/pulled overlay (the P3 survivorship control).
+    withdrawn_rows: list[dict] = []
     try:
-        raw_rows.extend(_sources.fetch_sebi_offer_documents())
-    except Exception as exc:  # noqa: BLE001
-        console.print(f"[red]SEBI issuer-side failed: {exc}[/red]")
+        withdrawn_rows = _sources.fetch_sebi_withdrawn()
+    except Exception as exc:  # noqa: BLE001 - per-source isolation (P14)
+        console.print(f"[red]SEBI/withdrawn overlay (Source B) failed: {exc}[/red]")
+
+    raw_rows: list[dict] = _merge_sources(listed_rows, withdrawn_rows)
+
+    # Enrich the listing-day close (the target input) — NSE past-issues has no
+    # close, so without this the whole panel's listing_day_return is NaN.
+    _enrich_listing_closes(raw_rows)
 
     rows: list[dict] = []
     for raw in raw_rows:
@@ -346,16 +424,26 @@ def build_sample_panel(*, write: bool = True) -> pd.DataFrame:
 
 @app.command(name="build")
 def build_cli() -> None:  # pragma: no cover - live network
-    """LIVE full build (~800–1000 IPOs). Deferred 04-07 checkpoint — needs egress."""
-    summary = None
-    df = build_panel(write=True)
+    """LIVE full build (~800–1000 IPOs). Deferred 05-11 checkpoint — needs egress."""
+    df = build_panel(write=False)
+
+    # Non-zero-row guard (RESEARCH Pitfall 7): a silent 0-row build is the exact
+    # 04-07 failure mode. Refuse to overwrite the committed panel with an empty one.
+    if len(df) == 0:
+        console.print(
+            "[bold red]ABORT: build produced 0 rows — a silent source failure "
+            "(Pitfall 7, the 04-07 failure mode). Refusing to write an empty "
+            "survivorship panel; check Source A (NSE) / Source B (SEBI) egress.[/bold red]"
+        )
+        raise typer.Exit(code=1)
+
+    write_panel(df)
     median, flag = sanity_check_median(df)
     console.print(
         f"[bold green]Wrote {len(df)} rows[/bold green] "
         f"statuses={sorted(df['status'].dropna().unique())} "
         f"median={median * 100:.2f}% flag={'FIRED' if flag else 'none'}"
     )
-    _ = summary
 
 
 @app.command(name="build-sample")

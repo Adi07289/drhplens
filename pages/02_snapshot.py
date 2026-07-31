@@ -21,6 +21,7 @@ st.set_page_config(
 from agent.gmp_schema import GmpRecord  # noqa: E402
 from app.util.css_loader import load_global_css  # noqa: E402
 from data.catalogue_loader import is_known_drhp_id, load_catalogue  # noqa: E402
+from pipelines.forecast import load_forecast  # noqa: E402
 from pipelines.gmp import load_gmp  # noqa: E402
 from pipelines.peers import load_peers  # noqa: E402
 from pipelines.redflag import load_redflag  # noqa: E402
@@ -44,7 +45,12 @@ from ui.copy import (  # noqa: E402
     SNAPSHOT_PRECOMPUTING_HEADING,
     UNKNOWN_DRHP_ID_COPY,
 )
-from ui.disclaimer import render_persistent_footer  # noqa: E402
+from ui.chrome import render_nav, render_site_footer  # noqa: E402
+from ui.forecast_block import (  # noqa: E402
+    render_forecast_block,
+    render_forecast_error,
+    render_forecast_not_covered,
+)
 from ui.snapshot_blocks import (  # noqa: E402
     render_financials_table,
     render_gmp_block,
@@ -66,6 +72,7 @@ _css_html = load_global_css(st.session_state)
 if _css_html:
     st.markdown(_css_html, unsafe_allow_html=True)
 init_session_state(st.session_state)
+st.markdown(render_nav(), unsafe_allow_html=True)
 
 st.markdown(
     '<script>document.documentElement.lang = "en-IN";</script>',
@@ -91,7 +98,7 @@ def _render_unknown_id() -> None:
         unsafe_allow_html=True,
     )
     st.markdown("[← All IPOs](/)")
-    st.markdown(render_persistent_footer(), unsafe_allow_html=True)
+    st.markdown(render_site_footer(), unsafe_allow_html=True)
 
 
 def _issuer_for(drhp_id: str) -> str:
@@ -117,13 +124,12 @@ def _render_redflag_block(redflag_record, redflag_state: str) -> None:
         )
         return
     if redflag_record is None:
-        st.markdown('<div class="drhp-redflag-table">', unsafe_allow_html=True)
-        st.markdown(
-            f'<h2 class="drhp-empty-heading">{_html.escape(REDFLAG_EMPTY_HEADING)}</h2>',
-            unsafe_allow_html=True,
-        )
-        st.markdown(REDFLAG_EMPTY_BODY)
-        st.markdown('</div>', unsafe_allow_html=True)
+        with st.container(border=True, key="drhpcard-redflag-empty"):
+            st.markdown(
+                f'<h2 class="drhp-empty-heading">{_html.escape(REDFLAG_EMPTY_HEADING)}</h2>',
+                unsafe_allow_html=True,
+            )
+            st.markdown(REDFLAG_EMPTY_BODY)
         return
     render_redflag_table(redflag_record)
 
@@ -146,7 +152,7 @@ def _render_peer_block(peer_record, peer_state: str) -> None:
         )
         return
     if peer_record is None:
-        with st.container(border=True):
+        with st.container(border=True, key="drhpcard-peer-empty"):
             st.markdown(
                 f'<h2 class="drhp-snapshot-block-heading">'
                 f'{_html.escape(PEER_BLOCK_HEADING)}</h2>',
@@ -181,6 +187,43 @@ def _render_gmp_block(gmp_record, gmp_state: str) -> None:
         )
         return
     render_gmp_block(gmp_record)
+
+
+def _issue_price_for(record) -> float | None:
+    """The per-share issue price (₹) for the GMP-implied-return conversion.
+
+    Sourced from the already-loaded snapshot metadata (the Phase 2 header value).
+    The current SnapshotRecord surfaces no structured per-share issue-price field
+    (the metadata field is a cited GroundedAnswer, not a parsed price), so this
+    returns None today — the forecast render then HONESTLY omits the GMP marker +
+    gap line (the band still renders) per the no-gap state, never a fabricated
+    conversion. It becomes a real value once a structured issue price is surfaced
+    (05-06/05-11), with no change needed at the render call site.
+    """
+    return None
+
+
+def _render_forecast_block(
+    forecast_record, forecast_state: str, gmp_record, issue_price: float | None
+) -> None:
+    """Render the forecast section AFTER the peer block, BEFORE ranked-risks (L5-4).
+
+    Mirrors _render_peer_block's error/empty/present fan-out (drhp_id already
+    allow-list-validated at the top of main()): a cache read error renders the
+    inherited amber .drhp-refusal banner (NOT red); a missing cache
+    (FileNotFoundError) renders the honest not-covered note (never a fabricated
+    band or metric); a present record renders the full forecast block — which
+    itself carries the covered+GMP / covered+no-GMP / abstain states. The GMP
+    marker reads ONLY the cached gmp_record + the cached issue price (display-layer
+    conversion; the render imports no model module — FCAST-02).
+    """
+    if forecast_state == "error":
+        render_forecast_error()
+        return
+    if forecast_record is None:
+        render_forecast_not_covered()
+        return
+    render_forecast_block(forecast_record, gmp_record, issue_price)
 
 
 def main() -> None:
@@ -270,6 +313,23 @@ def main() -> None:
         gmp_record = None
         gmp_state = "error"
 
+    # Phase 5 forecast cache read — SAME allow-list guard (drhp_id validated above)
+    # + try/except posture as the peer/GMP reads. Reads ONLY the cached
+    # data/forecasts/<drhp_id>.json (05-03); no model/training call on render, and
+    # this path imports NO model module (FCAST-02 isolation). FileNotFoundError ->
+    # honest not-covered note; any other error -> amber .drhp-refusal (NOT red);
+    # never an unhandled exception (T-05-07-ERR).
+    forecast_record = None
+    forecast_state = "ok"
+    try:
+        forecast_record = load_forecast(drhp_id)
+    except FileNotFoundError:
+        forecast_record = None
+        forecast_state = "missing"
+    except Exception:
+        forecast_record = None
+        forecast_state = "error"
+
     # Red-flag signals block — HIGH on the page (after the metadata header,
     # above-the-fold-adjacent on mobile), before the Phase 2 field blocks.
     _render_redflag_block(redflag_record, redflag_state)
@@ -277,22 +337,34 @@ def main() -> None:
     if record is not None:
         # Locked block order: metadata, business, financials, risks,
         # use-of-proceeds (split bar first), promoter.
-        render_grounded_block(record.fields.get("metadata"), "")
-        render_grounded_block(record.fields.get("business"), SNAPSHOT_BLOCK_HEADING_BUSINESS)
-
-        st.markdown('<div class="drhp-snapshot-block">', unsafe_allow_html=True)
-        st.markdown(
-            f'<h2 class="drhp-snapshot-block-heading">'
-            f'{_html.escape(SNAPSHOT_BLOCK_HEADING_FINANCIALS)}</h2>',
-            unsafe_allow_html=True,
+        render_grounded_block(record.fields.get("metadata"), "", card_key="metadata")
+        render_grounded_block(
+            record.fields.get("business"),
+            SNAPSHOT_BLOCK_HEADING_BUSINESS,
+            card_key="business",
         )
-        render_financials_table(record.fields.get("financials"))
-        st.markdown('</div>', unsafe_allow_html=True)
+
+        with st.container(border=True, key="drhpcard-financials"):
+            st.markdown(
+                f'<h2 class="drhp-snapshot-block-heading">'
+                f'{_html.escape(SNAPSHOT_BLOCK_HEADING_FINANCIALS)}</h2>',
+                unsafe_allow_html=True,
+            )
+            render_financials_table(record.fields.get("financials"))
 
         # NEW (Phase 4) — Comparison with listed peers, placed directly after Key
         # Financials (UI-SPEC IA block 7 — topically adjacent: "here are its
         # financials, here is how it compares"). Renders from the cached record.
         _render_peer_block(peer_record, peer_state)
+
+        # NEW (Phase 5) — Listing-day forecast (block 8), inserted DIRECTLY AFTER
+        # the peer block and BEFORE the ranked-risks list (L5-4, the analytical-
+        # narrative climax). Cache-only render over data/forecasts/<drhp_id>.json;
+        # the GMP marker reads the already-loaded gmp_record + the issue price. The
+        # quiet GMP block (block 12) stays the LAST read block, unmoved (D4-02).
+        _render_forecast_block(
+            forecast_record, forecast_state, gmp_record, _issue_price_for(record)
+        )
 
         # SINGLE risk list (UI-SPEC IA reconciliation, L3-4): the IDF-ranked list
         # SUPERSEDES the Phase 2 prioritized ordering. Exactly ONE renders at
@@ -301,26 +373,28 @@ def main() -> None:
         if redflag_record is not None and redflag_record.ranked_risks:
             render_idf_risk_list(redflag_record.ranked_risks, redflag_record)
         else:
-            st.markdown('<div class="drhp-snapshot-block">', unsafe_allow_html=True)
+            with st.container(border=True, key="drhpcard-risk-fallback"):
+                st.markdown(
+                    f'<h2 class="drhp-snapshot-block-heading">'
+                    f'{_html.escape(SNAPSHOT_BLOCK_HEADING_RISKS)}</h2>',
+                    unsafe_allow_html=True,
+                )
+                render_risk_block(record.fields.get("risks"))
+
+        with st.container(border=True, key="drhpcard-uop"):
             st.markdown(
                 f'<h2 class="drhp-snapshot-block-heading">'
-                f'{_html.escape(SNAPSHOT_BLOCK_HEADING_RISKS)}</h2>',
+                f'{_html.escape(SNAPSHOT_BLOCK_HEADING_USE_OF_PROCEEDS)}</h2>',
                 unsafe_allow_html=True,
             )
-            render_risk_block(record.fields.get("risks"))
-            st.markdown('</div>', unsafe_allow_html=True)
+            render_split_bar(record.ofs_fresh)
+            render_use_of_proceeds_body(record.fields.get("use_of_proceeds"))
 
-        st.markdown('<div class="drhp-snapshot-block">', unsafe_allow_html=True)
-        st.markdown(
-            f'<h2 class="drhp-snapshot-block-heading">'
-            f'{_html.escape(SNAPSHOT_BLOCK_HEADING_USE_OF_PROCEEDS)}</h2>',
-            unsafe_allow_html=True,
+        render_grounded_block(
+            record.fields.get("promoter"),
+            SNAPSHOT_BLOCK_HEADING_PROMOTER,
+            card_key="promoter",
         )
-        render_split_bar(record.ofs_fresh)
-        render_use_of_proceeds_body(record.fields.get("use_of_proceeds"))
-        st.markdown('</div>', unsafe_allow_html=True)
-
-        render_grounded_block(record.fields.get("promoter"), SNAPSHOT_BLOCK_HEADING_PROMOTER)
 
     # NEW (Phase 4) — Grey-market premium, the LAST read block immediately above
     # the Q&A 2xl divider (UI-SPEC IA block 10, D4-02). Rendered OUTSIDE the
@@ -331,12 +405,12 @@ def main() -> None:
 
     # 2xl gap + divider before the co-located Q&A chat (D2-08).
     st.markdown(
-        '<div style="margin-top: 48px; border-top: 1px solid #E2E8F0;"></div>',
+        '<div style="margin-top: 48px; border-top: 1px solid var(--drhp-border-subtle);"></div>',
         unsafe_allow_html=True,
     )
     render_snapshot_chat(drhp_id)
 
-    st.markdown(render_persistent_footer(), unsafe_allow_html=True)
+    st.markdown(render_site_footer(), unsafe_allow_html=True)
 
 
 main()

@@ -32,6 +32,14 @@ from ui.copy import (  # noqa: E402
     CATALOGUE_HERO_HEADING,
     CATALOGUE_HERO_SUBHEADING,
 )
+from ui.chrome import (  # noqa: E402
+    render_how_it_works,
+    render_landing_hero,
+    render_nav,
+    render_section_head,
+    render_site_footer,
+    render_trust_band,
+)
 from ui.disclaimer import render_first_use_modal, render_persistent_footer  # noqa: E402
 from ui.state import has_seen_modal, init_session_state, mark_modal_seen  # noqa: E402
 
@@ -94,21 +102,29 @@ def _render_empty_state() -> None:
 
 
 def main() -> None:
-    """Main app entry point — the catalogue landing, linear top-to-bottom."""
+    """Main app entry point — the premium catalogue landing, top-to-bottom."""
     _set_lang()
     _load_css()
     init_session_state(st.session_state)
-    _show_modal_gate()
+    st.markdown(render_nav(), unsafe_allow_html=True)
+    _show_modal_gate()  # first-use modal + st.stop() until dismissed
 
-    _render_hero()
+    st.markdown(render_landing_hero(), unsafe_allow_html=True)
 
     ipos = load_catalogue()
+    st.markdown(render_trust_band(len(ipos)), unsafe_allow_html=True)
+    st.markdown(render_how_it_works(), unsafe_allow_html=True)
+    st.markdown(
+        render_section_head("The catalogue", "Recent Indian IPOs", anchor="drhp-catalogue"),
+        unsafe_allow_html=True,
+    )
+
     if not ipos:
         _render_empty_state()
     else:
         render_catalogue_grid(ipos)
 
-    st.markdown(render_persistent_footer(), unsafe_allow_html=True)
+    st.markdown(render_site_footer(), unsafe_allow_html=True)
 
 
 if __name__ == "__main__":

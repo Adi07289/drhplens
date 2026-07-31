@@ -1,8 +1,1379 @@
 issuer,issue_date,listing_date,issue_price,listing_day_close,listing_day_return,status
-Sample Alpha Ltd,2018-03-01,2018-03-12,100.0,108.0,0.08,listed_alive
-Sample Beta Ltd,2017-07-01,2017-07-13,200.0,214.0,0.07,listed_alive
-Sample Gamma Ltd,2015-06-01,2015-06-15,150.0,156.0,0.04,delisted
-Sample Delta Ltd,2016-09-01,2016-09-14,300.0,321.0,0.07,merged
-Sample Epsilon Ltd,2019-01-10,2019-01-22,80.0,86.0,0.075,name_changed
-Sample Zeta Ltd,2020-02-01,,120.0,,,withdrawn
-Sample Eta Ltd,2021-11-01,2021-11-15,120.0,,,listed_alive
+Metalic Technoforge Limited,2026-07-21,,,,,listed_alive
+Caliber Mining and Logistics Limited,2026-07-17,2026-07-24,424.0,528.2,0.2457547169811322,listed_alive
+SBI Funds Management Limited,2026-07-14,2026-07-21,574.0,609.75,0.062282229965156796,listed_alive
+Alpine Texworld Limited,2026-07-14,2026-07-21,105.0,99.75,-0.05,listed_alive
+Laser Power & Infra Limited,2026-07-09,2026-07-16,214.0,262.42,0.22626168224299073,listed_alive
+Happy Steels Limited,2026-07-09,2026-07-16,66.0,68.5,0.03787878787878788,listed_alive
+Kusumgar Limited,2026-07-08,2026-07-15,419.0,602.8,0.4386634844868734,listed_alive
+IC Electricals Company Limited,2026-07-03,2026-07-10,99.0,174.3,0.7606060606060607,listed_alive
+Knack Packaging Limited,2026-07-01,2026-07-08,170.0,182.98,0.07635294117647053,listed_alive
+Vinit Mobile Limited,2026-06-30,2026-07-07,158.0,147.25,-0.0680379746835443,listed_alive
+Teja Engineering Industries Limited,2026-06-30,2026-07-07,220.0,438.9,0.9949999999999999,listed_alive
+Aastha Spintex Limited,2026-06-29,2026-07-06,136.0,136.49,0.003602941176470655,listed_alive
+IC Electricals Company Limited-Issue postponed,2026-06-25,,,,,listed_alive
+CSM Technologies Limited,2026-06-24,2026-07-02,113.0,107.35,-0.05000000000000005,listed_alive
+Sri Priyanka Geo Commex Limited-Issue Withdrawn,2026-06-24,,,,,listed_alive
+Advit Jewels Limited,2026-06-23,2026-07-01,138.0,179.46,0.3004347826086957,listed_alive
+Waterways Leisure Tourism Limited,2026-06-23,2026-07-01,808.0,668.1,-0.1731435643564356,listed_alive
+Shreedhar Spinners Limited,2026-06-23,2026-07-01,53.0,57.1,0.07735849056603776,listed_alive
+Turtlemint Fintech Solutions Limited,2026-06-19,2026-06-29,152.0,135.37,-0.10940789473684208,listed_alive
+Avience Biomedicals Limited,2026-06-18,2026-06-25,208.0,414.95,0.994951923076923,listed_alive
+Clay Craft India Limited,2026-06-17,2026-06-24,203.0,221.55,0.09137931034482764,listed_alive
+Utkal Speciality Industries India Limited,2026-06-10,2026-06-17,66.0,62.7,-0.049999999999999954,listed_alive
+Hexagon Nutrition Limited,2026-06-05,2026-06-12,45.0,50.66,0.1257777777777777,listed_alive
+GenXAI Analytics Limited,2026-06-05,2026-06-12,116.0,97.4,-0.16034482758620686,listed_alive
+CMR Green Technologies Limited,2026-06-03,2026-06-10,192.0,241.2,0.2562499999999999,listed_alive
+Q-Line Biotech Limited,2026-05-21,2026-05-29,343.0,474.6,0.38367346938775515,listed_alive
+Bio Medica Laboratories Limited,2026-05-21,2026-05-29,139.0,115.8,-0.1669064748201439,listed_alive
+Teamtech Formwork Solutions Limited,2026-05-19,2026-05-26,63.0,72.75,0.15476190476190477,listed_alive
+NFP Sampoorna Foods Limited,2026-05-18,2026-05-25,55.0,51.8,-0.05818181818181823,listed_alive
+RFBL Flexi Pack Limited,2026-05-12,2026-05-19,50.0,55.1,0.10200000000000004,listed_alive
+Simca Advertising Limited,2026-05-08,2026-05-15,183.0,163.8,-0.10491803278688519,listed_alive
+Bagmane Prime Office REIT,2026-05-05,2026-05-14,100.0,103.6,0.03599999999999994,listed_alive
+Value 360 Communications Limited,2026-05-04,2026-05-11,98.0,82.3,-0.1602040816326531,listed_alive
+Onemi Technology Solutions Limited,2026-04-30,2026-05-08,171.0,208.63,0.2200584795321637,listed_alive
+Amba Auto Sales and Services Limited,2026-04-27,2026-05-05,135.0,135.15,0.0011111111111111532,listed_alive
+Adisoft Technologies Limited,2026-04-23,2026-04-30,172.0,215.25,0.251453488372093,listed_alive
+Citius Transnet Investment Trust,2026-04-17,2026-04-29,100.0,106.23,0.06230000000000004,listed_alive
+Om Power Transmission Limited,2026-04-09,2026-04-17,175.0,193.38,0.1050285714285714,listed_alive
+Vivid Electromech Limited,2026-03-25,2026-04-07,555.0,563.05,0.014504504504504422,listed_alive
+Powerica Limited,2026-03-24,2026-04-02,395.0,390.0,-0.012658227848101266,listed_alive
+Sai Parenteral's Limited,2026-03-24,2026-04-02,392.0,405.7,0.0349489795918367,listed_alive
+Amir Chand Jagdish Kumar (Exports) Limited,2026-03-24,2026-04-02,212.0,180.0,-0.1509433962264151,listed_alive
+Central Mine Planning & Design Institute Limited,2026-03-20,2026-03-30,172.0,154.06,-0.10430232558139534,listed_alive
+GSP Crop Science Limited,2026-03-16,2026-03-24,320.0,356.25,0.11328125,listed_alive
+Rajputana Stainless Limited-Special Withdrawal Option,2026-03-12,,,,,listed_alive
+Raajmarg Infra Investment Trust,2026-03-11,2026-03-24,100.0,106.88,0.06879999999999996,listed_alive
+Apsis Aerocom Limited,2026-03-11,2026-03-18,110.0,160.65,0.4604545454545455,listed_alive
+Innovision Limited,2026-03-10,2026-03-23,519.0,374.2,-0.2789980732177264,listed_alive
+Rajputana Stainless Limited,2026-03-09,2026-03-19,122.0,113.03,-0.07352459016393442,listed_alive
+Srinibas Pradhan Constructions Limited,2026-03-06,2026-03-13,98.0,104.4,0.06530612244897965,listed_alive
+Sedemac Mechatronics Limited,2026-03-04,2026-03-11,1352.0,1451.1,0.07329881656804726,listed_alive
+Acetech E-Commerce Limited,2026-02-27,2026-03-09,112.0,117.6,0.04999999999999995,listed_alive
+Striders Impex Limited,2026-02-26,2026-03-06,72.0,66.5,-0.0763888888888889,listed_alive
+Nashik Municipal Corporation,2026-02-25,2026-03-06,125.0,,,listed_alive
+Omnitech Engineering Limited,2026-02-25,2026-03-05,227.0,204.93,-0.0972246696035242,listed_alive
+Yaap Digital Limited,2026-02-25,2026-03-05,145.0,133.35,-0.08034482758620694,listed_alive
+PNGS Reva Diamond Jewellery Limited,2026-02-24,2026-03-04,386.0,411.7,0.06658031088082898,listed_alive
+Shree Ram Twistex Limited,2026-02-23,2026-03-02,104.0,71.4,-0.3134615384615384,listed_alive
+Clean Max Enviro Energy Solutions Limited,2026-02-23,2026-03-02,1053.0,867.5,-0.1761633428300095,listed_alive
+Mobilise App Lab Limited,2026-02-23,2026-03-02,80.0,67.3,-0.15875000000000003,listed_alive
+Gaudium IVF and Women Health Limited,2026-02-20,2026-02-27,79.0,80.26,0.01594936708860766,listed_alive
+Manilam Industries India Limited,2026-02-20,2026-02-27,69.0,52.45,-0.23985507246376808,listed_alive
+IIFL Finance Limited,2026-02-17,2026-03-13,,,,listed_alive
+Marushika Technology Limited,2026-02-12,2026-02-19,117.0,114.0,-0.02564102564102564,listed_alive
+Aye Finance Limited,2026-02-09,2026-02-16,129.0,128.91,-0.0006976744186046776,listed_alive
+Fractal Analytics Limited,2026-02-09,2026-02-16,900.0,847.15,-0.058722222222222245,listed_alive
+Biopol Chemicals Limited,2026-02-06,2026-02-13,108.0,105.5,-0.023148148148148147,listed_alive
+Grover Jewells Limited,2026-02-04,2026-02-11,88.0,100.8,0.14545454545454542,listed_alive
+NFP Sampoorna Foods Limited-Issue Withdrawn,2026-02-04,,,,,listed_alive
+Brandman Retail Limited,2026-02-04,2026-02-11,176.0,192.15,0.09176136363636367,listed_alive
+C K K Retail Mart Limited,2026-01-30,2026-02-06,163.0,171.15,0.05000000000000004,listed_alive
+KRM Ayurveda Limited,2026-01-21,2026-01-29,135.0,180.7,0.33851851851851844,listed_alive
+Shadowfax Technologies Limited,2026-01-20,2026-01-28,124.0,109.98,-0.11306451612903222,listed_alive
+Power Finance Corporation Limited,2026-01-16,2026-03-05,,,,listed_alive
+Power Finance Corporation Limited (Zero Coupon NCD),2026-01-16,,,,,listed_alive
+Armour Security (India). Ltd,2026-01-14,2026-01-22,57.0,43.35,-0.23947368421052628,listed_alive
+Amagi Media Labs Limited,2026-01-13,2026-01-21,361.0,348.25,-0.035318559556786706,listed_alive
+Avana Electrosystems Limited,2026-01-12,2026-01-20,59.0,80.3,0.36101694915254234,listed_alive
+Bharat Coking Coal Limited,2026-01-09,2026-01-19,23.0,40.58,0.7643478260869564,listed_alive
+Victory Electric Vehicles International Limited,2026-01-07,2026-01-14,41.0,32.75,-0.20121951219512196,listed_alive
+Adani Enterprises Limited,2026-01-06,2026-02-10,450.0,1749.7,2.8882222222222222,listed_alive
+E TO E Transportation Infrastructure Limited,2025-12-26,2026-01-02,174.0,327.8,0.8839080459770116,listed_alive
+Dhara Rail Projects Limited,2025-12-23,2025-12-31,126.0,157.5,0.25,listed_alive
+Gujarat Kidney and Super Speciality Limited,2025-12-22,2025-12-30,114.0,104.54,-0.08298245614035082,listed_alive
+EPW India Limited,2025-12-22,2025-12-30,97.0,116.55,0.2015463917525773,listed_alive
+Shyam Dhani Industries Limited,2025-12-22,2025-12-30,70.0,139.65,0.9950000000000001,listed_alive
+Sundrex Oil Company Limited,2025-12-22,2025-12-30,86.0,65.4,-0.23953488372093015,listed_alive
+Marc Technocrats Limited,2025-12-17,2025-12-24,93.0,70.7,-0.2397849462365591,listed_alive
+KSH International Limited,2025-12-16,2025-12-23,384.0,355.0,-0.07552083333333333,listed_alive
+ICICI Prudential Asset Management Company Limited,2025-12-12,2025-12-19,2165.0,2585.9,0.19441108545034647,listed_alive
+Ashwini Container Movers Limited,2025-12-12,2025-12-19,142.0,140.1,-0.013380281690140884,listed_alive
+Exim Routes Limited,2025-12-12,2025-12-19,88.0,115.5,0.3125,listed_alive
+Park Medi World Limited,2025-12-10,2025-12-17,162.0,147.95,-0.08672839506172847,listed_alive
+Nephrocare Health Services Limited,2025-12-10,2025-12-17,460.0,471.25,0.024456521739130436,listed_alive
+Wakefit Innovations Limited,2025-12-08,2025-12-15,195.0,192.29,-0.013897435897435938,listed_alive
+Corona Remedies Limited,2025-12-08,2025-12-15,1062.0,1438.4,0.35442561205273077,listed_alive
+Flywings Simulator Training Centre Limited,2025-12-05,2025-12-12,191.0,204.75,0.07198952879581152,listed_alive
+Encompass Design India Limited,2025-12-05,2025-12-12,107.0,193.15,0.805140186915888,listed_alive
+Aequs Limited,2025-12-03,2025-12-10,124.0,151.29,0.22008064516129025,listed_alive
+Vidya Wires Limited,2025-12-03,2025-12-10,52.0,53.17,0.022500000000000034,listed_alive
+Meesho Limited,2025-12-03,2025-12-10,111.0,170.09,0.5323423423423423,listed_alive
+Shri Kanha Stainless Limited,2025-12-03,2025-12-10,90.0,83.6,-0.07111111111111118,listed_alive
+Neochem Bio Solutions Limited,2025-12-02,2025-12-09,98.0,111.8,0.1408163265306122,listed_alive
+Invicta Diagnostic Limited,2025-12-01,2025-12-08,85.0,96.7,0.13764705882352946,listed_alive
+Clear Secured Services Limited,2025-12-01,2025-12-08,132.0,113.05,-0.14356060606060608,listed_alive
+Speb Adhesives Limited,2025-12-01,2025-12-08,56.0,57.0,0.017857142857142856,listed_alive
+Sudeep Pharma Limited,2025-11-21,2025-11-28,593.0,774.15,0.30548060708263064,listed_alive
+Excelsoft Technologies Limited,2025-11-19,2025-11-26,120.0,125.97,0.04974999999999999,listed_alive
+Capillary Technologies India Limited,2025-11-14,2025-11-21,577.0,606.5,0.0511265164644714,listed_alive
+Fujiyama Power Systems Limited,2025-11-13,2025-11-20,228.0,208.44,-0.08578947368421054,listed_alive
+Tenneco Clean Air India Limited,2025-11-12,2025-11-19,397.0,490.8,0.23627204030226703,listed_alive
+Physicswallah Limited,2025-11-11,2025-11-18,109.0,155.24,0.42422018348623863,listed_alive
+Emmvee Photovoltaic Power Limited,2025-11-11,2025-11-18,217.0,219.4,0.011059907834101408,listed_alive
+Pine Labs Limited,2025-11-07,2025-11-14,221.0,250.89,0.1352488687782805,listed_alive
+Curis Lifesciences Limited,2025-11-07,2025-11-14,128.0,141.0,0.1015625,listed_alive
+Finbud Financial Services Limited,2025-11-06,2025-11-13,142.0,164.85,0.16091549295774643,listed_alive
+Billionbrains Garage Ventures Limited,2025-11-04,2025-11-12,100.0,131.33,0.31330000000000013,listed_alive
+Shreeji Global FMCG Limited,2025-11-04,2025-11-12,125.0,101.7,-0.18639999999999998,listed_alive
+Lenskart Solutions Limited,2025-10-31,2025-11-10,402.0,403.1,0.0027363184079602556,listed_alive
+Studds Accessories Limited,2025-10-30,2025-11-07,585.0,560.3,-0.0422222222222223,listed_alive
+Orkla India Limited,2025-10-29,2025-11-06,730.0,713.65,-0.022397260273972635,listed_alive
+Jayesh Logistics Limited,2025-10-27,2025-11-03,122.0,117.8,-0.034426229508196744,listed_alive
+SMC Global Securities Limited,2025-10-16,,,,,listed_alive
+Midwest Limited,2025-10-15,2025-10-24,1065.0,1140.5,0.07089201877934272,listed_alive
+Canara HSBC Life Insurance Company Limited,2025-10-10,2026-03-17,,,,listed_alive
+Canara Robeco Asset Management Company Limited,2025-10-09,2025-10-16,266.0,300.45,0.1295112781954887,listed_alive
+Rubicon Research Limited,2025-10-09,2025-10-16,485.0,628.2,0.295257731958763,listed_alive
+LG Electronics India Limited,2025-10-07,2025-10-14,1140.0,1689.9,0.48236842105263167,listed_alive
+Anantam Highways Trust,2025-10-07,2025-10-16,100.0,105.37,0.053700000000000046,listed_alive
+Surat Municipal Corporation,2025-10-06,2025-10-14,500.0,,,listed_alive
+Tata Capital Limited,2025-10-06,2026-07-09,,,,listed_alive
+WeWork India Management Limited,2025-10-03,2025-10-10,648.0,628.65,-0.029861111111111147,listed_alive
+Advance Agrolife Limited,2025-09-30,2025-10-08,100.0,108.3,0.08299999999999998,listed_alive
+Greenleaf Envirotech Limited,2025-09-30,2025-10-09,136.0,132.9,-0.02279411764705878,listed_alive
+B.A.G. Convergence Limited,2025-09-30,2025-10-08,87.0,106.05,0.21896551724137928,listed_alive
+Munish Forge Limited,2025-09-30,2025-10-08,96.0,110.25,0.1484375,listed_alive
+Sheel Biotech Limited,2025-09-30,2025-10-08,63.0,95.55,0.5166666666666666,listed_alive
+Fabtech Technologies Limited,2025-09-29,2025-10-07,191.0,182.4,-0.04502617801047117,listed_alive
+Glottis Limited,2025-09-29,2025-10-07,129.0,83.7,-0.3511627906976744,listed_alive
+Om Freight Forwarders Limited,2025-09-29,2025-10-08,135.0,85.57,-0.3661481481481482,listed_alive
+Vijaypd Ceutical Limited,2025-09-29,2025-10-07,35.0,35.9,0.025714285714285672,listed_alive
+Suba Hotels Limited,2025-09-29,2025-10-07,111.0,161.9,0.4585585585585586,listed_alive
+Pace Digitek Limited,2025-09-26,2025-10-06,219.0,217.99,-0.00461187214611868,listed_alive
+Manas Polymers and Energies Limited,2025-09-26,2025-10-06,81.0,146.2,0.8049382716049381,listed_alive
+Jinkushal Industries Limited,2025-09-25,2025-10-03,121.0,121.66,0.005454545454545426,listed_alive
+TruAlt Bioenergy Limited,2025-09-25,2025-10-03,496.0,530.95,0.07046370967741945,listed_alive
+BMW Ventures Limited,2025-09-24,2025-10-01,99.0,74.1,-0.2515151515151516,listed_alive
+Jain Resource Recycling Limited,2025-09-24,2025-10-01,232.0,318.06,0.37094827586206897,listed_alive
+Epack Prefab Technologies Limited,2025-09-24,2025-10-01,204.0,190.66,-0.06539215686274512,listed_alive
+Gurunanak Agriculture India Limited,2025-09-24,2025-10-01,75.0,57.0,-0.24,listed_alive
+Solarworld Energy Solutions Limited,2025-09-23,2025-09-30,351.0,323.5,-0.07834757834757834,listed_alive
+Seshaasai Technologies Limited,2025-09-23,2025-09-30,423.0,411.45,-0.027304964539007118,listed_alive
+Jaro Institute of Technology Management and Research Limited,2025-09-23,2025-09-30,890.0,744.25,-0.16376404494382021,listed_alive
+Anand Rathi Share and Stock Brokers Limited,2025-09-23,2025-09-30,414.0,445.55,0.07620772946859906,listed_alive
+Matrix Geo Solutions Limited,2025-09-23,2025-09-30,104.0,99.15,-0.04663461538461533,listed_alive
+Ecoline Exim Limited,2025-09-23,2025-09-30,141.0,140.5,-0.0035460992907801418,listed_alive
+Ganesh Consumer Products Limited,2025-09-22,2025-09-29,322.0,294.3,-0.08602484472049686,listed_alive
+Atlanta Electricals Limited,2025-09-22,2025-09-29,754.0,823.35,0.09197612732095493,listed_alive
+Prime Cable Industries Limited,2025-09-22,2025-09-29,83.0,78.3,-0.05662650602409642,listed_alive
+GK Energy Limited,2025-09-19,2025-09-26,153.0,167.74,0.0963398692810458,listed_alive
+Saatvik Green Energy Limited,2025-09-19,2025-09-26,465.0,,,listed_alive
+Siddhi Cotspin Limited,2025-09-19,2025-09-26,108.0,82.1,-0.23981481481481487,listed_alive
+Ivalue Infosolutions Limited,2025-09-18,2025-09-25,299.0,281.85,-0.0573578595317725,listed_alive
+VMS TMT Limited,2025-09-17,2025-09-24,99.0,99.65,0.006565656565656623,listed_alive
+Euro Pratik Sales Limited,2025-09-16,2025-09-23,247.0,248.38,0.005587044534412937,listed_alive
+TechD Cybersecurity Limited,2025-09-15,2025-09-22,193.0,385.0,0.9948186528497409,listed_alive
+Urban Company Limited,2025-09-10,2025-09-17,103.0,166.83,0.6197087378640778,listed_alive
+Shringar House of Mangalsutra Limited,2025-09-10,2025-09-17,165.0,184.88,0.12048484848484846,listed_alive
+Dev Accelerator Limited,2025-09-10,2025-09-17,61.0,64.05,0.049999999999999954,listed_alive
+Galaxy Medicare Limited,2025-09-10,2025-09-17,54.0,51.3,-0.05000000000000005,listed_alive
+Taurian MPS Limited,2025-09-09,2025-09-16,171.0,220.5,0.2894736842105263,listed_alive
+Vigor Plast India Limited,2025-09-04,2025-09-12,81.0,85.7,0.058024691358024724,listed_alive
+Optivalue Tek Consulting Limited,2025-09-02,2025-09-10,84.0,102.6,0.22142857142857136,listed_alive
+Amanta Healthcare Limited,2025-09-01,2025-09-09,126.0,141.75,0.125,listed_alive
+Snehaa Organics Limited,2025-08-29,2025-09-05,122.0,115.9,-0.049999999999999954,listed_alive
+Anlon Healthcare Limited,2025-08-26,2025-09-03,91.0,91.73,0.008021978021978066,listed_alive
+Vikran Engineering Limited,2025-08-26,2025-09-03,97.0,95.71,-0.013298969072165013,listed_alive
+Current Infraprojects Limited,2025-08-26,2025-09-03,80.0,152.75,0.909375,listed_alive
+Sattva Engineering Construction Limited,2025-08-26,2025-09-03,75.0,99.85,0.33133333333333326,listed_alive
+Classic Electrodes (India) Limited,2025-08-22,2025-09-01,87.0,95.0,0.09195402298850575,listed_alive
+Shivashrit Foods Limited,2025-08-22,2025-09-01,142.0,141.45,-0.0038732394366197986,listed_alive
+Anondita Medicare Limited,2025-08-22,2025-09-01,145.0,289.25,0.9948275862068966,listed_alive
+ARC Insulation & Insulators Limited,2025-08-21,2025-08-29,125.0,137.75,0.102,listed_alive
+Mangal Electrical Industries Limited,2025-08-20,2025-08-28,561.0,535.35,-0.0457219251336898,listed_alive
+Gem Aromatics Limited,2025-08-19,2025-08-26,325.0,319.05,-0.01830769230769227,listed_alive
+Shreeji Shipping Global Limited,2025-08-19,2025-08-26,252.0,255.1,0.012301587301587279,listed_alive
+Vikram Solar Limited,2025-08-19,2025-08-26,332.0,356.4,0.0734939759036144,listed_alive
+Patel Retail Limited,2025-08-19,2025-08-26,255.0,287.7,0.128235294117647,listed_alive
+Studio LSD Limited,2025-08-18,2025-08-25,54.0,41.05,-0.23981481481481487,listed_alive
+Regaal Resources Limited,2025-08-12,2025-08-20,102.0,131.58,0.29000000000000015,listed_alive
+Mahendra Realtors & Infrastructure Limited,2025-08-12,2025-08-20,85.0,64.6,-0.24000000000000007,listed_alive
+BlueStone Jewellery and Lifestyle Limited,2025-08-11,2025-08-19,517.0,546.0,0.05609284332688588,listed_alive
+ANB Metal Cast Limited,2025-08-08,2025-08-18,156.0,172.2,0.10384615384615377,listed_alive
+Medistep Healthcare Limited,2025-08-08,2025-08-18,43.0,50.35,0.17093023255813958,listed_alive
+All Time Plastics Limited,2025-08-07,2025-08-14,275.0,283.3,0.030181818181818223,listed_alive
+JSW Cement Limited,2025-08-07,2025-08-14,147.0,146.07,-0.006326530612244944,listed_alive
+Connplex Cinemas Limited,2025-08-07,2025-08-14,177.0,186.9,0.05593220338983054,listed_alive
+Sawaliya Food Products Limited,2025-08-07,2025-08-14,120.0,239.4,0.995,listed_alive
+Highway Infrastructure Limited,2025-08-05,2025-08-12,70.0,120.75,0.725,listed_alive
+Knowledge Realty Trust,2025-08-05,2025-08-18,100.0,106.24,0.06239999999999995,listed_alive
+Jyoti Global Plast Limited,2025-08-04,2025-08-11,66.0,65.8,-0.0030303030303030732,listed_alive
+Bhadora Industries Limited,2025-08-04,2025-08-11,103.0,105.95,0.028640776699029154,listed_alive
+Aaradhya Disposal Industries Limited,2025-08-04,2025-08-11,116.0,116.55,0.004741379310344803,listed_alive
+Parth Electricals & Engineering Limited,2025-08-04,2025-08-11,170.0,182.7,0.07470588235294111,listed_alive
+FlySBS Aviation Limited,2025-08-01,2025-08-08,225.0,448.85,0.994888888888889,listed_alive
+Cash Ur Drive Marketing Limited,2025-07-31,2025-08-07,130.0,157.45,0.21115384615384605,listed_alive
+Renol Polychem Limited,2025-07-31,2025-08-07,105.0,99.75,-0.05,listed_alive
+M&B Engineering Limited,2025-07-30,2025-08-06,385.0,408.65,0.06142857142857137,listed_alive
+National Securities Depository Limited,2025-07-30,,,,,listed_alive
+Sri Lotus Developers and Realty Limited,2025-07-30,2025-08-06,150.0,195.67,0.3044666666666666,listed_alive
+Laxmi India Finance Limited,2025-07-29,2025-08-05,158.0,134.11,-0.15120253164556954,listed_alive
+Aditya Infotech Limited,2025-07-29,2025-08-05,675.0,1082.65,0.6039259259259261,listed_alive
+Kaytex Fabrics Limited,2025-07-29,2025-08-05,180.0,150.6,-0.16333333333333336,listed_alive
+Shanti Gold International Limited,2025-07-25,2025-08-01,199.0,229.38,0.15266331658291454,listed_alive
+Sellowrap Industries Limited,2025-07-25,2025-08-01,83.0,94.5,0.13855421686746988,listed_alive
+Brigade Hotel Ventures Limited,2025-07-24,2025-07-31,90.0,85.32,-0.052000000000000074,listed_alive
+Indiqube Spaces Limited,2025-07-23,2025-07-30,237.0,217.97,-0.08029535864978904,listed_alive
+GNG Electronics Limited,2025-07-23,2025-07-30,237.0,333.39,0.40670886075949364,listed_alive
+TSC India Limited,2025-07-23,2025-07-30,70.0,71.4,0.02000000000000008,listed_alive
+Savy Infra and Logistics Limited,2025-07-21,2025-07-28,120.0,143.3,0.19416666666666677,listed_alive
+Sammaan Capital Limited,2025-07-15,2026-03-09,,,,listed_alive
+Anthem Biosciences Limited,2025-07-14,2025-07-21,570.0,730.35,0.28131578947368424,listed_alive
+Spunweb Nonwoven Limited,2025-07-14,2025-07-21,96.0,158.55,0.6515625000000002,listed_alive
+Smartworks Coworking Spaces Limited,2025-07-10,2025-07-17,407.0,445.05,0.09348894348894352,listed_alive
+Adani Enterprises Limited,2025-07-09,2026-02-10,450.0,1749.7,2.8882222222222222,listed_alive
+Travel Food Services Limited,2025-07-07,2025-07-14,1100.0,1074.8,-0.022909090909090952,listed_alive
+Smarten Power Systems Limited,2025-07-07,2025-07-14,100.0,151.2,0.5119999999999999,listed_alive
+Happy Square Outsourcing Services Limited,2025-07-03,2025-07-10,76.0,80.85,0.06381578947368413,listed_alive
+CRIZAC LIMITED,2025-07-02,2025-07-09,245.0,307.63,0.25563265306122446,listed_alive
+Cedaar Textile Limited,2025-06-30,2025-07-07,140.0,113.05,-0.19250000000000003,listed_alive
+Silky Overseas Limited,2025-06-30,2025-07-07,161.0,162.45,0.009006211180124154,listed_alive
+Pushpa Jewellers Limited,2025-06-30,2025-07-07,147.0,117.6,-0.20000000000000004,listed_alive
+Indogulf Cropsciences Limited,2025-06-26,2025-07-03,111.0,110.35,-0.005855855855855907,listed_alive
+PRO FX Tech Limited,2025-06-26,2025-07-03,87.0,99.75,0.14655172413793102,listed_alive
+Moving Media Entertainment Limited,2025-06-26,2025-07-03,70.0,74.55,0.06499999999999996,listed_alive
+HDB Financial Services Limited,2025-06-25,2025-07-02,740.0,840.95,0.13641891891891897,listed_alive
+Sambhv Steel Tubes Limited,2025-06-25,2025-07-02,82.0,97.59,0.19012195121951223,listed_alive
+Suntech Infra Solutions Limited,2025-06-25,2025-07-02,86.0,103.8,0.20697674418604647,listed_alive
+Rama Telecom Limited,2025-06-25,2025-07-02,68.0,68.4,0.005882352941176554,listed_alive
+Kalpataru Limited,2025-06-24,2025-07-01,414.0,432.95,0.04577294685990335,listed_alive
+Ellenbarrie Industrial Gases Limited,2025-06-24,2025-07-01,400.0,534.6,0.3365000000000001,listed_alive
+Globe Civil Projects Limited,2025-06-24,2025-07-01,71.0,94.46,0.3304225352112675,listed_alive
+Shri Hare-Krishna Sponge Iron Limited,2025-06-24,2025-07-01,59.0,64.55,0.09406779661016944,listed_alive
+Aakaar Medical Technologies Limited,2025-06-20,2025-06-27,72.0,71.25,-0.010416666666666666,listed_alive
+Safe Enterprises Retail Fixtures Limited,2025-06-20,2025-06-27,138.0,158.55,0.14891304347826095,listed_alive
+Mayasheel Ventures Limited,2025-06-20,2025-06-27,47.0,60.9,0.2957446808510638,listed_alive
+Arisinfra Solutions Limited,2025-06-18,2025-06-25,222.0,174.38,-0.21450450450450453,listed_alive
+Influx Healthtech Limited,2025-06-18,2025-06-25,96.0,126.2,0.3145833333333334,listed_alive
+Eppeltone Engineers Limited,2025-06-17,2025-06-24,128.0,255.35,0.994921875,listed_alive
+Samay Project Services Limited,2025-06-16,2025-06-23,34.0,36.0,0.058823529411764705,listed_alive
+Patil Automation Limited,2025-06-16,2025-06-23,120.0,162.75,0.35625,listed_alive
+Oswal Pumps Limited,2025-06-13,2025-06-20,614.0,625.35,0.01848534201954401,listed_alive
+Monolithisch India Limited,2025-06-12,2025-06-19,143.0,243.1,0.7,listed_alive
+Jainik Power Cables Limited,2025-06-10,2025-06-17,110.0,82.85,-0.24681818181818188,listed_alive
+Sacheerome Limited,2025-06-09,2025-06-16,102.0,160.55,0.5740196078431373,listed_alive
+Ganga Bath Fittings Limited,2025-06-04,2025-06-11,49.0,56.05,0.1438775510204081,listed_alive
+Scoda Tubes Limited,2025-05-28,2025-06-04,140.0,147.0,0.05,listed_alive
+Neptune Petrochemicals Limited,2025-05-28,2025-06-04,122.0,139.35,0.1422131147540983,listed_alive
+N R Vandana Tex Industries Limited,2025-05-28,2025-06-04,45.0,43.7,-0.028888888888888825,listed_alive
+Prostarm Info Systems Limited,2025-05-27,2025-06-03,105.0,126.0,0.2,listed_alive
+Blue Water Logistics Limited,2025-05-27,2025-06-03,135.0,148.05,0.09666666666666675,listed_alive
+Nikita Papers Limited,2025-05-27,2025-06-03,104.0,90.45,-0.13028846153846152,listed_alive
+Aegis Vopak Terminals Limited,2025-05-26,2026-01-08,,,,listed_alive
+Schloss Bangalore Limited,2025-05-26,2025-06-02,435.0,435.55,0.0012643678160919802,listed_alive
+Belrise Industries Limited,2025-05-21,2025-05-28,90.0,97.41,0.0823333333333333,listed_alive
+Dar Credit & Capital Limited,2025-05-21,2026-06-03,10000.0,,,listed_alive
+Borana Weaves Limited,2025-05-20,2025-05-27,216.0,255.15,0.18125000000000002,listed_alive
+Accretion Pharmaceuticals Limited,2025-05-14,2025-05-21,101.0,82.95,-0.17871287128712868,listed_alive
+Integrity Infrabuild Developers Limited,2025-05-13,2025-05-20,100.0,103.5,0.035,listed_alive
+Virtual Galaxy Infotech Limited,2025-05-09,2025-05-19,142.0,189.0,0.33098591549295775,listed_alive
+Arunaya Organics Limited,2025-04-29,2025-05-07,58.0,31.6,-0.4551724137931034,listed_alive
+Ather Energy Limited,2025-04-28,2025-05-06,321.0,302.3,-0.058255451713395606,listed_alive
+Iware Supplychain Services Limited,2025-04-28,2025-05-06,95.0,80.9,-0.1484210526315789,listed_alive
+Tankup Engineers Limited,2025-04-23,2025-04-30,140.0,183.75,0.3125,listed_alive
+IIFL Finance Limited,2025-04-07,2026-03-13,,,,listed_alive
+UGRO Capital Limited,2025-04-03,2025-04-28,1000.0,,,listed_alive
+SMC Global Securities Limited,2025-04-02,,,,,listed_alive
+ATC Energies System Limited,2025-03-25,2025-04-02,118.0,101.65,-0.13855932203389826,listed_alive
+Shri Ahimsa Naturals Limited,2025-03-25,2025-04-02,119.0,147.0,0.23529411764705882,listed_alive
+Rapid Fleet Management Services Limited,2025-03-21,2025-03-28,192.0,200.9,0.046354166666666696,listed_alive
+Active Infrastructures Limited,2025-03-21,2025-03-28,181.0,175.6,-0.02983425414364644,listed_alive
+Grand Continent Hotels Limited,2025-03-20,2025-03-27,113.0,107.25,-0.05088495575221239,listed_alive
+Divine Hira Jewellers Limited,2025-03-17,2025-03-24,90.0,85.5,-0.05,listed_alive
+Balaji Phosphates Limited,2025-02-28,2025-03-07,70.0,74.35,0.06214285714285706,listed_alive
+Sammaan Capital Limited,2025-02-27,2026-03-09,,,,listed_alive
+HP Telecom India Limited,2025-02-20,2025-02-28,108.0,115.05,0.06527777777777775,listed_alive
+Quality Power Electrical Equipments Limited,2025-02-14,2025-02-24,425.0,387.9,-0.08729411764705888,listed_alive
+Tejas Cargo India Limited,2025-02-14,2025-02-24,168.0,168.0,0.0,listed_alive
+Royal Arc Electrodes Limited,2025-02-14,2025-02-24,120.0,121.3,0.01083333333333331,listed_alive
+Hexaware Technologies Limited,2025-02-12,2025-02-19,708.0,762.55,0.07704802259886999,listed_alive
+Voler Car Limited,2025-02-12,2025-02-19,90.0,91.45,0.016111111111111142,listed_alive
+Maxvolt Energy Industries Limited,2025-02-12,2025-02-19,180.0,180.9,0.005000000000000031,listed_alive
+P S Raj Steels Limited,2025-02-12,2025-02-19,140.0,150.6,0.07571428571428568,listed_alive
+Ajax Engineering Limited,2025-02-10,2025-02-17,629.0,595.4,-0.053418124006359334,listed_alive
+Chandan Healthcare Limited,2025-02-10,2025-02-17,159.0,173.35,0.09025157232704399,listed_alive
+Eleganz Interiors Limited,2025-02-07,2025-02-14,130.0,116.05,-0.10730769230769233,listed_alive
+Readymix Construction Machinery Limited,2025-02-06,2025-02-13,123.0,116.85,-0.050000000000000044,listed_alive
+Ken Enterprises Limited,2025-02-05,2025-02-12,94.0,80.75,-0.14095744680851063,listed_alive
+Chamunda Electrical Limited,2025-02-04,2025-02-11,50.0,66.5,0.33,listed_alive
+Dr. Agarwal's Health Care Limited,2025-01-29,2025-02-04,402.0,401.65,-0.0008706467661692107,listed_alive
+Denta Water and Infra Solutions Limited,2025-01-22,2025-01-29,294.0,341.25,0.16071428571428573,listed_alive
+Rexpro Enterprises Limited,2025-01-22,2025-01-29,145.0,111.15,-0.23344827586206893,listed_alive
+EMA Partners India Limited,2025-01-17,2025-01-24,124.0,148.7,0.19919354838709669,listed_alive
+Stallion India Fluorochemicals Limited,2025-01-16,2025-01-23,90.0,126.0,0.4,listed_alive
+Kabra Jewels Limited,2025-01-15,2025-01-22,128.0,255.35,0.994921875,listed_alive
+Laxmi Dental Limited,2025-01-13,2025-01-20,428.0,550.55,0.2863317757009345,listed_alive
+Sat Kartar Shopping Limited,2025-01-10,2025-01-17,81.0,161.55,0.9944444444444446,listed_alive
+Barflex Polyfilms Limited,2025-01-10,2025-01-20,60.0,63.0,0.05,listed_alive
+Quadrant Future Tek Limited,2025-01-07,2025-01-14,290.0,444.0,0.5310344827586206,listed_alive
+Capital Infra Trust,2025-01-07,2025-01-17,99.0,99.02,0.00020202020202016182,listed_alive
+Delta Autocorp Limited,2025-01-07,2025-01-14,130.0,167.25,0.2865384615384615,listed_alive
+Standard Glass Lining Technology Limited,2025-01-06,2025-01-13,140.0,163.28,0.1662857142857143,listed_alive
+Indo Farm Equipment Limited,2024-12-31,2025-01-07,215.0,273.69,0.2729767441860465,listed_alive
+Anya Polytech & Fertilizers Limited,2024-12-26,2025-01-02,14.0,17.95,0.2821428571428571,listed_alive
+Unimech Aerospace and Manufacturing Limited,2024-12-23,2024-12-31,785.0,1376.25,0.7531847133757962,listed_alive
+Carraro India Limited,2024-12-20,2024-12-30,704.0,636.2,-0.09630681818181812,listed_alive
+Senores Pharmaceuticals Limited,2024-12-20,2024-12-30,391.0,557.05,0.42468030690537073,listed_alive
+Ventive Hospitality Limited,2024-12-20,2024-12-30,643.0,704.35,0.09541213063763612,listed_alive
+Sanathan Textiles Limited,2024-12-19,2024-12-27,321.0,388.35,0.2098130841121496,listed_alive
+Mamata Machinery Limited,2024-12-19,2024-12-27,243.0,630.0,1.5925925925925926,listed_alive
+Transrail Lighting Limited,2024-12-19,2024-12-27,432.0,553.55,0.2813657407407406,listed_alive
+Concord Enviro Systems Limited,2024-12-19,2024-12-27,701.0,827.1,0.179885877318117,listed_alive
+DAM Capital Advisors Limited,2024-12-19,2024-12-27,283.0,415.1,0.46678445229681986,listed_alive
+NewMalayalam Steel Limited,2024-12-19,2024-12-27,90.0,85.5,-0.05,listed_alive
+Identical Brains Studios Limited,2024-12-18,2024-12-26,54.0,99.75,0.8472222222222222,listed_alive
+International Gemmological Institute (India) Limited,2024-12-13,2024-12-20,417.0,471.15,0.12985611510791362,listed_alive
+Inventurus Knowledge Solutions Limited,2024-12-12,2024-12-19,1329.0,1960.85,0.47543265613243035,listed_alive
+Vishal Mega Mart Limited,2024-12-11,2024-12-18,78.0,111.93,0.4350000000000001,listed_alive
+One MobiKwik Systems Limited,2024-12-11,2024-12-18,279.0,528.0,0.8924731182795699,listed_alive
+Sai Life Sciences Limited,2024-12-11,2024-12-18,549.0,764.65,0.3928051001821493,listed_alive
+Supreme Facility Management Limited,2024-12-11,2024-12-18,76.0,71.25,-0.0625,listed_alive
+Purple United Sales Limited,2024-12-11,2024-12-18,126.0,208.95,0.6583333333333332,listed_alive
+Sammaan Capital Limited,2024-12-09,2026-03-09,,,,listed_alive
+Dhanlaxmi Crop Science Limited,2024-12-09,2024-12-16,55.0,109.7,0.9945454545454546,listed_alive
+IIFL Home Finance Limited,2024-12-06,2025-12-02,,,,listed_alive
+Emerald Tyre Manufacturers Limited,2024-12-05,2024-12-12,95.0,189.5,0.9947368421052631,listed_alive
+Suraksha Diagnostic Limited,2024-11-29,2024-12-06,441.0,417.25,-0.053854875283446714,listed_alive
+Ganesh Infraworld Limited,2024-11-29,2024-12-06,83.0,165.55,0.9945783132530122,listed_alive
+Agarwal Toughened Glass India Limited,2024-11-28,2024-12-05,108.0,141.75,0.3125,listed_alive
+Abha Power and Steel Limited,2024-11-27,2024-12-04,75.0,77.8,0.037333333333333295,listed_alive
+Apex Ecotech Limited,2024-11-27,2024-12-04,73.0,145.6,0.9945205479452054,listed_alive
+Rajputana Biodiesel Limited,2024-11-26,2024-12-03,130.0,259.35,0.9950000000000002,listed_alive
+C2C Advanced Systems Limited- Withdrawal Window,2024-11-26,,,,,listed_alive
+Enviro Infra Engineers Limited,2024-11-22,2024-11-29,148.0,207.07,0.39912162162162157,listed_alive
+C2C Advanced Systems Limited,2024-11-22,2024-12-03,226.0,450.85,0.9949115044247788,listed_alive
+Lamosaic India Limited,2024-11-21,2024-11-29,200.0,172.2,-0.13900000000000007,listed_alive
+NTPC Green Energy Limited,2024-11-19,2026-07-13,,,,listed_alive
+Zinka Logistics Solutions Limited,2024-11-13,2024-11-22,273.0,260.05,-0.04743589743589739,listed_alive
+ONYX BIOTEC LIMITED,2024-11-13,2024-11-22,61.0,56.75,-0.06967213114754098,listed_alive
+Neelam Linens and Garments (India) Limited,2024-11-08,2024-11-18,24.0,38.05,0.5854166666666666,listed_alive
+Niva Bupa Health Insurance Company Limited,2024-11-07,2024-11-14,74.0,74.02,0.0002702702702702165,listed_alive
+Swiggy Limited,2024-11-06,2024-11-13,390.0,456.0,0.16923076923076924,listed_alive
+ACME Solar Holdings Limited,2024-11-06,2024-11-13,289.0,253.15,-0.12404844290657438,listed_alive
+Sagility India Limited,2024-11-05,2024-11-12,30.0,29.32,-0.022666666666666658,listed_alive
+Afcons Infrastructure Limited,2024-10-25,2025-10-17,,,,listed_alive
+Usha Financial Services Limited,2024-10-24,2024-10-31,168.0,155.85,-0.0723214285714286,listed_alive
+Godavari Biorefineries Limited,2024-10-23,2024-10-30,352.0,343.2,-0.025000000000000033,listed_alive
+Danish Power Limited,2024-10-22,2024-10-29,380.0,598.5,0.575,listed_alive
+OBSC Perfection Limited,2024-10-22,2024-10-29,100.0,115.5,0.155,listed_alive
+United Heat Transfer Limited,2024-10-22,2024-10-29,59.0,63.95,0.08389830508474581,listed_alive
+Waaree Energies Limited,2024-10-21,2024-10-28,1503.0,2338.9,0.5561543579507652,listed_alive
+Deepak Builders & Engineers India Limited,2024-10-21,2024-10-28,203.0,161.95,-0.20221674876847295,listed_alive
+Premium Plast Limited,2024-10-21,2024-10-28,49.0,48.9,-0.002040816326530641,listed_alive
+Freshara Agro Exports Limited,2024-10-17,2024-10-24,116.0,134.7,0.16120689655172404,listed_alive
+Lakshya Powertech Limited,2024-10-16,2024-10-23,180.0,359.1,0.9950000000000001,listed_alive
+Hyundai Motor India Limited,2024-10-15,2024-10-22,1960.0,1819.6,-0.07163265306122453,listed_alive
+UGRO Capital Limited,2024-10-10,2025-04-28,1000.0,,,listed_alive
+Pranik Logistics Limited,2024-10-10,2024-10-17,77.0,82.95,0.07727272727272731,listed_alive
+Garuda Construction and Engineering Limited,2024-10-08,2024-10-15,95.0,106.36,0.11957894736842105,listed_alive
+Paramount Dye Tec Limited,2024-09-30,2024-10-08,117.0,107.05,-0.08504273504273507,listed_alive
+Saj Hotels Limited,2024-09-27,2024-10-07,65.0,52.45,-0.19307692307692303,listed_alive
+Hvax Technologies Limited,2024-09-27,2024-10-07,458.0,490.35,0.07063318777292582,listed_alive
+Diffusion Engineers Limited,2024-09-26,2024-10-04,168.0,203.17,0.20934523809523803,listed_alive
+Sahasra Electronic Solutions Limited,2024-09-26,2024-10-04,283.0,564.55,0.994876325088339,listed_alive
+Divyadhan Recycling Industries Limited,2024-09-26,2024-10-04,64.0,88.2,0.37812500000000004,listed_alive
+Forge Auto International Limited,2024-09-26,2024-10-04,108.0,109.35,0.012499999999999947,listed_alive
+KRN Heat Exchanger and Refrigeration Limited,2024-09-25,2024-10-03,220.0,478.79,1.1763181818181818,listed_alive
+Unilex Colours and Chemicals Limited,2024-09-25,2024-10-03,87.0,88.15,0.013218390804597767,listed_alive
+Thinking Hats Entertainment Solutions Limited,2024-09-25,2024-10-03,44.0,57.0,0.29545454545454547,listed_alive
+Techera Engineering (India) Limited,2024-09-25,2024-10-03,82.0,131.25,0.600609756097561,listed_alive
+Manba Finance Limited,2024-09-23,2024-09-30,120.0,152.25,0.26875,listed_alive
+Rappid Valves (India) Limited,2024-09-23,2024-09-30,222.0,309.35,0.39346846846846856,listed_alive
+WOL 3D India Limited,2024-09-23,2024-09-30,150.0,189.05,0.2603333333333334,listed_alive
+Phoenix Overseas Limited,2024-09-20,2024-09-27,64.0,60.8,-0.050000000000000044,listed_alive
+S D Retail Limited,2024-09-20,2024-09-27,131.0,150.9,0.15190839694656494,listed_alive
+Bikewo Green Tech Limited,2024-09-20,2024-09-27,62.0,47.25,-0.23790322580645162,listed_alive
+Avi Ansh Textile Limited,2024-09-20,2024-09-27,62.0,71.15,0.1475806451612904,listed_alive
+Kalana Ispat Limited,2024-09-19,2024-09-26,66.0,47.4,-0.28181818181818186,listed_alive
+Paramount Speciality Forgings Limited,2024-09-17,2024-09-25,59.0,87.15,0.4771186440677967,listed_alive
+Arkade Developers Limited,2024-09-16,2024-09-24,128.0,165.86,0.2957812500000001,listed_alive
+Northern Arc Capital Limited,2024-09-16,2026-01-05,,,,listed_alive
+Pelatro Limited,2024-09-16,2024-09-24,200.0,288.75,0.44375,listed_alive
+Osel Devices Limited,2024-09-16,2024-09-24,160.0,207.95,0.29968749999999994,listed_alive
+Western Carriers (India) Limited,2024-09-13,2024-09-24,172.0,159.44,-0.0730232558139535,listed_alive
+Deccan Transcon Leasing Limited,2024-09-13,2024-09-24,108.0,110.25,0.020833333333333332,listed_alive
+Envirotech Systems Limited,2024-09-13,2024-09-24,56.0,111.7,0.9946428571428572,listed_alive
+Excellent Wires and Packaging Limited,2024-09-11,2024-09-19,90.0,82.05,-0.08833333333333336,listed_alive
+Innomet Advanced Materials Limited,2024-09-11,2024-09-18,100.0,199.5,0.995,listed_alive
+P N Gadgil Jewellers Limited,2024-09-10,2024-09-17,480.0,793.3,0.6527083333333332,listed_alive
+SPP Polymer Limited,2024-09-10,2024-09-17,59.0,59.85,0.014406779661016974,listed_alive
+Tolins Tyres Limited,2024-09-09,2024-09-16,226.0,239.4,0.059292035398230115,listed_alive
+Bajaj Housing Finance Limited,2024-09-09,2024-09-16,70.0,165.0,1.3571428571428572,listed_alive
+Kross Limited,2024-09-09,2024-09-16,240.0,259.81,0.08254166666666668,listed_alive
+Gajanand International Limited,2024-09-09,2024-09-16,36.0,39.9,0.1083333333333333,listed_alive
+Aditya Ultra Steel Limited,2024-09-09,2024-09-16,62.0,66.4,0.07096774193548397,listed_alive
+Shubhshree Biofuels Energy Limited,2024-09-09,2024-09-16,119.0,198.45,0.6676470588235294,listed_alive
+Sammaan Capital Limited,2024-09-06,2026-03-09,,,,listed_alive
+Vision Infra Equipment Solutions Limited,2024-09-06,2024-09-13,163.0,215.25,0.3205521472392638,listed_alive
+Shree Tirupati Balajee Agro Trading Company Limited,2024-09-05,2024-09-12,83.0,94.5,0.13855421686746988,listed_alive
+My Mudra Fincorp Limited,2024-09-05,2024-09-12,110.0,123.5,0.12272727272727273,listed_alive
+Adani Enterprises Limited,2024-09-04,2026-02-10,450.0,1749.7,2.8882222222222222,listed_alive
+Namo eWaste Management Limited,2024-09-04,2024-09-11,85.0,169.55,0.9947058823529413,listed_alive
+Gala Precision Engineering Limited,2024-09-02,2024-09-09,529.0,757.15,0.4312854442344045,listed_alive
+Jeyyam Global Foods Limited,2024-09-02,2024-09-09,61.0,64.05,0.049999999999999954,listed_alive
+Baazar Style Retail Limited,2024-08-30,2024-09-06,389.0,400.0,0.028277634961439587,listed_alive
+Boss Packaging Solutions Limited,2024-08-30,2024-09-06,66.0,86.6,0.312121212121212,listed_alive
+Ecos (India) Mobility & Hospitality Limited,2024-08-28,2024-09-04,334.0,443.15,0.3267964071856287,listed_alive
+Aeron Composite Limited,2024-08-28,2024-09-04,125.0,157.5,0.26,listed_alive
+Premier Energies Limited,2024-08-27,2024-09-03,450.0,839.9,0.8664444444444444,listed_alive
+Vdeal System Limited,2024-08-27,2024-09-03,112.0,178.5,0.59375,listed_alive
+Jay Bee Laminations Limited,2024-08-27,2024-09-03,146.0,291.25,0.9948630136986302,listed_alive
+Paramatrix Technologies Limited,2024-08-27,2024-09-04,110.0,120.8,0.09818181818181816,listed_alive
+Indian Phosphate Limited,2024-08-26,2024-09-03,99.0,178.7,0.8050505050505049,listed_alive
+Orient Technologies Limited,2024-08-21,2024-08-28,206.0,302.4,0.46796116504854357,listed_alive
+QVC Exports Limited,2024-08-21,2024-08-28,86.0,152.95,0.7784883720930231,listed_alive
+Ideal Technoplast Industries Limited,2024-08-21,2024-08-28,121.0,138.7,0.1462809917355371,listed_alive
+Interarch Building Products Limited,2024-08-19,2024-08-26,900.0,1195.7,0.3285555555555556,listed_alive
+Brace Port Logistics Limited,2024-08-19,2024-08-26,80.0,159.6,0.9949999999999999,listed_alive
+Forcas Studio Limited,2024-08-19,2024-08-26,80.0,144.4,0.805,listed_alive
+Solve Plastic Products Limited,2024-08-13,2024-08-21,91.0,107.1,0.17692307692307685,listed_alive
+Saraswati Saree Depot Limited,2024-08-12,2024-08-20,160.0,203.7,0.27312499999999995,listed_alive
+Sunlite Recycling Industries Limited,2024-08-12,2024-08-20,105.0,209.45,0.9947619047619046,listed_alive
+Positron Energy Limited,2024-08-12,2024-08-20,250.0,498.75,0.995,listed_alive
+Aesthetik Engineers Limited,2024-08-08,2024-08-16,58.0,115.7,0.9948275862068966,listed_alive
+Unicommerce eSolutions Limited,2024-08-06,2024-08-13,108.0,210.08,0.9451851851851854,listed_alive
+Brainbees Solutions Limited,2024-08-06,2024-08-13,465.0,679.1,0.4604301075268818,listed_alive
+Ola Electric Mobility Limited,2024-08-02,2024-08-09,76.0,91.2,0.20000000000000004,listed_alive
+Picturepost Studios Limited,2024-08-02,2024-08-09,24.0,31.5,0.3125,listed_alive
+Ceigall India Limited,2024-08-01,2024-08-08,401.0,386.75,-0.035536159600997506,listed_alive
+Dhariwalcorp Limited,2024-08-01,2024-08-08,106.0,142.5,0.3443396226415094,listed_alive
+Utssav CZ Gold Jewels Limited,2024-07-31,2024-08-07,110.0,115.55,0.050454545454545426,listed_alive
+Akums Drugs and Pharmaceuticals Limited,2024-07-30,2024-08-06,679.0,796.25,0.17268041237113402,listed_alive
+Bulkcorp International Limited,2024-07-30,2024-08-06,105.0,136.5,0.3,listed_alive
+Sathlokhar Synergys E&C Global Limited,2024-07-30,2024-08-06,140.0,247.0,0.7642857142857142,listed_alive
+Ashapura Logistics Limited,2024-07-30,2024-08-06,144.0,175.75,0.2204861111111111,listed_alive
+Rajputana Industries Limited,2024-07-30,2024-08-06,38.0,75.8,0.994736842105263,listed_alive
+Esprit Stones Limited,2024-07-26,2024-08-02,87.0,97.8,0.12413793103448273,listed_alive
+S A Tech Software India Limited,2024-07-26,2024-08-02,59.0,117.7,0.9949152542372882,listed_alive
+Aprameya Engineering Limited,2024-07-25,2024-08-01,58.0,75.6,0.30344827586206885,listed_alive
+Trom Industries Limited,2024-07-25,2024-08-01,115.0,229.4,0.9947826086956523,listed_alive
+Chetana Education Limited,2024-07-24,2024-07-31,85.0,103.8,0.22117647058823525,listed_alive
+Manglam Infra and Engineering Limited,2024-07-24,2024-07-31,56.0,111.7,0.9946428571428572,listed_alive
+V L Infraprojects Limited,2024-07-23,2024-07-30,42.0,83.75,0.9940476190476191,listed_alive
+SAR Televenture Limited - FPO,2024-07-22,,,,,listed_alive
+RNFI Services Limited,2024-07-22,2024-07-29,105.0,189.55,0.8052380952380953,listed_alive
+SMC Global Securities Limited,2024-07-19,,,,,listed_alive
+Sanstar Limited,2024-07-19,2024-07-26,95.0,115.07,0.21126315789473676,listed_alive
+Macobs Technologies Limited,2024-07-16,2024-07-24,75.0,100.8,0.344,listed_alive
+Kataria Industries Limited,2024-07-16,2024-07-24,96.0,191.5,0.9947916666666666,listed_alive
+Tunwal E-Motors Limited,2024-07-15,2024-07-23,59.0,60.8,0.03050847457627114,listed_alive
+Prizor Viztech Limited,2024-07-12,2024-07-22,87.0,173.55,0.9948275862068967,listed_alive
+Sati Poly Plast Limited,2024-07-12,2024-07-22,130.0,259.35,0.9950000000000002,listed_alive
+Sahaj Solar Limited,2024-07-11,2024-07-19,180.0,359.1,0.9950000000000001,listed_alive
+Ganesh Green Bharat Limited,2024-07-05,2024-07-12,190.0,379.05,0.9950000000000001,listed_alive
+Effwa Infra & Research Limited,2024-07-05,2024-07-12,82.0,163.55,0.9945121951219513,listed_alive
+Ambey Laboratories Limited,2024-07-04,2024-07-11,68.0,89.25,0.3125,listed_alive
+Bansal Wire Industries Limited,2024-07-03,2024-07-10,256.0,350.35,0.3685546875000001,listed_alive
+Emcure Pharmaceuticals Limited,2024-07-03,2024-07-10,1008.0,1359.15,0.34836309523809533,listed_alive
+Nephro Care India Limited,2024-06-28,2024-07-05,90.0,179.55,0.9950000000000001,listed_alive
+Vraj Iron and Steel Limited,2024-06-26,2024-07-03,207.0,252.0,0.21739130434782608,listed_alive
+Diensten Tech Limited,2024-06-26,2024-07-03,100.0,252.0,1.52,listed_alive
+Allied Blenders and Distillers Limited,2024-06-25,2024-07-02,281.0,317.9,0.1313167259786476,listed_alive
+Akiko Global Services Limited,2024-06-25,2024-07-02,77.0,93.35,0.21233766233766227,listed_alive
+Divine Power Energy Limited,2024-06-25,2024-07-02,40.0,152.3,2.8075,listed_alive
+Petro Carbon and Chemicals Limited,2024-06-25,2024-07-02,171.0,315.0,0.8421052631578947,listed_alive
+Visaman Global Sales Limited,2024-06-24,2024-07-01,43.0,47.35,0.10116279069767445,listed_alive
+Mason Infratech Limited,2024-06-24,2024-07-01,64.0,92.4,0.4437500000000001,listed_alive
+Sylvan Plyboard (India) Limited,2024-06-24,2024-07-01,55.0,69.3,0.25999999999999995,listed_alive
+Shivalic Power Control Limited,2024-06-24,2024-07-01,100.0,326.55,2.2655000000000003,listed_alive
+Stanley Lifestyles Limited,2024-06-21,2024-06-28,369.0,474.75,0.2865853658536585,listed_alive
+Medicamen Organics Limited,2024-06-21,2024-06-28,34.0,144.7,3.255882352941176,listed_alive
+Winny Immigration and Education Services Limited,2024-06-20,2024-06-27,140.0,252.0,0.8,listed_alive
+Akme Fintrade (India) Limited,2024-06-19,2026-07-17,10000.0,,,listed_alive
+DEE Development Engineers Limited,2024-06-19,2024-06-26,203.0,335.32,0.6518226600985222,listed_alive
+Durlax Top Surface Limited,2024-06-19,2024-06-26,68.0,103.55,0.5227941176470587,listed_alive
+Falcon Technoprojects India Limited,2024-06-19,2024-06-26,92.0,88.2,-0.041304347826086926,listed_alive
+Gp Eco Solutions India Limited,2024-06-14,2024-06-24,94.0,393.75,3.1888297872340425,listed_alive
+Le Travenues Technology Limited,2024-06-10,2024-06-18,93.0,165.72,0.7819354838709678,listed_alive
+IIFL Samasta Finance limited,2024-06-03,2026-07-03,10000.0,,,listed_alive
+Kronox Lab SciencesLimited,2024-06-03,2024-06-10,136.0,159.32,0.17147058823529407,listed_alive
+TBI Corn Limited,2024-05-31,2024-06-07,94.0,207.9,1.2117021276595745,listed_alive
+Aimtron Electronics Limited,2024-05-30,2024-06-06,161.0,253.05,0.5717391304347826,listed_alive
+Z-Tech (India) Limited,2024-05-29,2024-06-05,110.0,105.0,-0.045454545454545456,listed_alive
+Beacon Trusteeship Limited,2024-05-28,2024-06-04,60.0,94.5,0.575,listed_alive
+Vilas Transcore Limited,2024-05-27,2024-06-03,147.0,225.75,0.5357142857142857,listed_alive
+GSM Foils Limited,2024-05-24,2024-05-31,32.0,33.6,0.050000000000000044,listed_alive
+Awfis Space Solutions Limited,2024-05-22,2024-05-30,383.0,421.75,0.10117493472584857,listed_alive
+HOAC Foods India Limited,2024-05-16,2024-05-24,48.0,139.65,1.909375,listed_alive
+Rulka Electricals Limited,2024-05-16,2024-05-24,235.0,498.75,1.122340425531915,listed_alive
+Go Digit General Insurance Limited,2024-05-15,2024-05-23,272.0,306.0,0.125,listed_alive
+Quest Laboratories Limited,2024-05-15,2024-05-23,97.0,147.35,0.5190721649484535,listed_alive
+Indiabulls Housing Finance Limited,2024-05-13,,,,,listed_alive
+Mandeep Auto Industries Limited,2024-05-13,2024-05-21,67.0,65.35,-0.024626865671641875,listed_alive
+Veritaas Advertising Limited,2024-05-13,2024-05-21,114.0,261.25,1.2916666666666667,listed_alive
+Indian Emulsifiers Limited,2024-05-13,2024-05-22,132.0,451.5,2.4204545454545454,listed_alive
+ABS Marine Services Limited,2024-05-10,2024-05-21,147.0,279.3,0.9,listed_alive
+Premier Roadlines Limited,2024-05-10,2024-05-17,67.0,91.35,0.3634328358208954,listed_alive
+Energy-Mission Machineries (India) Limited,2024-05-09,2024-05-16,60.0,384.25,5.404166666666667,listed_alive
+TBO Tek Limited,2024-05-08,2024-05-15,920.0,1406.3,0.528586956521739,listed_alive
+Aadhar Housing Finance Limited,2024-05-08,2024-05-15,315.0,329.45,0.045873015873015836,listed_alive
+Silkflex Polymers (India) Limited,2024-05-07,2024-05-15,52.0,58.7,0.1288461538461539,listed_alive
+Indegene Limited,2024-05-06,2024-05-13,452.0,570.9,0.2630530973451327,listed_alive
+Winsol Engineers Limited,2024-05-06,2024-05-14,75.0,383.25,4.11,listed_alive
+Refractory Shapes Limited,2024-05-06,2024-05-14,31.0,78.75,1.5403225806451613,listed_alive
+Slone Infosystems Limited,2024-05-03,2024-05-10,79.0,112.6,0.42531645569620247,listed_alive
+JNK India Limited,2024-04-23,2024-04-30,415.0,694.55,0.6736144578313252,listed_alive
+Motilal Oswal Financial Services Limited,2024-04-23,2025-12-17,,,,listed_alive
+Vodafone Idea Limited - FPO,2024-04-18,2024-04-25,,,,listed_alive
+Grill Splendour Services Limited,2024-04-15,2024-04-23,120.0,127.35,0.06124999999999995,listed_alive
+Ramdevbaba Solvent Limited,2024-04-15,2024-04-23,85.0,117.6,0.38352941176470584,listed_alive
+Teerth Gopicon Limited,2024-04-08,2024-04-16,111.0,131.25,0.18243243243243243,listed_alive
+DCG Cables & Wires Limited,2024-04-08,2024-04-16,100.0,85.5,-0.145,listed_alive
+Bharti Hexacom Limited,2024-04-03,2024-04-12,570.0,813.3,0.4268421052631578,listed_alive
+K2 Infragen Limited,2024-03-28,2024-04-08,119.0,173.25,0.45588235294117646,listed_alive
+Creative Graphics Solutions India Limited,2024-03-28,2024-04-09,85.0,176.25,1.0735294117647058,listed_alive
+Aluwind Architectural Limited,2024-03-28,2024-04-09,45.0,47.25,0.05,listed_alive
+Yash Optics and Lens Limited,2024-03-27,2024-04-08,81.0,92.7,0.1444444444444445,listed_alive
+Radiowalla Network Limited,2024-03-27,2024-04-05,76.0,126.15,0.6598684210526317,listed_alive
+TAC Infosec Limited,2024-03-27,2024-04-05,106.0,304.5,1.8726415094339623,listed_alive
+SRM Contractors Limited,2024-03-26,2024-04-03,210.0,226.0,0.0761904761904762,listed_alive
+Aspire and Innovative Advertising Limited,2024-03-26,2024-04-03,54.0,59.3,0.0981481481481481,listed_alive
+Trust Fintech Limited,2024-03-26,2024-04-04,101.0,150.4,0.48910891089108915,listed_alive
+Blue Pebble Limited,2024-03-26,2024-04-03,168.0,208.95,0.24374999999999994,listed_alive
+Naman In-Store (India) Limited,2024-03-22,2024-04-02,89.0,118.75,0.3342696629213483,listed_alive
+Vishwas Agri Seeds Limited,2024-03-21,2024-04-01,86.0,83.6,-0.027906976744186112,listed_alive
+Omfurn India Limited - FPO,2024-03-20,2024-03-28,75.0,,,listed_alive
+Enfuse Solutions Limited,2024-03-15,2024-03-22,96.0,115.45,0.2026041666666667,listed_alive
+Enser Communications Limited,2024-03-15,2024-03-22,70.0,70.1,0.0014285714285713475,listed_alive
+Krystal Integrated Services Limited,2024-03-14,2024-03-21,715.0,712.85,-0.003006993006992975,listed_alive
+AVP Infracon Limited,2024-03-13,2024-03-20,75.0,75.05,0.0006666666666666288,listed_alive
+Popular Vehicles and Services Limited,2024-03-12,2024-03-19,295.0,276.15,-0.06389830508474584,listed_alive
+Signoria Creation Limited,2024-03-12,2024-03-19,65.0,137.55,1.1161538461538463,listed_alive
+Pratham EPC Projects Limited,2024-03-11,2024-03-18,75.0,118.95,0.5860000000000001,listed_alive
+Gopal Snacks Limited,2024-03-06,2024-03-14,401.0,362.7,-0.09551122194513718,listed_alive
+Shree Karni Fabcom Limited,2024-03-06,2024-03-14,227.0,273.0,0.2026431718061674,listed_alive
+J G Chemicals Limited,2024-03-05,2024-03-13,221.0,184.8,-0.1638009049773755,listed_alive
+Indiabulls Housing Finance Limited,2024-03-05,2024-04-09,,965.55,,listed_alive
+Sona Machinery Limited,2024-03-05,2024-03-13,143.0,131.25,-0.08216783216783216,listed_alive
+R K Swamy Limited,2024-03-04,2024-03-12,288.0,262.6,-0.08819444444444437,listed_alive
+V R Infraspace Limited,2024-03-04,2024-03-12,85.0,87.4,0.028235294117647126,listed_alive
+Mukka Proteins Limited,2024-02-29,2024-03-07,28.0,42.25,0.5089285714285714,listed_alive
+M.V.K. Agro food product limited,2024-02-29,2024-03-07,120.0,82.95,-0.30874999999999997,listed_alive
+Bharat Highways InvIT,2024-02-28,2024-03-12,100.0,103.05,0.03049999999999997,listed_alive
+Platinum Industries Limited,2024-02-27,2024-03-05,171.0,221.2,0.29356725146198825,listed_alive
+Exicom Telesystems Limited,2024-02-27,2024-03-05,142.0,224.95,0.5841549295774647,listed_alive
+Purv Flexipack Limited,2024-02-27,2024-03-05,71.0,247.0,2.4788732394366195,listed_alive
+Navi Finserv Limited,2024-02-26,2024-03-18,1000.0,1000.0,0.0,listed_alive
+Owais Metal and Mineral Processing Limited,2024-02-26,2024-03-04,87.0,262.5,2.0172413793103448,listed_alive
+Sadhav Shipping Limited,2024-02-23,2024-03-01,95.0,141.75,0.4921052631578947,listed_alive
+GPT Healthcare Limited,2024-02-22,2024-02-29,186.0,200.7,0.07903225806451607,listed_alive
+Juniper Hotels Limited,2024-02-21,2024-02-28,360.0,401.5,0.11527777777777778,listed_alive
+Deem Roll-Tech Limited,2024-02-20,2024-02-27,129.0,209.7,0.6255813953488372,listed_alive
+Zenith Drugs Limited,2024-02-19,2024-02-27,79.0,105.15,0.3310126582278482,listed_alive
+Esconet Technologies Limited,2024-02-16,2024-02-23,84.0,275.5,2.2797619047619047,listed_alive
+Interiors & More Limited,2024-02-15,2024-02-23,227.0,283.5,0.2488986784140969,listed_alive
+Kalahridhaan Trendz Limited,2024-02-15,2024-02-23,10.0,49.5,3.95,listed_alive
+Thaai Casting Limited,2024-02-15,2024-02-23,77.0,195.15,1.5344155844155845,listed_alive
+Atmastco Limited,2024-02-15,2024-02-23,77.0,95.55,0.24090909090909088,listed_alive
+Vibhor Steel Tubes Limited,2024-02-13,2024-02-20,151.0,446.25,1.955298013245033,listed_alive
+Wise Travel India Limited,2024-02-12,2024-02-19,147.0,204.75,0.39285714285714285,listed_alive
+Entero Healthcare Solutions Limited,2024-02-09,2024-02-16,1258.0,1149.55,-0.08620826709062007,listed_alive
+UGRO Capital Limited,2024-02-08,2025-04-28,1000.0,,,listed_alive
+Polysil Irrigation Systems Limited,2024-02-08,2024-02-16,54.0,54.25,0.004629629629629629,listed_alive
+Alpex Solar Limited,2024-02-08,2024-02-15,115.0,345.45,2.003913043478261,listed_alive
+Capital Small Finance Bank Limited,2024-02-07,2024-02-14,468.0,435.0,-0.07051282051282051,listed_alive
+Jana Small Finance Bank Limited,2024-02-07,2024-02-14,414.0,368.15,-0.11074879227053146,listed_alive
+Rashi Peripherals Limited,2024-02-07,2024-02-14,311.0,321.5,0.03376205787781351,listed_alive
+Apeejay Surrendra Park Hotels Limited,2024-02-05,2024-02-12,155.0,203.55,0.31322580645161296,listed_alive
+Italian Edibles Limited,2024-02-02,2024-02-12,68.0,57.75,-0.15073529411764705,listed_alive
+BLS E- Services Limited,2024-01-30,2024-02-06,135.0,366.0,1.711111111111111,listed_alive
+Baweja Studios Limited,2024-01-29,2024-02-06,180.0,173.85,-0.0341666666666667,listed_alive
+Megatherm Induction Limited,2024-01-29,2024-02-05,108.0,207.9,0.925,listed_alive
+Delaplex Limited,2024-01-25,2024-02-02,192.0,324.45,0.68984375,listed_alive
+Docmode Health Technologies Limited,2024-01-25,2024-02-02,79.0,180.75,1.2879746835443038,listed_alive
+Fonebox Retail Limited,2024-01-25,2024-02-02,70.0,210.0,2.0,listed_alive
+Nova Agritech Limited,2024-01-23,2024-01-31,41.0,57.75,0.40853658536585363,listed_alive
+Cholamandalam Investment and Finance Company Limited,2024-01-19,2026-07-01,,,,listed_alive
+EPACK Durable Limited,2024-01-19,2024-01-30,230.0,207.6,-0.09739130434782611,listed_alive
+Konstelec Engineers Limited,2024-01-19,2024-01-30,70.0,220.5,2.15,listed_alive
+Addictive Learning Technology Limited,2024-01-19,2024-01-30,140.0,294.5,1.1035714285714286,listed_alive
+Medi Assist Healthcare Services Limited,2024-01-15,2024-01-23,418.0,464.1,0.11028708133971298,listed_alive
+Maxposure Limited,2024-01-15,2024-01-23,33.0,137.75,3.1742424242424243,listed_alive
+Australian Premium Solar (India) Limited,2024-01-11,2024-01-18,54.0,147.0,1.7222222222222223,listed_alive
+Jyoti CNC Automation Limited,2024-01-09,2024-01-16,331.0,434.2,0.3117824773413897,listed_alive
+IBL Finance Limited,2024-01-09,2024-01-16,51.0,58.8,0.1529411764705882,listed_alive
+Kaushalya Logistics Limited,2023-12-29,2024-01-08,75.0,105.0,0.4,listed_alive
+Kay Cee Energy & Infra Limited,2023-12-28,2024-01-05,54.0,239.4,3.4333333333333336,listed_alive
+Akanksha Power and Infrastructure Limited,2023-12-27,2024-01-03,55.0,65.1,0.18363636363636354,listed_alive
+HRH Next Services Limited,2023-12-27,2024-01-03,36.0,43.05,0.19583333333333325,listed_alive
+Innova Captab Limited,2023-12-21,2023-12-29,448.0,541.4,0.2084821428571428,listed_alive
+Supreme Power Equipment Limited,2023-12-21,2023-12-29,65.0,102.9,0.5830769230769232,listed_alive
+Sameera Agro and Infra Limited,2023-12-21,2024-01-01,180.0,171.0,-0.05,listed_alive
+Trident Techlabs Limited,2023-12-21,2023-12-29,35.0,103.05,1.9442857142857142,listed_alive
+Indifra Limited,2023-12-21,2023-12-29,65.0,68.4,0.052307692307692395,listed_alive
+Azad Engineering Limited,2023-12-20,2023-12-28,524.0,677.5,0.2929389312977099,listed_alive
+Credo Brands Marketing Limited,2023-12-19,2023-12-27,280.0,312.2,0.11499999999999996,listed_alive
+Happy Forging Limited,2023-12-19,2023-12-27,850.0,1030.8,0.21270588235294113,listed_alive
+RBZ Jewellers Limited,2023-12-19,2023-12-27,100.0,105.0,0.05,listed_alive
+Electro Force (India) Limited,2023-12-19,2023-12-27,93.0,105.0,0.12903225806451613,listed_alive
+Motisons Jewellers Limited,2023-12-18,2023-12-26,55.0,103.55,0.8827272727272727,listed_alive
+Suraj Estate Developers Limited,2023-12-18,2023-12-26,360.0,334.5,-0.07083333333333333,listed_alive
+Muthoot Microfin Limited,2023-12-18,2023-12-26,291.0,266.15,-0.0853951890034365,listed_alive
+INOX India Limited,2023-12-14,2023-12-21,660.0,939.95,0.42416666666666675,listed_alive
+Shree OSFM E-Mobility Limited,2023-12-14,2023-12-21,65.0,68.25,0.05,listed_alive
+India Shelter Finance Corporation Limited,2023-12-13,2023-12-20,493.0,544.7,0.1048681541582151,listed_alive
+DOMS Industries Limited,2023-12-13,2023-12-20,790.0,1326.05,0.6785443037974683,listed_alive
+S J Logistics (India) Limited,2023-12-12,2023-12-19,125.0,183.75,0.47,listed_alive
+Presstonic Engineering Limited,2023-12-11,2023-12-18,72.0,147.0,1.0416666666666667,listed_alive
+Accent Microcell Limited,2023-12-08,2023-12-15,140.0,315.0,1.25,listed_alive
+Indiabulls Housing Finance Limited,2023-12-07,2024-04-09,,965.55,,listed_alive
+IIFL Samasta Finance Limited,2023-12-04,2026-07-03,10000.0,,,listed_alive
+Sheetal Universal Limited,2023-12-04,2023-12-11,70.0,75.4,0.07714285714285722,listed_alive
+Marinetrans India Limited,2023-11-30,2023-12-08,26.0,31.0,0.19230769230769232,listed_alive
+Graphisads Limited,2023-11-30,2023-12-13,111.0,105.95,-0.04549549549549547,listed_alive
+Net Avenue Technologies Limited,2023-11-30,2023-12-08,18.0,39.9,1.2166666666666666,listed_alive
+Cholamandalam Investment and Finance Company Limited,2023-11-28,2026-07-01,,,,listed_alive
+Gandhar Oil Refinery (India) Limited,2023-11-22,2023-11-30,169.0,301.4,0.7834319526627218,listed_alive
+Flair Writing Industries Limited,2023-11-22,2023-12-01,304.0,450.9,0.48322368421052625,listed_alive
+Tata Technologies Limited,2023-11-22,2023-11-30,500.0,1313.0,1.626,listed_alive
+Fedbank Financial Services Limited,2023-11-22,2023-11-30,140.0,140.25,0.0017857142857142857,listed_alive
+Rockingdeals Circular Economy Limited,2023-11-22,2025-11-28,80.0,,,listed_alive
+Indian Renewable Energy Development Agency Limited,2023-11-21,2026-06-29,,,,listed_alive
+ASK Automotive Limited,2023-11-07,2023-11-15,282.0,310.1,0.09964539007092206,listed_alive
+Sunrest Lifescience Limited,2023-11-07,2023-11-20,84.0,79.8,-0.05000000000000003,listed_alive
+ROX Hi-Tech Limited,2023-11-07,2023-11-16,83.0,141.75,0.7078313253012049,listed_alive
+Protean eGov Technologies Limited,2023-11-06,2025-02-06,1381.0,1469.7,0.06422881969587259,listed_alive
+ESAF Small Finance Bank Limited,2023-11-03,2026-06-30,,,,listed_alive
+Baba Food Processing (India) Limited,2023-11-03,2023-11-15,76.0,72.2,-0.04999999999999996,listed_alive
+Micropro Software Solutions Limited,2023-11-03,2023-11-10,81.0,76.0,-0.06172839506172839,listed_alive
+SAR Televenture Limited,2023-11-01,2023-11-08,55.0,110.25,1.0045454545454546,listed_alive
+Honasa Consumer Limited,2023-10-31,2023-11-07,324.0,337.1,0.04043209876543217,listed_alive
+Cello World Limited,2023-10-30,2023-11-06,648.0,791.7,0.22175925925925932,listed_alive
+Transteel Seating Technologies Limited,2023-10-30,2023-11-06,70.0,93.3,0.3328571428571428,listed_alive
+Maitreya Medicare Limited,2023-10-27,2023-11-07,82.0,154.45,0.8835365853658536,listed_alive
+Shanthala FMCG Products Limited,2023-10-27,2023-11-03,91.0,103.55,0.1379120879120879,listed_alive
+Paragon Fine and Speciality Chemical Limited,2023-10-26,2023-11-03,100.0,213.75,1.1375,listed_alive
+Blue Jet Healthcare Limited,2023-10-25,2023-11-01,346.0,413.4,0.1947976878612716,listed_alive
+On Door Concepts Limited,2023-10-23,2023-11-01,208.0,203.4,-0.02211538461538459,listed_alive
+Indiabulls Housing Finance Limited,2023-10-20,2024-04-09,,965.55,,listed_alive
+Piramal Enterprises Limited,2023-10-19,2025-05-12,,,,listed_alive
+IRM ENERGY LIMITED,2023-10-18,2023-10-26,505.0,473.15,-0.06306930693069311,listed_alive
+Rajgor Castor Derivatives Limited,2023-10-17,2023-10-31,50.0,61.1,0.22200000000000003,listed_alive
+Womancart Limited,2023-10-16,2023-10-27,86.0,122.85,0.4284883720930232,listed_alive
+Arvind and Company Shipping Agencies Limited,2023-10-12,2023-10-25,45.0,80.05,0.7788888888888889,listed_alive
+Committed Cargo Care Limited,2023-10-06,2023-10-18,77.0,86.1,0.11818181818181811,listed_alive
+Plaza Wires Limited,2023-09-29,2023-10-12,54.0,80.2,0.4851851851851852,listed_alive
+Karnika Industries Limited,2023-09-29,2023-10-12,76.0,82.6,0.08684210526315782,listed_alive
+Plada Infotech Services Limited,2023-09-29,2023-10-13,48.0,56.05,0.16770833333333326,listed_alive
+Sharp Chucks and Machines Limited,2023-09-29,2023-10-12,58.0,65.05,0.12155172413793099,listed_alive
+Vishnusurya Projects and Infra Limited,2023-09-29,2023-10-10,68.0,76.65,0.12720588235294125,listed_alive
+Aditya Birla Finance Limited,2023-09-27,2024-04-24,,,,listed_alive
+Valiant Laboratories Limited,2023-09-27,2023-10-06,140.0,170.25,0.21607142857142858,listed_alive
+Canarys Automations Limited,2023-09-27,2023-10-11,31.0,41.3,0.33225806451612894,listed_alive
+Vinyas Innovative Technologies Limited,2023-09-27,2023-10-06,165.0,346.5,1.1,listed_alive
+E Factor Experiences Limited,2023-09-27,2023-10-09,75.0,120.75,0.61,listed_alive
+Kontor Space Limited,2023-09-27,2023-10-10,93.0,115.9,0.246236559139785,listed_alive
+Oneclick Logistics India Limited,2023-09-27,2023-10-11,99.0,133.0,0.3434343434343434,listed_alive
+Goyal Salt Limited,2023-09-26,2023-10-11,38.0,136.1,2.581578947368421,listed_alive
+JSW Infrastructure Limited,2023-09-25,2023-10-03,119.0,157.3,0.3218487394957984,listed_alive
+Updater Services Limited,2023-09-25,2023-10-04,300.0,283.9,-0.053666666666666744,listed_alive
+Inspire Films Limited,2023-09-25,2023-10-05,59.0,67.85,0.1499999999999999,listed_alive
+Digikore Studios Limited,2023-09-25,2023-10-04,171.0,283.5,0.6578947368421053,listed_alive
+Newjaisa Technologies Limited,2023-09-25,2023-10-05,47.0,70.8,0.5063829787234042,listed_alive
+Arabian Petroleum Limited,2023-09-25,2023-10-09,70.0,76.25,0.08928571428571429,listed_alive
+Saakshi Medtech and Panels Limited,2023-09-25,2023-10-03,97.0,153.3,0.5804123711340208,listed_alive
+Manoj Vaibhav Gems N Jewellers Limited,2023-09-22,2023-10-03,215.0,215.5,0.002325581395348837,listed_alive
+HI-Green Carbon Limited,2023-09-21,2023-09-28,75.0,80.85,0.07799999999999993,listed_alive
+Mangalam Alloys Limited,2023-09-21,2023-10-04,80.0,76.0,-0.05,listed_alive
+Marco Cables and Conductors Limited,2023-09-21,2023-09-28,,40.6,,listed_alive
+Signatureglobal (India) Limited,2023-09-20,2023-09-27,385.0,458.55,0.19103896103896106,listed_alive
+Sai Silks (Kalamandir) Limited,2023-09-20,2023-09-27,222.0,244.9,0.10315315315315318,listed_alive
+Master Components Limited,2023-09-18,2023-09-29,140.0,140.2,0.0014285714285713475,listed_alive
+Madhusudan Masala Limited,2023-09-18,2023-09-26,70.0,114.0,0.6285714285714286,listed_alive
+Yatra Online Limited,2023-09-15,2023-09-28,142.0,135.9,-0.042957746478873196,listed_alive
+Holmarc Opto-Mechatronics Limited,2023-09-15,2023-09-25,40.0,68.5,0.7125,listed_alive
+Cellecor Gadgets Limited,2023-09-15,2023-09-28,92.0,96.6,0.04999999999999994,listed_alive
+Kody Technolab Limited,2023-09-15,2023-09-27,160.0,178.5,0.115625,listed_alive
+SAMHI Hotels Limited,2023-09-14,2023-09-22,126.0,143.4,0.13809523809523813,listed_alive
+Zaggle Prepaid Ocean Services Limited,2023-09-14,2023-09-22,164.0,158.35,-0.03445121951219516,listed_alive
+R R Kabel Limited,2023-09-13,2023-09-20,1035.0,1198.05,0.15753623188405794,listed_alive
+Kundan Edifice Limited,2023-09-12,2023-09-26,91.0,78.75,-0.1346153846153846,listed_alive
+Chavda Infra Limited,2023-09-12,2023-09-25,65.0,86.45,0.33000000000000007,listed_alive
+EMS Limited,2023-09-08,2023-09-21,211.0,279.9,0.32654028436018945,listed_alive
+Jiwanram Sheoduttrai Industries Limited,2023-09-08,2023-09-18,23.0,28.5,0.2391304347826087,listed_alive
+Unihealth Consultancy Limited,2023-09-08,2023-09-21,132.0,133.0,0.007575757575757576,listed_alive
+Jupiter Life Line Hospitals Limited,2023-09-06,2023-09-18,735.0,1075.75,0.4636054421768708,listed_alive
+Indiabulls Housing Finance Limited,2023-09-06,2024-04-09,,965.55,,listed_alive
+Ratnaveer Precision Engineering Limited,2023-09-04,2023-09-11,98.0,129.35,0.3198979591836734,listed_alive
+Pramara Promotions Limited,2023-09-01,2023-09-13,63.0,116.55,0.85,listed_alive
+Basilic Fly Studio Limited,2023-09-01,2023-09-11,97.0,284.55,1.9335051546391753,listed_alive
+Saroja Pharma Industries India Limited,2023-08-31,2023-09-13,84.0,68.25,-0.1875,listed_alive
+Rishabh Instruments Limited,2023-08-30,2023-09-11,441.0,443.15,0.004875283446711966,listed_alive
+C P S Shapers Limited,2023-08-29,2023-09-07,185.0,472.5,1.554054054054054,listed_alive
+Mono Pharmacare Limited,2023-08-28,2023-09-07,28.0,30.45,0.08749999999999998,listed_alive
+Sahaj Fashions Limited,2023-08-25,2023-09-06,30.0,30.35,0.011666666666666714,listed_alive
+CreditAccess Grameen Limited,2023-08-24,2023-09-11,1000.0,999.78,-0.00022000000000002728,listed_alive
+Vishnu Prakash R Punglia Limited,2023-08-24,2023-09-05,99.0,145.7,0.4717171717171716,listed_alive
+Aeroflex Industries Limited,2023-08-22,2023-08-31,108.0,163.25,0.5115740740740741,listed_alive
+Sungarner Energies Limited,2023-08-21,2023-08-31,83.0,262.35,2.160843373493976,listed_alive
+Pyramid Technoplast Limited,2023-08-18,2023-08-29,166.0,177.65,0.0701807228915663,listed_alive
+Crop Life Science Limited,2023-08-18,2023-08-30,52.0,53.15,0.02211538461538459,listed_alive
+TVS Supply Chain Solutions Limited,2023-08-10,2023-08-23,197.0,201.0,0.02030456852791878,listed_alive
+Srivari Spices and Foods Limited,2023-08-07,2023-08-18,42.0,106.55,1.5369047619047618,listed_alive
+Concord Biotech Limited,2023-08-04,2023-08-18,741.0,942.8,0.2723346828609986,listed_alive
+Sangani Hospitals Limited,2023-08-04,2023-08-17,40.0,41.85,0.046250000000000034,listed_alive
+Yudiz Solutions Limited,2023-08-04,2023-08-17,165.0,181.4,0.09939393939393942,listed_alive
+SBFC Finance Limited,2023-08-03,2023-08-16,57.0,92.2,0.6175438596491228,listed_alive
+Vinsys IT Services India Limited,2023-08-01,2023-08-11,128.0,217.6,0.7,listed_alive
+Oriana Power Limited,2023-08-01,2023-08-11,118.0,317.1,1.6872881355932206,listed_alive
+Cholamandalam Investment and Finance Company Limited,2023-07-28,2026-07-01,,,,listed_alive
+Zeal Global Services Limited,2023-07-28,2023-08-09,103.0,154.35,0.4985436893203883,listed_alive
+Yatharth Hospital and Trauma Care Services Limited,2023-07-26,2023-08-07,300.0,333.85,0.11283333333333341,listed_alive
+Shri Techtex Limited,2023-07-26,2023-08-04,61.0,85.2,0.3967213114754099,listed_alive
+Yasons Chemex Care Limited,2023-07-24,2023-08-03,40.0,33.6,-0.15999999999999998,listed_alive
+Netweb Technologies India Limited,2023-07-17,2023-07-27,500.0,910.4,0.8208,listed_alive
+Service Care Limited,2023-07-14,2023-07-26,67.0,67.55,0.008208955223880555,listed_alive
+Utkarsh Small Finance Bank Limited,2023-07-12,2023-07-21,25.0,48.0,0.92,listed_alive
+Indiabulls Housing Finance Limited,2023-07-10,2024-04-09,,965.55,,listed_alive
+Navi Finserv Limited,2023-07-10,2024-03-18,1000.0,1000.0,0.0,listed_alive
+Drone Destination Limited,2023-07-07,2023-07-21,65.0,102.1,0.5707692307692307,listed_alive
+Senco Gold Limited,2023-07-04,2023-07-14,317.0,405.3,0.2785488958990537,listed_alive
+PKH Ventures Limited - Issue Withdrawn,2023-06-30,,,,,listed_alive
+PKH Ventures Limited,2023-06-30,,,,,listed_alive
+Synoptics Technologies Limited,2023-06-30,2023-07-13,237.0,226.1,-0.045991561181434625,listed_alive
+Tridhya Tech Limited,2023-06-30,2023-07-13,42.0,44.1,0.05000000000000003,listed_alive
+Global Pet Industries Limited,2023-06-28,2023-07-10,49.0,52.8,0.07755102040816321,listed_alive
+Cyient DLM Limited,2023-06-27,2023-07-10,265.0,420.6,0.5871698113207549,listed_alive
+Ideaforge Technology Limited,2023-06-26,2023-07-07,672.0,1294.95,0.9270089285714287,listed_alive
+Pentagon Rubber Limited,2023-06-26,2023-07-07,70.0,123.5,0.7642857142857142,listed_alive
+Greenchef Appliances Limited,2023-06-23,2023-07-06,87.0,109.2,0.25517241379310346,listed_alive
+Essen Speciality Films Limited,2023-06-23,2023-07-06,107.0,147.0,0.37383177570093457,listed_alive
+Magson Retail and Distribution Limited,2023-06-23,2023-07-06,65.0,95.7,0.4723076923076924,listed_alive
+HMA Agro Industries Limited,2023-06-20,2023-07-04,585.0,585.65,0.0011111111111110723,listed_alive
+Aatmaj Healthcare Limited,2023-06-19,2023-06-30,60.0,53.2,-0.11333333333333329,listed_alive
+Vilin Bio Med Limited,2023-06-16,2023-06-30,30.0,28.5,-0.05,listed_alive
+Cell Point (India) Limited,2023-06-15,2023-06-28,100.0,95.0,-0.05,listed_alive
+Urban Enviro Waste Management Limited,2023-06-12,2023-06-22,100.0,148.05,0.4805000000000001,listed_alive
+IIFL Finance Limited,2023-06-09,2026-03-13,,,,listed_alive
+Spectrum Talent Management Limited,2023-06-09,2023-06-22,173.0,147.25,-0.14884393063583815,listed_alive
+IKIO Lighting Limited,2023-06-06,2023-06-16,285.0,403.85,0.4170175438596492,listed_alive
+Kore Digital Limited,2023-06-02,2023-06-14,180.0,190.95,0.06083333333333327,listed_alive
+Sahana System Limited,2023-05-31,2023-06-12,135.0,171.15,0.26777777777777784,listed_alive
+Infollion Research Services Limited,2023-05-29,2023-06-08,82.0,198.55,1.4213414634146342,listed_alive
+Proventus Agrocom Limited,2023-05-24,2023-06-05,771.0,862.05,0.11809338521400772,listed_alive
+Vasa Denticity Limited,2023-05-23,2023-06-02,128.0,221.55,0.7308593750000001,listed_alive
+Crayons Advertising Limited,2023-05-22,2023-06-02,65.0,94.5,0.45384615384615384,listed_alive
+Remus Pharmaceuticals Limited,2023-05-17,2023-05-29,1229.0,1796.8,0.4620016273393002,listed_alive
+Krishca Strapping Solutions Limited,2023-05-16,2023-05-26,54.0,112.9,1.0907407407407408,listed_alive
+Auro Impex & Chemicals Limited,2023-05-11,2023-05-23,78.0,75.7,-0.029487179487179452,listed_alive
+Nexus Select Trust,2023-05-09,2023-05-19,100.0,104.29,0.04290000000000006,listed_alive
+De Neers Tools Limited,2023-04-28,2023-05-11,101.0,180.5,0.7871287128712872,listed_alive
+Cholamandalam Investment and Finance Company Limited,2023-04-25,2026-07-01,,,,listed_alive
+Mankind Pharma Limited,2023-04-25,2023-05-09,1080.0,1422.3,0.3169444444444444,listed_alive
+Quicktouch Technologies Limited,2023-04-18,2023-05-02,61.0,96.6,0.5836065573770491,listed_alive
+A G Universal Limited,2023-04-11,2023-04-24,60.0,60.1,0.0016666666666666904,listed_alive
+Pattech Fitwell Tube Components Limited,2023-04-05,2023-04-21,50.0,57.75,0.155,listed_alive
+Avalon Technologies Limited,2023-04-03,2023-04-18,436.0,398.0,-0.0871559633027523,listed_alive
+Indiabulls Commercial Credit Limited,2023-04-03,2023-04-27,1000.0,913.0,-0.087,listed_alive
+Mos Utility Limited,2023-03-31,2023-04-18,76.0,94.5,0.24342105263157895,listed_alive
+Infinium Pharmachem Limited,2023-03-31,2023-04-17,135.0,147.8,0.0948148148148149,listed_alive
+Sotac Pharmaceuticals Limited,2023-03-29,2023-04-13,111.0,120.75,0.08783783783783784,listed_alive
+Udayshivakumar Infra Limited,2023-03-20,2023-04-03,35.0,31.5,-0.1,listed_alive
+Nirman Agri Genetics Limited,2023-03-15,2023-03-28,0.99,101.3,101.32323232323233,listed_alive
+Quality Foils (India) Limited,2023-03-14,2023-03-24,60.0,97.7,0.6283333333333334,listed_alive
+Global Surfaces Limited,2023-03-13,2023-03-23,140.0,171.05,0.22178571428571436,listed_alive
+Vels Film International Limited,2023-03-10,2023-03-22,99.0,103.4,0.0444444444444445,listed_alive
+MCON Rasayan India Limited,2023-03-06,2023-03-20,40.0,50.4,0.25999999999999995,listed_alive
+Indiabulls Housing Finance Limited,2023-03-03,2024-04-09,,965.55,,listed_alive
+Vertexplus Technologies Limited,2023-03-02,2023-03-15,96.0,106.05,0.10468749999999998,listed_alive
+Systango Technologies Limited,2023-03-02,2023-03-15,90.0,102.9,0.1433333333333334,listed_alive
+Divgi TorqTransfer Systems Limited,2023-03-01,2023-03-14,590.0,605.2,0.025762711864406856,listed_alive
+Srivasavi Adhesive Tapes Limited,2023-02-23,2023-03-09,41.0,42.0,0.024390243902439025,listed_alive
+Viaz Tyres Limited,2023-02-16,2023-03-01,62.0,68.05,0.09758064516129028,listed_alive
+Indore Municipal Corporation,2023-02-10,2023-02-21,250.0,251.38,0.0055199999999999815,listed_alive
+Agarwal Float Glass India Limited,2023-02-10,2023-02-23,42.0,44.05,0.04880952380952374,listed_alive
+Lead Reclaim and Rubber Products Limited,2023-02-09,2023-02-21,25.0,27.65,0.10599999999999994,listed_alive
+Shera Energy Limited,2023-02-07,2023-02-17,57.0,67.3,0.18070175438596486,listed_alive
+Adani Enterprises Limited-FPO,2023-01-27,,,,,listed_alive
+Gayatri Rubbers and Chemicals Limited,2023-01-25,2023-02-07,30.0,36.75,0.225,listed_alive
+Aristo Bio-Tech and Lifescience Limited,2023-01-16,2023-01-30,72.0,84.0,0.16666666666666666,listed_alive
+InCred Financial Services Limited,2023-01-09,2023-02-06,1000.0,998.2,-0.0017999999999999546,listed_alive
+Ducol Organics And Colours Limited,2023-01-09,2023-01-19,78.0,117.5,0.5064102564102564,listed_alive
+IIFL Finance Limited,2023-01-06,2026-03-13,,,,listed_alive
+Indiabulls Commercial Credit Limited,2023-01-05,2023-04-27,1000.0,913.0,-0.087,listed_alive
+Chaman Metallics Limited,2023-01-04,2023-01-16,0.38,,,listed_alive
+Sah Polymers Limited,2022-12-30,2023-01-12,65.0,89.25,0.3730769230769231,listed_alive
+Anlon Technology Solutions Limited,2022-12-29,2023-01-10,100.0,263.65,1.6364999999999998,listed_alive
+Radiant Cash Management Services Limited,2022-12-23,2023-01-04,94.0,104.9,0.1159574468085107,listed_alive
+RBM Infracon Limited,2022-12-23,2023-01-04,36.0,55.1,0.5305555555555556,listed_alive
+Homesfy Realty Limited,2022-12-21,2023-01-02,197.0,287.95,0.4616751269035532,listed_alive
+Moxsh Overseas Educon Limited,2022-12-21,2022-12-30,153.0,127.85,-0.1643790849673203,listed_alive
+Elin Electronics Limited,2022-12-20,2022-12-30,247.0,227.65,-0.0783400809716599,listed_alive
+KFin Technologies Limited,2022-12-19,2022-12-29,366.0,363.85,-0.005874316939890648,listed_alive
+Arihant Academy Limited,2022-12-16,2022-12-29,90.0,126.1,0.40111111111111103,listed_alive
+Dollex Agrotech Limited,2022-12-15,2022-12-28,35.0,31.5,-0.1,listed_alive
+Uma Converter Limited,2022-12-15,2022-12-29,33.0,33.15,0.004545454545454503,listed_alive
+Landmark Cars Limited,2022-12-13,2022-12-23,506.0,458.4,-0.09407114624505933,listed_alive
+Abans Holdings Limited,2022-12-12,2022-12-23,270.0,218.4,-0.1911111111111111,listed_alive
+Sula Vineyards Limited,2022-12-12,2022-12-22,357.0,331.2,-0.07226890756302524,listed_alive
+All E Technologies Limited,2022-12-09,2022-12-21,90.0,131.25,0.4583333333333333,listed_alive
+Arham Technologies Limited,2022-12-05,2022-12-15,42.0,63.0,0.5,listed_alive
+Indiabulls Housing Finance Limited,2022-12-01,2024-04-09,,965.55,,listed_alive
+Uniparts India Limited,2022-11-30,2022-12-12,577.0,539.65,-0.06473136915077994,listed_alive
+Dharmaj Crop Guard Limited,2022-11-28,2022-12-08,237.0,266.3,0.12362869198312242,listed_alive
+Baheti Recycling Industries Limited,2022-11-28,2022-12-08,45.0,114.0,1.5333333333333334,listed_alive
+Pritika Engineering Components Limited,2022-11-25,2022-12-08,29.0,44.3,0.5275862068965517,listed_alive
+CreditAccess Grameen Limited,2022-11-14,2023-09-11,1000.0,999.78,-0.00022000000000002728,listed_alive
+Keystone Realtors Limited,2022-11-14,2022-11-24,541.0,556.85,0.029297597042513904,listed_alive
+Inox Green Energy Services Limited,2022-11-11,2022-11-23,65.0,59.1,-0.09076923076923074,listed_alive
+Kaynes Technology India Limited,2022-11-10,2022-11-22,587.0,689.95,0.17538330494037485,listed_alive
+Archean Chemical Industries Limited,2022-11-09,2022-11-21,407.0,458.15,0.1256756756756756,listed_alive
+FiveStar Business Finance Limited,2022-11-09,2022-11-21,474.0,490.0,0.03375527426160337,listed_alive
+Global Health Limited,2022-11-03,2022-11-16,336.0,415.3,0.23601190476190478,listed_alive
+Bikaji Foods International Limited,2022-11-03,2022-11-16,300.0,317.45,0.05816666666666663,listed_alive
+Fusion Micro Finance Limited,2022-11-02,2022-11-15,368.0,324.8,-0.11739130434782606,listed_alive
+Amiable Logistics (India) Limited,2022-11-02,2022-11-16,81.0,136.4,0.6839506172839507,listed_alive
+DCX System limited,2022-10-31,,,,,listed_alive
+Vital Chemtech Limited,2022-10-31,2026-03-11,46.0,41.5,-0.09782608695652174,listed_alive
+Rite Zone Chemcon India Limited,2022-10-31,2022-11-11,75.0,86.95,0.15933333333333338,listed_alive
+Integrated Personnel Services Limited,2022-10-31,2022-11-11,59.0,69.8,0.18305084745762706,listed_alive
+National Highways Infra Trust,2022-10-17,2022-10-28,400.0,300.01,-0.24997500000000003,listed_alive
+Phantom Digital Effects Limited,2022-10-12,2022-10-21,95.0,312.7,2.291578947368421,listed_alive
+Tracxn Technologies Limited,2022-10-10,2022-10-20,80.0,93.25,0.165625,listed_alive
+Indiabulls Housing Finance Limited,2022-10-07,2024-04-09,,965.55,,listed_alive
+Electronics Mart India Limited,2022-10-04,2022-10-17,59.0,84.5,0.4322033898305085,listed_alive
+Frog Cellsat Limited,2022-09-29,2022-10-13,102.0,185.8,0.8215686274509805,listed_alive
+Swastik Pipe Limited,2022-09-29,2022-10-12,100.0,69.3,-0.30700000000000005,listed_alive
+Lloyds Luxuries Limited,2022-09-28,2022-10-11,40.0,42.9,0.07249999999999997,listed_alive
+Cyber Media Research & Services Limited,2022-09-27,2022-10-10,180.0,257.5,0.4305555555555556,listed_alive
+QMS Medical Allied Services Limited,2022-09-27,2026-06-18,96.0,101.75,0.059895833333333336,listed_alive
+Kandarp Digi Smart BPO Limited,2022-09-16,2022-09-28,30.0,28.5,-0.05,listed_alive
+Maks Energy Solutions India Limited,2022-09-16,2022-09-28,20.0,21.0,0.05,listed_alive
+Varanium Cloud Limited,2022-09-16,2023-10-20,61.5,93.8,0.5252032520325203,listed_alive
+Annapurna Swadisht Limited,2022-09-15,2022-09-27,70.0,126.0,0.8,listed_alive
+Harsha Engineers International Limited,2022-09-14,2022-09-26,330.0,486.5,0.47424242424242424,listed_alive
+Tapi Fruit Processing Limited,2022-09-12,2022-09-22,48.0,54.7,0.1395833333333334,listed_alive
+Ishan International Limited,2022-09-09,2022-09-22,80.0,82.8,0.03499999999999996,listed_alive
+Sabar Flex India Limited,2022-09-08,2022-09-21,11.0,22.05,1.0045454545454546,listed_alive
+Mega Flex Plastics Limited,2022-09-06,2022-09-19,40.0,56.7,0.4175000000000001,listed_alive
+Indiabulls Housing Finance Limited,2022-09-05,2024-04-09,,965.55,,listed_alive
+Tamilnad Mercantile Bank Limited,2022-09-05,2022-09-15,510.0,509.65,-0.0006862745098039661,listed_alive
+U Gro Capital Limited,2022-09-05,,,,,listed_alive
+Viviana Power Tech Limited,2022-09-05,2026-06-22,10000.0,,,listed_alive
+Jay Jalaram Technologies Limited,2022-08-26,2022-09-08,36.0,52.5,0.4583333333333333,listed_alive
+JFL Life Sciences Limited,2022-08-25,2022-09-08,61.0,66.5,0.09016393442622951,listed_alive
+Ameya Precision Engineers Limited,2022-08-25,2022-09-08,34.0,65.4,0.923529411764706,listed_alive
+Dreamfolks Services Limited,2022-08-24,2022-09-06,326.0,462.4,0.41840490797546004,listed_alive
+Syrma SGS Technology Limited,2022-08-12,2022-08-26,220.0,310.5,0.4113636363636364,listed_alive
+Veekayem Fashion and Apparels Limited,2022-08-05,2022-08-22,28.0,50.0,0.7857142857142857,listed_alive
+Upsurge Seeds of Agriculture Limited,2022-07-29,2022-08-11,120.0,147.0,0.225,listed_alive
+Agni Green Power Limited,2022-07-20,2022-08-01,10.0,26.25,1.625,listed_alive
+SKP Bearing Industries Limited,2022-06-30,2022-07-13,70.0,72.45,0.03500000000000004,listed_alive
+Mangalam Worldwide Limited,2022-06-30,2026-05-04,100000.0,,,listed_alive
+KCK Industries Limited,2022-06-27,2022-07-08,30.0,26.25,-0.125,listed_alive
+Fidel Softech Limited,2022-05-30,2022-06-10,37.0,62.05,0.677027027027027,listed_alive
+Aether Industries Limited,2022-05-24,2022-06-03,642.0,774.4,0.20623052959501553,listed_alive
+Navi Finserv Limited,2022-05-23,2024-03-18,1000.0,1000.0,0.0,listed_alive
+Globesecure Technologies Limited,2022-05-23,2022-06-02,29.0,37.1,0.27931034482758627,listed_alive
+eMudhra Limited,2022-05-20,2022-06-01,256.0,257.9,0.007421874999999911,listed_alive
+Rachana Infrastructure Limited,2022-05-20,2022-06-10,135.0,138.55,0.02629629629629638,listed_alive
+ETHOS Limited,2022-05-18,2022-05-30,878.0,803.1,-0.08530751708428243,listed_alive
+Paradeep Phosphates Limited,2022-05-17,2022-05-27,42.0,43.9,0.0452380952380952,listed_alive
+Venus Pipes and Tubes Limited,2022-05-11,2022-05-24,326.0,354.35,0.08696319018404915,listed_alive
+Delhivery Limited,2022-05-11,2022-05-24,487.0,536.35,0.10133470225872694,listed_alive
+Prudent Corporate Advisory Services Limited,2022-05-10,2022-05-20,630.0,561.75,-0.10833333333333334,listed_alive
+Life Insurance Corporation of India,2022-05-04,2022-05-17,949.0,875.25,-0.07771338250790305,listed_alive
+Sonu Infratech Limited,2022-04-29,2022-05-13,36.0,37.6,0.04444444444444448,listed_alive
+Rainbow Childrens Medicare Limited,2022-04-27,2022-05-10,542.0,450.2,-0.16937269372693728,listed_alive
+Campus Activewear Limited,2022-04-26,2022-05-09,292.0,378.9,0.2976027397260273,listed_alive
+LE MERITE EXPORTS LIMITED,2022-04-25,2025-12-12,507.0,513.75,0.013313609467455622,listed_alive
+Dhani Loans and Services Limited,2022-04-19,2022-05-19,,,,listed_alive
+U Gro Capital Limited,2022-04-07,,,,,listed_alive
+Hariom Pipe Industries Limited,2022-03-30,2022-04-13,153.0,231.0,0.5098039215686274,listed_alive
+Indiabulls Housing Finance Limited,2022-03-30,2024-04-09,,965.55,,listed_alive
+Jeena Sikho Lifecare Limited,2022-03-30,2025-08-11,566.0,536.1,-0.052826855123674875,listed_alive
+Veranda Learning Solutions Limited,2022-03-29,2022-04-11,137.0,131.25,-0.041970802919708027,listed_alive
+UMA Exports Limited,2022-03-28,2022-04-07,68.0,79.8,0.17352941176470585,listed_alive
+Krishna Defence And Allied Industries Limited,2022-03-25,2025-12-30,783.05,813.8,0.03926952301896431,listed_alive
+Ruchi Soya Industries Limited,2022-03-24,2003-01-02,34.0,34.0,0.0,listed_alive
+P.E. Analytics Limited,2022-03-22,,,,,listed_alive
+Empyrean Cashews Limited,2022-03-21,2022-03-31,37.0,44.1,0.19189189189189193,listed_alive
+KN Agri Resources Limited,2022-03-15,2025-12-09,197.0,203.25,0.031725888324873094,listed_alive
+Swaraj Suiting Limited,2022-03-15,2022-03-28,56.0,53.2,-0.04999999999999995,listed_alive
+Cool Caps Industries Limited,2022-03-10,2022-03-24,38.0,37.65,-0.009210526315789511,listed_alive
+SP Refractories Limited,2022-03-09,2022-03-22,90.0,90.1,0.001111111111111048,listed_alive
+Shigan Quantum Technologies Limited,2022-02-28,2022-03-11,50.0,64.05,0.2809999999999999,listed_alive
+Vaidya Sane Ayurved Laboratories Limited,2022-02-10,2022-02-23,73.0,105.4,0.44383561643835623,listed_alive
+Richa Info Systems Limited,2022-02-09,2022-02-21,125.0,118.75,-0.05,listed_alive
+Vedant Fashions Limited,2022-02-04,2022-02-16,866.0,933.55,0.07800230946882211,listed_alive
+Adani Wilmar Limited,2022-01-27,2022-02-08,230.0,268.25,0.16630434782608697,listed_alive
+InCred Financial Services Limited,2022-01-24,2023-02-06,1000.0,998.2,-0.0017999999999999546,listed_alive
+AGS Transact Technologies Limited,2022-01-19,2022-01-31,175.0,161.05,-0.07971428571428565,listed_alive
+Precision Metaliks Limited,2022-01-19,2022-02-01,51.0,71.25,0.39705882352941174,listed_alive
+Dhani Loans and Services Limited,2022-01-04,2022-05-19,1000.0,995.0,-0.005,listed_alive
+Timescan Logistics (India) Private Limited,2021-12-31,,0.51,,,listed_alive
+AB Cotspin India Limited,2021-12-30,,,,,listed_alive
+CMS Info Systems Limited,2021-12-21,2021-12-31,216.0,238.2,0.10277777777777773,listed_alive
+Vivo Collaboration Solutions Limited,2021-12-20,2021-12-31,82.0,337.35,3.1140243902439027,listed_alive
+Supriya Lifescience Limited,2021-12-16,2021-12-28,274.0,390.85,0.4264598540145986,listed_alive
+HP Adhesives Limited,2021-12-15,2021-12-27,274.0,330.75,0.2071167883211679,listed_alive
+Data Patterns (India) Limited,2021-12-14,2021-12-24,585.0,755.0,0.2905982905982906,listed_alive
+Euro Panel Products Limited,2021-12-14,2025-08-01,195.0,204.28,0.0475897435897436,listed_alive
+MedPlus Health Services Limited,2021-12-13,2021-12-23,796.0,1121.15,0.40847989949748753,listed_alive
+Nupur Recyclers Limited,2021-12-13,2021-12-23,60.0,77.7,0.29500000000000004,listed_alive
+Foce India Limited,2021-12-13,2021-12-28,225.0,225.7,0.0031111111111110606,listed_alive
+Metro Brands Limited,2021-12-10,2021-12-22,500.0,493.35,-0.013299999999999954,listed_alive
+C.E. Info Systems Limited,2021-12-09,2021-12-21,1033.0,1393.65,0.34912875121006787,listed_alive
+Indiabulls Housing Finance Limited,2021-12-09,2024-04-09,,965.55,,listed_alive
+IIFL Home Finance Limited,2021-12-08,2025-12-02,,,,listed_alive
+Shriram Properties Limited,2021-12-08,2021-12-20,118.0,99.6,-0.15593220338983055,listed_alive
+RateGain Travel Technologies Limited,2021-12-07,2021-12-17,425.0,340.05,-0.19988235294117646,listed_alive
+Anand Rathi Wealth Limited,2021-12-02,2021-12-14,550.0,583.55,0.060999999999999915,listed_alive
+Tega Industries Limited,2021-12-01,2021-12-13,453.0,726.05,0.6027593818984547,listed_alive
+Star Health and Allied Insurance Company Limited,2021-11-30,2021-12-10,900.0,906.85,0.007611111111111136,listed_alive
+Go Fashion (India) Limited,2021-11-17,2021-11-30,690.0,1253.7,0.8169565217391305,listed_alive
+Tarsons Products Limited,2021-11-15,2021-11-26,662.0,818.4,0.23625377643504528,listed_alive
+Latent View Analytics Limited,2021-11-10,2021-11-23,197.0,488.75,1.4809644670050761,listed_alive
+Sapphire Foods India Limited,2021-11-09,2021-11-18,1180.0,1211.55,0.02673728813559318,listed_alive
+One 97 Communications Limited,2021-11-08,2021-11-18,2150.0,1560.8,-0.274046511627907,listed_alive
+U Gro Capital Limited,2021-11-08,,,,,listed_alive
+Sigachi Industries Limited,2021-11-01,2021-11-15,163.0,598.5,2.6717791411042944,listed_alive
+PB Fintech Limited,2021-11-01,2021-11-15,980.0,1202.3,0.2268367346938775,listed_alive
+S J S Enterprises Limited,2021-11-01,2021-11-15,542.0,510.2,-0.05867158671586718,listed_alive
+FINO Payments Bank Limited,2021-10-29,2021-11-12,577.0,543.9,-0.057365684575389986,listed_alive
+FSN Ecommerce Ventures Limited,2021-10-28,2021-11-10,1125.0,2205.8,0.9607111111111113,listed_alive
+Nidan Laboratories and Healthcare Limited,2021-10-28,2021-11-12,125.0,117.75,-0.058,listed_alive
+Kotyark Industries Limited,2021-10-21,2026-03-12,281.0,360.65,0.2834519572953736,listed_alive
+D. K. Enterprises Global Limited,2021-10-07,,0.4,,,listed_alive
+Bombay Metrics Supply Chain Limited,2021-09-30,2021-10-12,93.0,103.2,0.10967741935483874,listed_alive
+Destiny Logistics & Infra Limited,2021-09-30,2021-10-13,20.0,19.7,-0.015000000000000036,listed_alive
+Dynamic Services & Security Ltd.,2021-09-30,,0.51,,,listed_alive
+Aditya Birla Sun Life AMC Limited,2021-09-29,2021-10-11,712.0,699.45,-0.017626404494381957,listed_alive
+Jainam Ferro Alloys (I) Limited,2021-09-28,2021-10-08,70.0,73.1,0.044285714285714206,listed_alive
+IIFL Finance Limited,2021-09-27,2026-03-13,,,,listed_alive
+JM Financial Products Limited,2021-09-23,,,,,listed_alive
+Paras Defence and Space Technologies Limited,2021-09-21,2021-10-01,175.0,492.45,1.8139999999999998,listed_alive
+Quadpro ITeS Limited,2021-09-20,2021-09-30,20.0,19.85,-0.007499999999999929,listed_alive
+Sansera Engineering Limited,2021-09-14,2021-09-24,744.0,818.55,0.10020161290322574,listed_alive
+Indiabulls Housing Finance Limited,2021-09-06,2024-04-09,,965.55,,listed_alive
+BEW Engineering Limited,2021-09-02,2021-09-16,58.0,133.95,1.3094827586206894,listed_alive
+Vijaya Diagnostic Centre Limited,2021-09-01,2021-09-14,531.0,620.1,0.16779661016949157,listed_alive
+Ami Organics Limited,2021-09-01,2021-09-14,610.0,935.0,0.5327868852459017,listed_alive
+DU Digital Technologies Limited,2021-08-12,2021-08-26,65.0,63.0,-0.03076923076923077,listed_alive
+Chemplast Sanmar Limited,2021-08-10,2021-08-24,541.0,535.6,-0.00998151571164506,listed_alive
+Aptus Value Housing Finance India Limited,2021-08-10,2021-08-24,353.0,346.9,-0.017280453257790433,listed_alive
+CarTrade Tech Limited,2021-08-09,2021-08-20,1618.0,1501.05,-0.07228059332509273,listed_alive
+Nuvoco Vistas Corporation Limited,2021-08-09,2025-09-23,,,,listed_alive
+Devyani International Limited,2021-08-04,2021-08-16,90.0,123.5,0.37222222222222223,listed_alive
+Krsnaa Diagnostics Limited,2021-08-04,2021-08-16,954.0,987.0,0.03459119496855346,listed_alive
+Windlas Biotech Limited,2021-08-04,2021-08-16,460.0,407.15,-0.11489130434782614,listed_alive
+Exxaro Tiles Limited,2021-08-04,2021-08-16,120.0,132.3,0.10250000000000009,listed_alive
+Rolex Rings Limited,2021-07-28,2021-08-09,900.0,1167.0,0.2966666666666667,listed_alive
+Rex Pipes and Cables Industries Limited,2021-07-28,2021-08-10,26.0,26.8,0.030769230769230795,listed_alive
+Network People Services Technologies Limited,2021-07-28,2025-04-30,2177.0,2320.15,0.06575562700964635,listed_alive
+Glenmark Life Sciences Limited,2021-07-27,2021-08-06,720.0,748.5,0.03958333333333333,listed_alive
+Tatva Chintan Pharma Chem Limited,2021-07-16,2021-07-29,1083.0,2312.2,1.134995383194829,listed_alive
+Zomato Limited,2021-07-14,2021-07-23,76.0,126.0,0.6578947368421053,listed_alive
+Piramal Capital and Housing Finance Limited,2021-07-12,,,,,listed_alive
+Clean Science and Technology Limited,2021-07-07,2021-07-19,900.0,1585.25,0.7613888888888889,listed_alive
+G R Infraprojects Limited,2021-07-07,2021-07-19,837.0,1747.1,1.0873357228195937,listed_alive
+IIFL Home Finance Limited,2021-07-06,2025-12-02,,,,listed_alive
+Walpar Nutritions Limited,2021-06-30,2021-07-13,55.0,57.0,0.03636363636363636,listed_alive
+India Pesticides Limited,2021-06-23,2021-07-05,296.0,343.15,0.15929054054054045,listed_alive
+Dodla Dairy Limited,2021-06-16,2021-06-28,428.0,609.9,0.42499999999999993,listed_alive
+Krishna Institute of Medical Sciences Limited,2021-06-16,2021-06-28,825.0,996.95,0.20842424242424248,listed_alive
+Sona BLW Precision Forgings Limited,2021-06-14,2021-06-24,291.0,361.2,0.2412371134020618,listed_alive
+Shyam Metalics and Energy Limited,2021-06-14,2021-06-24,306.0,376.15,0.22924836601307183,listed_alive
+Abhishek Integrations Limited,2021-06-08,2021-06-21,50.0,38.0,-0.24,listed_alive
+POWERGRID Infrastructure Investment Trust,2021-04-29,2021-05-14,100.0,102.99,0.029899999999999947,listed_alive
+India Grid Trust,2021-04-28,2021-05-10,1000.0,127.04,-0.8729600000000001,listed_alive
+Macrotech Developers Limited,2021-04-07,2021-04-19,486.0,465.25,-0.042695473251028807,listed_alive
+V-Marc India Limited,2021-03-25,,,,,listed_alive
+Barbeque-Nation Hospitality Limited,2021-03-24,2021-04-07,500.0,587.8,0.17559999999999992,listed_alive
+Siddhika Coatings Limited,2021-03-24,2021-04-07,57.0,56.95,-0.0008771929824560905,listed_alive
+Suryoday Small Finance Bank Limited,2021-03-17,2021-03-26,305.0,277.8,-0.08918032786885242,listed_alive
+Nazara Technologies Limited,2021-03-17,2021-03-30,1101.0,1592.0,0.44595821980018163,listed_alive
+Kalyan Jewellers India Limited,2021-03-16,2021-03-26,87.0,75.2,-0.13563218390804593,listed_alive
+Craftsman Automation Limited,2021-03-15,2021-03-25,1490.0,1435.6,-0.03651006711409402,listed_alive
+Laxmi Organic Industries Limited,2021-03-15,2021-03-25,130.0,164.45,0.2649999999999999,listed_alive
+Anupam Rasayan India Limited,2021-03-12,2024-05-10,236.0,788.75,2.3421610169491527,listed_alive
+Easy Trip Planners Limited,2021-03-08,2021-03-19,187.0,208.45,0.11470588235294112,listed_alive
+IIFL Finance Limited,2021-03-03,2026-03-13,,,,listed_alive
+MTAR Technologies Limited,2021-03-03,2021-03-15,575.0,1082.5,0.8826086956521739,listed_alive
+Pavna Industries Limited,2021-02-24,2021-03-09,165.0,165.5,0.0030303030303030303,listed_alive
+Heranba Industries Limited,2021-02-23,2021-03-05,627.0,812.6,0.29601275917065395,listed_alive
+Party Cruisers Limited,2021-02-22,2021-03-05,51.0,51.3,0.005882352941176415,listed_alive
+RailTel Corporation of India Limited,2021-02-16,2021-02-26,94.0,121.35,0.2909574468085106,listed_alive
+Nureca Limited,2021-02-15,2021-02-25,400.0,645.75,0.614375,listed_alive
+Brookfield India Real Estate Trust,2021-02-03,2021-02-16,275.0,268.93,-0.022072727272727247,listed_alive
+Stove Kraft Limited,2021-01-25,2021-02-05,385.0,445.95,0.1583116883116883,listed_alive
+Home First Finance Company India Limited,2021-01-21,2021-02-03,518.0,527.55,0.018436293436293348,listed_alive
+Indigo Paints Limited,2021-01-20,2021-02-02,1490.0,3117.15,1.092046979865772,listed_alive
+Indian Railway Finance Corporation Limited,2021-01-18,2025-12-03,,,,listed_alive
+Antony Waste Handling Cell Limited,2020-12-21,2021-01-01,315.0,407.35,0.29317460317460325,listed_alive
+Mrs. Bectors Food Specialities Limited,2020-12-15,2020-12-24,288.0,594.2,1.0631944444444446,listed_alive
+Burger King India Limited,2020-12-02,2020-12-14,60.0,135.0,1.25,listed_alive
+Gland Pharma Limited,2020-11-09,2020-11-20,1500.0,1819.55,0.2130333333333333,listed_alive
+Equitas Small Finance Bank Limited,2020-10-20,2020-11-02,33.0,32.8,-0.0060606060606061465,listed_alive
+Bodhi Tree Multimedia Limited,2020-10-09,2020-10-21,95.0,95.8,0.008421052631578918,listed_alive
+AAA Technologies Limited,2020-09-30,2022-11-28,72.0,78.75,0.09375,listed_alive
+Atal Realtech Limited,2020-09-30,2020-10-15,72.0,66.7,-0.07361111111111107,listed_alive
+Mazagon Dock Shipbuilders Limited,2020-09-29,2020-10-12,145.0,171.95,0.18586206896551716,listed_alive
+Likhitha Infrastructure Limited,2020-09-29,2020-10-15,120.0,136.5,0.1375,listed_alive
+UTI Asset Management Company Limited,2020-09-29,2020-10-12,554.0,476.2,-0.14043321299638992,listed_alive
+Sigma Solve Limited,2020-09-29,2023-06-09,295.0,302.35,0.02491525423728821,listed_alive
+Angel Broking Limited,2020-09-22,2020-10-05,306.0,275.8,-0.09869281045751631,listed_alive
+Chemcon Speciality Chemicals Limited,2020-09-21,2020-10-01,340.0,584.8,0.7199999999999999,listed_alive
+Computer Age Management Services Limited,2020-09-21,2021-05-07,1240.0,2207.4,0.7801612903225807,listed_alive
+Route Mobile Limited,2020-09-09,2020-09-21,350.0,651.3,0.8608571428571428,listed_alive
+Happiest Minds Technologies Limited,2020-09-07,2020-09-17,166.0,370.95,1.2346385542168674,listed_alive
+Mindspace Business Parks REIT,2020-07-27,2020-08-07,275.0,303.7,0.10436363636363633,listed_alive
+Yes Bank Limited - FPO,2020-07-15,,,,,listed_alive
+Rossari Biotech Limited,2020-07-13,2020-07-23,425.0,741.65,0.7450588235294117,listed_alive
+Ksolves India Limited,2020-06-23,2022-09-23,406.0,422.75,0.04125615763546798,listed_alive
+Laxmi Goldorna House Limited,2020-03-20,2023-11-10,135.0,148.75,0.10185185185185185,listed_alive
+Antony Waste Handling Cell Limited - Issue Withdrawn,2020-03-04,,,,,listed_alive
+SBI Cards and Payment Services Limited,2020-03-02,2020-03-16,755.0,681.4,-0.0974834437086093,listed_alive
+Madhav Copper Limited,2020-01-27,2020-08-19,70.0,77.9,0.11285714285714293,listed_alive
+ITI Limited FPO - Issue Withdrawn,2020-01-24,,,,,listed_alive
+Hindprakash Industries Limited,2020-01-15,2020-01-27,40.0,41.3,0.03249999999999993,listed_alive
+Tata Capital Housing Finance Limited,2020-01-07,2026-06-22,,,,listed_alive
+Shriram Transport Finance Company Limited,2020-01-06,,,,,listed_alive
+Vaxtex Cotfab Limited,2019-12-27,2020-01-13,24.0,24.8,0.03333333333333336,listed_alive
+Prince Pipes and Fittings Limited,2019-12-18,2019-12-30,178.0,166.9,-0.06235955056179772,listed_alive
+L&T Finance Limited,2019-12-16,2026-07-10,,,,listed_alive
+DC Infotech and Communication Limited,2019-12-12,2019-12-27,45.0,45.2,0.004444444444444508,listed_alive
+Ujjivan Small Finance Bank Limited,2019-12-02,2019-12-12,37.0,55.95,0.5121621621621623,listed_alive
+Ascom Leasing & Investments Limited,2019-11-26,,30.0,,,listed_alive
+CSB Bank Limited,2019-11-22,2019-12-04,195.0,300.05,0.5387179487179488,listed_alive
+Mangalam Global Enterprise Limited,2019-11-15,2020-12-23,41.0,47.85,0.16707317073170735,listed_alive
+Indian Railway Catering and Tourism Corporation Limited,2019-09-30,2019-10-14,320.0,727.75,1.27421875,listed_alive
+Vishwaraj Sugar Industries Limited,2019-09-30,2019-10-15,60.0,60.35,0.005833333333333357,listed_alive
+Sona Hi Sona Jewellers (Gujarat) Limited,2019-09-30,,10.0,,,listed_alive
+Shiv Aum Steels Limited,2019-09-19,2025-11-14,300.0,300.0,0.0,listed_alive
+Salasar Exteriors And Contour Limited,2019-08-28,2019-09-12,36.0,36.0,0.0,listed_alive
+Tata Capital Financial Services Ltd,2019-08-13,,,,,listed_alive
+India Infoline Finance Limited,2019-08-06,2019-09-09,1000.0,938.9,-0.06110000000000002,listed_alive
+Sterling & Wilson Solar Limited,2019-08-06,,,,,listed_alive
+Spandana Sphoorty Financial Limited,2019-08-05,2025-08-18,115.0,112.85,-0.018695652173913092,listed_alive
+Indiabulls Consumer Finance Limited,2019-07-31,2019-09-11,1000.0,851.15,-0.14885,listed_alive
+Affle India Limited,2019-07-29,2019-08-08,745.0,873.65,0.17268456375838923,listed_alive
+Wonder Fibromats Limited,2019-07-22,2019-08-06,89.0,89.05,0.0005617977528089568,listed_alive
+Shriram Transport Finance Company Limited,2019-07-17,2019-08-26,1000.0,980.75,-0.01925,listed_alive
+K.P.R. Agrochem Limited,2019-06-28,,,,,listed_alive
+AB Infrabuild Limited,2019-06-28,,29.0,,,listed_alive
+IndiaMART InterMESH Limited,2019-06-24,2019-07-04,973.0,1301.95,0.3380781089414183,listed_alive
+Alumilite Architecturals Limited,2019-06-24,,30.0,,,listed_alive
+Sudarshan Pharma Industries Limited,2019-06-12,,72.0,,,listed_alive
+Indiabulls Consumer Finance Limited,2019-05-30,2019-09-11,1000.0,851.15,-0.14885,listed_alive
+Par Drugs and Chemicals Limited,2019-05-03,2021-09-16,124.0,142.9,0.15241935483870972,listed_alive
+Neogen Chemicals Limited,2019-04-24,2019-05-08,215.0,263.55,0.22581395348837213,listed_alive
+Magma Fincorp Limited,2019-04-08,2019-05-09,1000.0,128.75,-0.87125,listed_alive
+L&T Finance Limited,2019-04-08,2026-07-10,,,,listed_alive
+Polycab India Limited,2019-04-05,2019-04-16,538.0,654.8,0.2171003717472118,listed_alive
+Metropolis Healthcare Limited,2019-04-03,2019-04-15,880.0,959.85,0.0907386363636364,listed_alive
+Rail Vikas Nigam Limited,2019-03-29,2019-04-11,19.0,19.05,0.0026315789473684583,listed_alive
+OSIA Hyper Retail Limited,2019-03-26,2022-12-01,295.0,325.55,0.10355932203389834,listed_alive
+KHFM Hospitality and Facility Management Serv Ltd,2019-03-22,2019-04-12,36.0,36.1,0.0027777777777778173,listed_alive
+Embassy Office Parks REIT,2019-03-18,2019-04-01,300.0,314.67,0.048900000000000055,listed_alive
+Artedz Fabs Limited,2019-03-18,2019-03-29,36.0,41.65,0.15694444444444441,listed_alive
+MSTC Limited,2019-03-13,2019-03-29,120.0,113.95,-0.050416666666666644,listed_alive
+L&T Finance Limited,2019-03-06,2026-07-10,,,,listed_alive
+Mindpool Technologies Limited,2019-02-14,2019-02-28,30.0,28.5,-0.05,listed_alive
+Indiabulls Consumer Finance Limited,2019-02-04,2019-09-11,1000.0,851.15,-0.14885,listed_alive
+Chalet Hotels Limited,2019-01-29,2019-02-07,280.0,291.7,0.041785714285714246,listed_alive
+Surani Steel Tubes Limited,2019-01-25,2019-02-06,52.0,53.25,0.02403846153846154,listed_alive
+Xelpmoc Design and Tech Limited,2019-01-23,2019-02-04,66.0,59.85,-0.09318181818181816,listed_alive
+India Infoline Finance Limited,2019-01-22,2019-09-09,1000.0,938.9,-0.06110000000000002,listed_alive
+Shriram Transport Finance Company Limited,2019-01-07,2019-08-26,1000.0,980.75,-0.01925,listed_alive
+ECL Finance Limited,2018-12-13,2025-12-01,1000.0,,,listed_alive
+DRS Dilip Roadlines Limited,2018-11-27,2018-12-10,75.0,75.15,0.002000000000000076,listed_alive
+Shubhlaxmi Jewel Art Limited,2018-11-22,2018-12-04,26.0,27.2,0.04615384615384613,listed_alive
+ICL Multitrading India Limited,2018-11-19,,85.0,,,listed_alive
+Shriram Transport Finance Company Limited,2018-10-15,2019-08-26,1000.0,980.75,-0.01925,listed_alive
+Ultra Wiring Connectivity System Limited,2018-10-12,2018-10-26,35.0,33.2,-0.051428571428571344,listed_alive
+Iris Clothings Limited,2018-10-10,2021-02-22,60.0,70.8,0.17999999999999997,listed_alive
+Dinesh Engineers Limited,2018-09-28,,,,,listed_alive
+Marine Electricals (India) Limited,2018-09-28,2020-12-02,191.05,197.1,0.03166710285265628,listed_alive
+Vinny Overseas Limited,2018-09-28,2022-11-28,80.0,82.65,0.03312500000000007,listed_alive
+B&B Triplewall Containers Limited,2018-09-28,2022-11-23,230.0,225.9,-0.017826086956521714,listed_alive
+Silgo Retail Limited,2018-09-27,2026-02-19,30.0,37.04,0.23466666666666663,listed_alive
+Kritika Wires Limited,2018-09-26,2022-05-04,40.0,58.05,0.45124999999999993,listed_alive
+Parin Furniture Limited,2018-09-26,2018-10-09,63.0,64.9,0.03015873015873025,listed_alive
+Aavas Financiers Limited,2018-09-25,2018-10-08,821.0,774.35,-0.056820950060901314,listed_alive
+Garden Reach Shipbuilders & Engineers Limited,2018-09-24,2018-10-10,118.0,103.3,-0.1245762711864407,listed_alive
+Rajnandini Metal Limited,2018-09-24,2021-02-16,31.05,37.25,0.19967793880837356,listed_alive
+Kshitij Polyline Limited,2018-09-21,2022-07-27,31.0,34.05,0.09838709677419345,listed_alive
+Ircon International Limited,2018-09-17,2018-09-28,475.0,415.3,-0.12568421052631576,listed_alive
+Spectrum Electrical Industries Limited,2018-09-17,2025-03-28,1833.0,2057.05,0.12223131478450637,listed_alive
+Indiabulls Commercial Credit Limited,2018-09-11,2023-04-27,1000.0,913.0,-0.087,listed_alive
+Ahlada Engineers Limited,2018-09-11,2021-01-28,69.5,68.65,-0.012230215827338048,listed_alive
+Tata Capital Financial Services Limited,2018-09-10,2023-12-12,,1054.93,,listed_alive
+Rajshree Polypack Limited,2018-09-10,2018-09-24,,116.6,,listed_alive
+AKG Exim Limited,2018-09-10,2021-02-16,93.3,102.4,0.09753483386923911,listed_alive
+Lagnam Spintex Limited,2018-09-04,2021-09-30,41.0,45.05,0.09878048780487798,listed_alive
+Sumit Woods Limited,2018-08-29,2019-07-30,23.85,22.95,-0.03773584905660386,listed_alive
+Marshall Machines Limited,2018-08-28,2021-11-22,33.0,31.4,-0.048484848484848526,listed_alive
+Supreme Engineering Limited,2018-08-24,2020-12-04,23.0,25.45,0.10652173913043475,listed_alive
+Dangee Dums Limited,2018-08-20,2020-11-13,92.0,110.4,0.20000000000000007,listed_alive
+Aaron Industries Limited,2018-08-20,2020-11-06,27.0,32.7,0.21111111111111122,listed_alive
+Powerful Technologies Limited,2018-08-09,2018-08-28,51.0,45.6,-0.10588235294117644,listed_alive
+CreditAccess Grameen Limited,2018-08-08,2023-09-11,1000.0,999.78,-0.00022000000000002728,listed_alive
+Saketh Exim Limited,2018-08-01,2018-08-13,69.0,69.4,0.005797101449275445,listed_alive
+HDFC Asset Management Company Limited,2018-07-25,2018-08-06,1100.0,1815.95,0.6508636363636364,listed_alive
+ECL Finance Limited,2018-07-24,2025-12-01,1000.0,,,listed_alive
+Ushanti Colour Chem Limited,2018-07-23,2018-08-02,60.0,67.4,0.12333333333333343,listed_alive
+TCNS Clothing Co. Limited,2018-07-18,2018-07-30,716.0,659.15,-0.07939944134078215,listed_alive
+Avon Moldplast Limited,2018-07-12,2018-07-26,51.0,52.25,0.024509803921568627,listed_alive
+Ambani Organics Limited,2018-07-06,2018-07-18,66.0,66.65,0.009848484848484934,listed_alive
+Rudrabhishek Enterprises Limited,2018-06-29,2020-12-14,96.0,99.85,0.04010416666666661,listed_alive
+Jakharia Fabric Limited,2018-06-29,2018-07-11,180.0,181.5,0.008333333333333333,listed_alive
+Ganga Forging Limited,2018-06-29,2021-07-06,93.0,98.7,0.06129032258064519,listed_alive
+Shriram Transport Finance Company Limited - NCD 8,2018-06-27,,,,,listed_alive
+Varroc Engineering Limited,2018-06-26,2018-07-06,967.0,1037.35,0.07275077559462245,listed_alive
+Bright Solar Limited,2018-06-26,2018-07-09,36.0,36.95,0.02638888888888897,listed_alive
+RITES Limited,2018-06-20,2018-07-02,185.0,213.3,0.15297297297297305,listed_alive
+Fine Organic Industries Limited,2018-06-20,2018-07-02,783.0,822.8,0.05083014048531284,listed_alive
+Accuracy Shipping Limited,2018-06-11,2020-12-11,27.0,31.25,0.1574074074074074,listed_alive
+Priti International Limited,2018-06-11,2022-03-02,66.0,69.05,0.04621212121212117,listed_alive
+Shreeoswal Seeds and Chemicals Limited,2018-06-07,2023-02-28,348.0,384.5,0.10488505747126436,listed_alive
+Sonam Clock Limited,2018-06-01,2022-04-07,75.0,84.55,0.1273333333333333,listed_alive
+Sorich Foils Limited,2018-05-24,,16.0,,,listed_alive
+Debock Sales and Marketing Limited,2018-05-24,2018-06-05,20.0,20.35,0.01750000000000007,listed_alive
+Latteys Industries Limited,2018-05-23,2023-05-23,35.0,40.95,0.17000000000000007,listed_alive
+Shree Vasu Logistics Limited,2018-05-23,2023-04-21,127.0,144.3,0.13622047244094498,listed_alive
+Dewan Housing Finance Corporation Limited,2018-05-22,2018-06-06,1000.0,989.99,-0.010009999999999991,listed_alive
+Suumaya Lifestyle Limited,2018-05-22,2020-10-19,55.0,62.25,0.1318181818181818,listed_alive
+Sirca Paints India Limited,2018-05-16,2019-07-22,202.0,200.85,-0.0056930693069307215,listed_alive
+IndoStar Capital Finance Limited,2018-05-09,2026-04-28,,,,listed_alive
+Five Core Electronics Limited,2018-05-09,2018-05-21,140.0,145.5,0.039285714285714285,listed_alive
+E2E Networks Limited,2018-05-03,2022-04-12,124.0,136.7,0.10241935483870959,listed_alive
+SoftTech Engineers Limited,2018-04-27,2022-02-25,131.0,127.9,-0.02366412213740454,listed_alive
+Godha Cabcon and Insulation Limited,2018-04-27,2018-05-11,,33.05,,listed_alive
+Aakash Exploration Services Limited,2018-04-17,2020-09-29,53.0,50.55,-0.046226415094339675,listed_alive
+Mahickra Chemicals Limited,2018-04-16,2018-04-26,,36.75,,listed_alive
+Bombay Super Hybrid Seeds Limited,2018-04-12,2020-10-28,92.0,93.75,0.019021739130434784,listed_alive
+Power and Instrumentation (Gujarat) Limited,2018-04-11,2018-04-23,33.0,34.9,0.05757575757575753,listed_alive
+Vera Synthetic Limited,2018-03-28,2018-04-12,40.0,42.75,0.06875,listed_alive
+AVG Logistics Limited,2018-03-28,2023-05-12,168.0,194.35,0.15684523809523807,listed_alive
+MMP Industries Limited,2018-03-28,2020-01-09,105.0,106.0,0.009523809523809525,listed_alive
+S S Infrastructure Development Consultants Limited,2018-03-28,2018-04-12,,43.1,,listed_alive
+Soni Soya Products Limited,2018-03-28,2018-04-12,25.0,25.5,0.02,listed_alive
+Narmada Agrobase Limited,2018-03-28,2022-10-27,22.0,25.75,0.17045454545454544,listed_alive
+Lemon Tree Hotels Limited,2018-03-26,2018-04-09,56.0,71.65,0.27946428571428583,listed_alive
+Penta Gold Limited,2018-03-23,2018-04-25,37.0,,,listed_alive
+ICICI Securities Limited,2018-03-22,2025-11-26,,,,listed_alive
+Mishra Dhatu Nigam Limited,2018-03-21,2018-04-04,90.0,90.05,0.000555555555555524,listed_alive
+Continental Seeds and Chemicals Limited,2018-03-21,2018-04-04,26.0,25.75,-0.009615384615384616,listed_alive
+Kapston Facilities Management Limited,2018-03-21,2020-05-27,91.0,97.25,0.06868131868131869,listed_alive
+Sandhar Technologies Limited,2018-03-19,2018-04-02,332.0,322.15,-0.02966867469879525,listed_alive
+Mittal Life Style Limited,2018-03-19,2020-04-29,103.0,104.4,0.013592233009708793,listed_alive
+Giriraj Civil Developers Limited,2018-03-19,2018-04-02,100.0,100.1,0.0009999999999999432,listed_alive
+Karda Constructions Limited,2018-03-16,2018-04-02,180.0,142.8,-0.2066666666666666,listed_alive
+Hindustan Aeronautics Limited,2018-03-16,2018-03-28,1215.0,1132.85,-0.06761316872427992,listed_alive
+Uravi T and Wedge Lamps Limited,2018-03-16,2023-07-05,265.0,277.4,0.0467924528301886,listed_alive
+Bandhan Bank Limited,2018-03-15,2018-03-27,375.0,476.85,0.27160000000000006,listed_alive
+Bharat Dynamics Limited,2018-03-13,2018-03-23,428.0,389.8,-0.0892523364485981,listed_alive
+Tara Chand Logistic Solutions Limited,2018-03-13,2018-03-23,55.0,49.05,-0.10818181818181824,listed_alive
+Marvel Decor Limited,2018-03-12,2018-03-23,57.0,57.85,0.014912280701754412,listed_alive
+Macpower CNC Machines Limited,2018-03-12,2020-08-19,50.35,53.1,0.05461767626613704,listed_alive
+Edelweiss Retail Finance Limited,2018-03-07,2018-03-26,1000.0,997.93,-0.00207000000000005,listed_alive
+Sarveshwar Foods Limited,2018-03-05,2022-12-08,70.0,85.55,0.22214285714285711,listed_alive
+Uniinfo Telecom Services Limited,2018-03-05,2022-01-12,43.0,38.9,-0.09534883720930236,listed_alive
+H.G.Infra Engineering Limited,2018-02-26,2018-03-09,270.0,267.75,-0.008333333333333333,listed_alive
+Hindcon Chemicals Limited,2018-02-26,2021-07-05,39.0,41.75,0.07051282051282051,listed_alive
+CKP Leisure Limited,2018-02-21,2018-03-06,30.0,29.9,-0.003333333333333381,listed_alive
+Aster DM Healthcare Limited,2018-02-12,2018-02-26,190.0,181.55,-0.044473684210526256,listed_alive
+SREI Infrastructure Finance Limited,2018-02-09,2018-03-21,1000.0,995.89,-0.004110000000000014,listed_alive
+Arvee Laboratories India Limited,2018-02-09,2018-02-22,61.0,62.5,0.02459016393442623,listed_alive
+South West Pinnacle Exploration Limited,2018-02-06,2018-02-19,78.0,88.3,0.13205128205128203,listed_alive
+Sintercom India Limited,2018-02-05,2020-10-07,80.0,83.05,0.038124999999999964,listed_alive
+Banka BioLoo Limited,2018-02-05,2020-10-29,31.55,34.75,0.10142630744849443,listed_alive
+Mohini Health and Hygiene Limited,2018-02-05,2018-02-16,42.0,50.4,0.19999999999999996,listed_alive
+Galaxy Surfactants Limited,2018-01-29,2018-02-08,1480.0,1700.45,0.14895270270270272,listed_alive
+A and M Jumbo Bags  Limited,2018-01-29,2018-02-12,65.0,66.55,0.0238461538461538,listed_alive
+Vasa Retail and Overseas  Limited,2018-01-24,2018-02-06,30.0,36.0,0.2,listed_alive
+Shree Ram Proteins Limited,2018-01-23,2020-09-23,35.3,39.45,0.11756373937677071,listed_alive
+Solex Energy Limited,2018-01-22,2025-10-08,1694.0,1715.35,0.012603305785123912,listed_alive
+Amber Enterprises India Limited,2018-01-17,2018-01-30,859.0,1245.25,0.44965075669383003,listed_alive
+Newgen Software Technologies Limited,2018-01-16,2018-01-29,245.0,252.4,0.030204081632653083,listed_alive
+Apollo Micro Systems Limited,2018-01-10,2018-01-22,275.0,441.75,0.6063636363636363,listed_alive
+S K S Textiles Limited,2018-01-09,2018-01-19,150.0,133.35,-0.11100000000000004,listed_alive
+Silly Monks Entertainment Limited,2018-01-05,2020-07-08,25.0,26.9,0.07599999999999994,listed_alive
+Brand Concepts Limited,2017-12-29,2022-01-11,46.0,53.25,0.15760869565217392,listed_alive
+Moksh Ornaments Limited,2017-12-21,2021-05-21,64.0,61.8,-0.034375000000000044,listed_alive
+Ajooni Biotech Limited,2017-12-20,2021-05-07,40.0,43.5,0.0875,listed_alive
+Astron Paper & Board Mills Limited,2017-12-15,2017-12-29,50.0,120.75,1.415,listed_alive
+SMVD Poly Pack Limited,2017-12-13,2017-12-26,55.0,53.6,-0.025454545454545428,listed_alive
+One Point One Solutions Limited,2017-12-13,2019-05-09,39.8,38.55,-0.0314070351758794,listed_alive
+Touchwood Entertainment Limited,2017-12-11,2020-01-21,89.0,84.8,-0.04719101123595509,listed_alive
+Future Supply Chain Solutions Limited,2017-12-06,2017-12-18,664.0,686.35,0.0336596385542169,listed_alive
+Shalby Limited,2017-12-05,2017-12-15,248.0,239.6,-0.03387096774193551,listed_alive
+Innovana Thinklabs Limited,2017-11-29,2024-12-17,467.0,467.7,0.0014989293361884126,listed_alive
+Ice Make Refrigeration Limited,2017-11-27,2020-10-12,55.0,58.05,0.0554545454545454,listed_alive
+Shradha Infraprojects (Nagpur) Limited,2017-11-27,2020-10-22,34.3,38.0,0.10787172011661816,listed_alive
+Felix Industries Limited,2017-11-23,2017-12-05,35.0,35.8,0.022857142857142777,listed_alive
+Zodiac Energy Limited,2017-11-23,2021-12-14,30.0,32.1,0.07000000000000005,listed_alive
+Silver Touch Technologies limited,2017-11-20,2022-05-12,213.0,267.6,0.2563380281690142,listed_alive
+Vertoz Advertising Limited,2017-11-14,2020-05-14,72.0,75.4,0.047222222222222304,listed_alive
+Pulz Electronics Limited,2017-11-14,2017-11-24,54.0,64.05,0.18611111111111106,listed_alive
+ANI Integrated Services Limited,2017-11-08,2017-11-20,100.0,120.0,0.2,listed_alive
+HDFC Standard Life Insurance Company Limited,2017-11-07,2017-11-17,290.0,344.6,0.1882758620689656,listed_alive
+Khadim India Limited,2017-11-02,2017-11-14,750.0,688.85,-0.0815333333333333,listed_alive
+The New India Assurance Company Limited,2017-11-01,2017-11-13,800.0,727.1,-0.09112499999999997,listed_alive
+Secur Credentials Limited,2017-11-01,2022-10-17,71.35,72.6,0.017519271198318153,listed_alive
+Mahindra Logistics Limited,2017-10-31,2017-11-10,429.0,429.5,0.0011655011655011655,listed_alive
+Reliance Nippon Life Asset Management Limited,2017-10-25,2017-11-06,252.0,284.4,0.12857142857142848,listed_alive
+General Insurance Corporation Of India,2017-10-11,2017-10-25,912.0,874.3,-0.041337719298245666,listed_alive
+Indian Energy Exchange Limited,2017-10-09,2017-10-23,1650.0,1629.15,-0.012636363636363581,listed_alive
+D.P. Abhushan Limited,2017-10-09,2017-10-23,28.0,33.6,0.20000000000000004,listed_alive
+MAS Financial Services Limited,2017-10-06,2017-10-18,459.0,654.4,0.4257080610021786,listed_alive
+Godrej Agrovet Limited,2017-10-04,2017-10-16,460.0,595.65,0.294891304347826,listed_alive
+Tirupati  Forge Limited,2017-09-29,2017-10-12,29.0,34.1,0.1758620689655173,listed_alive
+Beta  Drugs Limited,2017-09-29,2017-10-12,85.0,101.95,0.1994117647058824,listed_alive
+CMM Infraprojects Limited,2017-09-29,2017-10-12,40.0,42.25,0.05625,listed_alive
+Milton Industries Limited,2017-09-29,2017-10-16,34.0,34.35,0.010294117647058865,listed_alive
+Omfurn India Limited,2017-09-29,2017-10-13,23.0,22.85,-0.006521739130434721,listed_alive
+Jash Engineering Limited,2017-09-28,2019-10-30,95.0,115.15,0.2121052631578948,listed_alive
+Goldstar Power Limited,2017-09-27,2017-10-10,25.0,26.3,0.052000000000000025,listed_alive
+Reliable Data Services Limited,2017-09-27,2024-07-10,48.0,53.65,0.1177083333333333,listed_alive
+RKEC Projects Limited,2017-09-25,2020-12-18,36.0,41.95,0.16527777777777786,listed_alive
+Airo Lam Limited,2017-09-25,2021-10-13,74.0,83.7,0.13108108108108113,listed_alive
+Prataap Snacks Limited,2017-09-22,2017-10-05,938.0,1180.65,0.2586886993603412,listed_alive
+Innovative Tyres and Tubes Limited,2017-09-22,2017-10-05,45.0,47.15,0.047777777777777745,listed_alive
+Aarvi Encon Limited,2017-09-21,2020-06-24,22.0,24.7,0.1227272727272727,listed_alive
+Cadsys (India) Limited,2017-09-21,2017-10-04,70.0,84.0,0.2,listed_alive
+Shree Tirupati Balajee FIBC Limited,2017-09-21,2017-10-05,40.0,43.05,0.07624999999999993,listed_alive
+D P Wires Limited,2017-09-21,2020-01-17,76.0,88.8,0.16842105263157892,listed_alive
+SBI Life Insurance Company Limited,2017-09-20,2017-10-03,700.0,707.55,0.010785714285714221,listed_alive
+R M Drip and Sprinklers Systems Limited,2017-09-19,2025-07-30,610.0,663.15,0.08713114754098357,listed_alive
+Madhya Pradesh Today Media Limited,2017-09-19,2017-09-29,66.0,79.2,0.20000000000000004,listed_alive
+ICICI Lombard General Insurance Company Limited,2017-09-15,2017-09-27,661.0,681.2,0.030559757942511416,listed_alive
+Worth Peripherals Limited,2017-09-15,2020-08-04,44.0,47.75,0.08522727272727272,listed_alive
+Sri Krishna Metcom Limited,2017-09-14,2017-09-26,55.0,49.0,-0.10909090909090909,listed_alive
+Capacit'e Infraprojects Limited,2017-09-13,2017-09-25,250.0,342.55,0.37020000000000003,listed_alive
+Matrimony.com Limited,2017-09-11,2017-09-21,985.0,904.65,-0.08157360406091373,listed_alive
+Bharat Road Network Limited,2017-09-06,2017-09-18,205.0,208.45,0.016829268292682872,listed_alive
+Dixon Technologies (India) Limited,2017-09-06,2017-09-18,1766.0,2891.55,0.6373442808607023,listed_alive
+Manav infra projects Limited,2017-09-04,2025-03-12,11.0,1.1,-0.9,listed_alive
+Penta Gold Limited,2017-09-04,,35.0,,,listed_alive
+Pashupati Cotspin Limited,2017-08-28,2025-07-17,670.0,688.35,0.02738805970149257,listed_alive
+Apex Frozen Foods Limited,2017-08-22,2017-09-04,175.0,212.1,0.21199999999999997,listed_alive
+Seven Hills Beverages Limited,2017-08-18,,26.0,,,listed_alive
+Lexus Granito (India) Limited,2017-08-09,2023-03-13,62.5,73.45,0.17520000000000005,listed_alive
+Geekay Wires Limited,2017-08-09,2020-03-06,39.0,37.5,-0.038461538461538464,listed_alive
+Servotech Power Systems Limited,2017-08-09,2021-09-02,26.0,25.8,-0.007692307692307665,listed_alive
+Vaishali Pharma Limited,2017-08-07,2020-01-15,40.0,46.7,0.16750000000000007,listed_alive
+Cochin Shipyard Limited,2017-08-01,2017-08-11,432.0,528.15,0.2225694444444444,listed_alive
+Security and Intelligence Services (India) Limited,2017-07-31,2017-08-10,815.0,757.05,-0.07110429447852766,listed_alive
+Surevin BPO Services Limited,2017-07-28,2017-08-09,40.0,40.2,0.005000000000000071,listed_alive
+Total Transport Systems Limited,2017-07-25,2020-08-28,22.55,26.0,0.1529933481152993,listed_alive
+Keerti Knowledge And Skills Limited,2017-07-24,2020-11-13,32.5,29.45,-0.09384615384615387,listed_alive
+Shanti Overseas (India) Limited,2017-07-21,2021-09-16,22.0,21.9,-0.00454545454545461,listed_alive
+Srei Equipment Finance Limited,2017-07-17,2020-02-27,1000.0,661.8,-0.33820000000000006,listed_alive
+Univastu India Limited,2017-07-14,2020-06-22,25.0,33.2,0.3280000000000001,listed_alive
+Salasar Techno Engineering Limited,2017-07-12,2017-07-25,108.0,262.5,1.4305555555555556,listed_alive
+Shrenik Limited,2017-07-06,2019-08-02,58.5,63.9,0.09230769230769229,listed_alive
+Bansal Multiflex Limited,2017-06-30,2017-07-12,31.0,35.7,0.15161290322580653,listed_alive
+Transwind Infrastructures Limited,2017-06-30,2017-07-12,27.0,32.4,0.19999999999999996,listed_alive
+Ace Integrated Solutions Limited,2017-06-29,2022-11-04,46.0,48.5,0.05434782608695652,listed_alive
+AU Small Finance Bank Limited,2017-06-28,2017-07-10,358.0,541.65,0.5129888268156424,listed_alive
+Pushpanjali Realms and Infratech Limited,2017-06-27,2017-07-10,55.0,55.45,0.008181818181818233,listed_alive
+Accord Synergy Limited,2017-06-22,2017-07-06,60.0,72.0,0.2,listed_alive
+GTPL Hathway Limited,2017-06-21,2017-07-04,170.0,171.65,0.00970588235294121,listed_alive
+Central Depository Services (India) Limited,2017-06-19,2017-06-30,149.0,261.6,0.7557046979865774,listed_alive
+Eris Lifesciences Limited,2017-06-16,2017-06-29,603.0,601.5,-0.0024875621890547263,listed_alive
+Tejas Networks Limited,2017-06-14,2017-06-27,257.0,263.5,0.02529182879377432,listed_alive
+Globe Textiles (India) Limited,2017-06-12,2020-10-07,46.0,54.9,0.19347826086956518,listed_alive
+Shri Ram Switchgears Limited,2017-05-25,2017-06-07,19.0,22.8,0.20000000000000004,listed_alive
+Vadivarhe Speciality Chemicals Limited,2017-05-22,2017-06-02,42.0,50.4,0.19999999999999996,listed_alive
+Jalan Transolutions (India) Limited,2017-05-18,2017-05-31,46.0,41.95,-0.0880434782608695,listed_alive
+India Grid Trust,2017-05-17,2021-05-10,1000.0,127.04,-0.8729600000000001,listed_alive
+PSP Projects Limited,2017-05-17,2017-05-29,210.0,199.5,-0.05,listed_alive
+Housing and Urban Development Corporation Limited,2017-05-08,2017-05-19,60.0,1060.22,16.670333333333335,listed_alive
+IRB InvIT Fund,2017-05-03,2017-05-18,102.0,101.8,-0.001960784313725518,listed_alive
+Zota Health Care Limited,2017-04-27,2019-08-19,198.25,204.5,0.031525851197982346,listed_alive
+S Chand and Company Limited,2017-04-26,2017-05-09,670.0,676.0,0.008955223880597015,listed_alive
+CKP Products Limited,2017-04-26,2017-05-09,50.0,50.15,0.0029999999999999714,listed_alive
+InfoBeans Technologies Limited,2017-04-18,2019-07-15,60.0,65.3,0.08833333333333329,listed_alive
+Panache Digilife Limited,2017-04-11,2020-01-06,52.0,54.55,0.04903846153846148,listed_alive
+Sikko Industries Limited,2017-04-05,2021-10-22,36.0,38.6,0.07222222222222226,listed_alive
+M K Proteins Limited,2017-03-31,2023-06-13,712.0,631.7,-0.11278089887640443,listed_alive
+Dev Information Technology Limited,2017-03-31,2022-02-15,129.0,133.15,0.03217054263565896,listed_alive
+ASL Industries Limited,2017-03-31,2017-04-18,35.0,35.05,0.0014285714285713475,listed_alive
+Focus Lighting And Fixtures Limited,2017-03-30,2021-11-24,78.0,85.3,0.09358974358974355,listed_alive
+Creative Peripherals and Distribution Limited,2017-03-29,2019-08-05,66.75,67.7,0.014232209737827758,listed_alive
+Bohra Industries Limited,2017-03-23,2022-10-27,6.0,68.65,10.441666666666668,listed_alive
+Shankara Building Products Limited,2017-03-22,2017-04-05,460.0,632.45,0.3748913043478262,listed_alive
+Euro India Fresh Foods Limited,2017-03-21,2021-10-12,130.0,135.15,0.039615384615384656,listed_alive
+CL Educate Limited,2017-03-20,2017-03-31,502.0,422.1,-0.15916334661354578,listed_alive
+Laxmi Cotspin Limited,2017-03-17,2021-11-12,23.0,26.35,0.14565217391304355,listed_alive
+Airan Limited,2017-03-14,2019-05-03,38.0,39.35,0.03552631578947372,listed_alive
+Avenue Supermarts Limited,2017-03-08,2017-03-21,299.0,641.6,1.1458193979933111,listed_alive
+Music Broadcast Limited,2017-03-06,2023-04-20,100.0,86.45,-0.13549999999999998,listed_alive
+Sanginita Chemicals Limited,2017-03-01,2019-07-15,81.3,79.5,-0.02214022140221399,listed_alive
+Akash Infra Projects Limited,2017-02-28,2019-10-11,58.0,60.5,0.04310344827586207,listed_alive
+Nitiraj Engineers Limited,2017-02-20,2021-04-22,45.45,43.2,-0.0495049504950495,listed_alive
+Global Education limited,2017-02-16,2020-12-07,196.0,50.15,-0.7441326530612244,listed_alive
+Krishana Phoschem Limited,2017-02-13,2019-08-22,50.5,52.05,0.030693069306930637,listed_alive
+Steel City Securities Limited,2017-02-06,2019-06-27,56.2,61.1,0.0871886120996441,listed_alive
+Srei Infrastructure Finance Limited,2017-01-30,2018-03-21,1000.0,995.89,-0.004110000000000014,listed_alive
+BSE Limited,2017-01-23,2017-02-03,806.0,1069.2,0.3265508684863524,listed_alive
+Madhav Copper Limited,2017-01-23,2020-08-19,70.0,77.9,0.11285714285714293,listed_alive
+Srei Equipment Finance Limited,2017-01-03,2020-02-27,1000.0,661.8,-0.33820000000000006,listed_alive
+Maheshwari Logistics Limited,2016-12-30,2017-01-16,68.0,76.35,0.12279411764705873,listed_alive
+Prolife Industries Limited,2016-12-27,2017-01-09,38.0,37.1,-0.023684210526315752,listed_alive
+Libas Designs Limited,2016-12-27,2019-07-23,48.95,48.05,-0.018386108273748838,listed_alive
+Reliance Home Finance Limited,2016-12-22,2017-09-22,10.0,1058.0,104.8,listed_alive
+Laurus Labs Limited,2016-12-06,2016-12-19,428.0,480.4,0.12242990654205602,listed_alive
+Sheela Foam Limited,2016-11-29,2016-12-09,730.0,1032.0,0.4136986301369863,listed_alive
+Jet Freight Logistics Limited,2016-11-24,2021-12-21,48.0,48.0,0.0,listed_alive
+GreenSignal Bio Pharma Limited,2016-11-09,,,,,listed_alive
+Agro Phos India limited,2016-10-27,2019-03-08,57.0,58.7,0.029824561403508823,listed_alive
+Varun Beverages Limited,2016-10-26,2016-11-08,445.0,459.5,0.03258426966292135,listed_alive
+PNB Housing Finance Limited,2016-10-25,2026-07-13,,,,listed_alive
+Endurance Technologies Limited,2016-10-05,2016-10-19,472.0,646.9,0.37055084745762706,listed_alive
+Pansari Developers Limited,2016-09-30,2021-10-18,55.0,55.0,0.0,listed_alive
+Dhanuka Realty Limited,2016-09-30,2016-10-18,40.0,41.25,0.03125,listed_alive
+Globe International Carriers Limited,2016-09-30,2026-02-18,45.0,49.2,0.0933333333333334,listed_alive
+Art Nirman Limited,2016-09-30,2021-10-18,30.0,31.149999618530273,0.03833332061767578,listed_alive
+Sakar Healthcare Limited,2016-09-30,2019-04-11,56.0,60.6,0.08214285714285717,listed_alive
+Gretex Industries Limited,2016-09-30,2016-10-14,20.0,24.0,0.2,listed_alive
+Aurangabad Distillery Limited,2016-09-30,2016-10-17,35.0,42.0,0.2,listed_alive
+Nandani Creation Limited,2016-09-28,2021-09-02,59.0,72.7,0.23220338983050853,listed_alive
+Jet Knitwears Limited,2016-09-27,2016-10-07,39.0,46.8,0.19999999999999993,listed_alive
+HPL Electric and Power Limited,2016-09-22,2016-10-04,202.0,189.3,-0.06287128712871282,listed_alive
+ICICI Prudential Life Insurance Company Limited,2016-09-19,2025-12-02,,,,listed_alive
+Indiabulls Housing Finance Limited,2016-09-15,2024-04-09,,965.55,,listed_alive
+AVSL Industries Limited,2016-09-15,2016-10-06,36.0,36.0,0.0,listed_alive
+GNA Axles Limited,2016-09-14,2016-09-26,207.0,245.05,0.183816425120773,listed_alive
+L&T Technology Services Limited,2016-09-12,2016-09-23,860.0,869.0,0.010465116279069767,listed_alive
+Crown Lifters Limited,2016-09-09,2022-02-08,30.0,35.1,0.17000000000000004,listed_alive
+Husys Consulting Limited,2016-09-09,2015-08-21,50.0,,,listed_alive
+Srei Infrastructure Finance Limited,2016-09-07,2018-03-21,1000.0,995.89,-0.004110000000000014,listed_alive
+Dewan Housing Finance Corporation Limited,2016-08-29,2018-06-06,1000.0,989.99,-0.010009999999999991,listed_alive
+Madhya Bharat Agro Products Limited,2016-08-29,2019-08-22,67.0,77.5,0.15671641791044777,listed_alive
+RBL Bank Limited,2016-08-19,2016-08-31,225.0,299.4,0.33066666666666655,listed_alive
+Dewan Housing Finance Corporation Limited,2016-08-03,2018-06-06,1000.0,989.99,-0.010009999999999991,listed_alive
+S.P. Apparels Limited,2016-08-02,2016-08-12,268.0,288.75,0.07742537313432836,listed_alive
+Dilip Buildcon Limited,2016-08-01,2016-08-11,219.0,251.75,0.1495433789954338,listed_alive
+Advanced Enzyme Technologies Limited,2016-07-20,2016-08-01,896.0,1178.1,0.3148437499999999,listed_alive
+Larsen & Toubro Infotech Limited,2016-07-11,2016-07-21,710.0,697.6,-0.017464788732394335,listed_alive
+Edelweiss Housing Finance Limited,2016-07-08,,,,,listed_alive
+KKV Agro Powers Limited,2016-06-30,2016-07-15,320.0,342.0,0.06875,listed_alive
+Quess Corp Limited,2016-06-29,2016-07-12,317.0,503.1,0.5870662460567824,listed_alive
+Mahanagar Gas Limited,2016-06-21,2016-07-01,421.0,520.3,0.2358669833729215,listed_alive
+United Polyfab Gujarat Limited,2016-05-25,2021-12-31,17.0,17.35,0.02058823529411773,listed_alive
+Parag Milk Foods Limited,2016-05-04,2016-05-19,215.0,247.0,0.14883720930232558,listed_alive
+Sagardeep Alloys Limited,2016-05-04,2019-01-25,95.0,94.9,-0.0010526315789473085,listed_alive
+Ujjivan Financial Services Limited,2016-04-28,2016-05-10,210.0,231.55,0.10261904761904768,listed_alive
+Thyrocare Technologies Limited,2016-04-27,2016-05-09,446.0,618.8,0.3874439461883407,listed_alive
+Equitas Holdings Limited,2016-04-05,2016-04-21,110.0,135.2,0.22909090909090898,listed_alive
+Infibeam Incorporation Limited,2016-03-21,2016-04-04,432.0,445.75,0.031828703703703706,listed_alive
+Bharat Wire Ropes Limited,2016-03-18,2016-04-01,45.0,45.55,0.012222222222222159,listed_alive
+HealthCare Global Enterprises Limited,2016-03-16,2016-03-30,218.0,171.0,-0.21559633027522937,listed_alive
+Indian Railway Finance Corporation Limited,2016-03-10,2025-12-03,,,,listed_alive
+HEC Infra Projects Limited,2016-03-10,2021-12-30,38.0,34.3,-0.09736842105263166,listed_alive
+Wealth First Portfolio Managers Limited,2016-03-10,2021-01-20,92.1,87.56626892089844,-0.04922617892618412,listed_alive
+National Highways Authority of India,2016-02-24,2016-03-11,1000.0,1023.0,0.023,listed_alive
+Hi-Tech Pipes Limited,2016-02-15,2018-05-07,380.0,413.05,0.08697368421052634,listed_alive
+Quick Heal Technologies Limited,2016-02-08,2016-02-18,321.0,253.85,-0.209190031152648,listed_alive
+TeamLease Services Limited,2016-02-02,2016-02-12,850.0,1022.85,0.20335294117647063,listed_alive
+Precision Camshafts Limited,2016-01-27,2016-02-08,186.0,177.45,-0.04596774193548393,listed_alive
+Ecom Express Ltd.,2024-08-19,,,,,withdrawn
+MEIR Commodities India Ltd.,2025-03-03,,,,,withdrawn
+Tea Post Ltd. #,2025-03-30,,,,,withdrawn
+Sai Infinium Ltd.,2025-04-03,,,,,withdrawn
+Gaudium IVF & Women Health Ltd. #,2025-01-29,,,,,withdrawn

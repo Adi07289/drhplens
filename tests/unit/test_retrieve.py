@@ -142,12 +142,12 @@ def test_gate1_passes_when_top_score_above_threshold():
 
 
 def test_gate1_fails_when_top_score_below_threshold():
-    """gate1_check.run sets gate1_passed=False when max score < GATE1_THRESHOLD."""
+    """gate1_check.run sets gate1_passed=False when max score < GATE1_THRESHOLD (garbage retrieval)."""
     from agent.nodes import gate1_check
 
     state = {
         **_base_state(),
-        "reranked_top_k": [{"chunk_id": "c1", "rerank_score": -1.0}],
+        "reranked_top_k": [{"chunk_id": "c1", "rerank_score": -5.0}],  # below calibrated -3.0
     }
     result = gate1_check.run(state)
     assert result["gate1_passed"] is False
