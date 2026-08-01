@@ -3,7 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-last_updated: "2026-07-30T17:11:18.939Z"
+last_updated: "2026-08-01T06:03:27.793Z"
+last_activity: "2026-07-31 — Phase 6.1 verified (UAT 6/6 pass, `06.1-VERIFICATION.md` status: pass) and **shipped as PR #2** (`phase6/6a-eval-harness` → `phase5/05-11-residuals`, stacked on open PR #1; auto-retargets to `main` on PR #1 merge). Deferred (non-blocking, disclosed): judge calibration, CI gate lane, gold-set span-tightening, WR-03."
 progress:
   total_phases: 8
   completed_phases: 4
