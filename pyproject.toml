@@ -56,6 +56,12 @@ dependencies = [
     "typer",
     "rich",
     "tiktoken",
+    # YAML — committed data files (the FAILGAL-01 /failures gallery reads
+    # eval/failures/failures.yaml). PyYAML is currently only transitively present
+    # (docling-core / transformers / langchain-core / omegaconf / …); declare it
+    # explicitly so the render surface never breaks if a transitive parent is
+    # pruned (06.2-RESEARCH Pitfall 5). Reference YAML lib, already resolved 6.0.3.
+    "pyyaml>=6,<7",
     # Cite-check fuzzy matching (Pattern 3 per 01-RESEARCH.md)
     "rapidfuzz",
     # Indian market data (Phase 4 — peer multiples + historical panel).

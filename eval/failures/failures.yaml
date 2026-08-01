@@ -1,0 +1,219 @@
+# eval/failures/failures.yaml — the FAILGAL-01 committed failure gallery.
+#
+# A curated, honestly-labelled record of real DRHPLens failures across the three
+# surfaces {rag, extraction, forecast}. Read-only by ui/failures.py::render_failures()
+# (yaml.safe_load, no live call — P19 demo-safe). This file is NOT scrubbed: failures
+# describe real behaviour with evaluative words, and that is the point — the honesty
+# thesis made concrete. Every entry cites a committed `refs` path so it is verifiable.
+#
+# Schema (each entry):
+#   id         unique slug
+#   surface    one of {rag, extraction, forecast}
+#   category   free-text sub-area (retrieval, cite, calibration, features, …)
+#   query      the failure in one line (what was asked / what was expected to hold)
+#   expected   the honest expectation
+#   actual     what actually happened (never spun as a win)
+#   postmortem what was learned / done about it
+#   status     one of {open, mitigated}  (neutral — never a red/green verdict)
+#   by_design  (optional) true when open/mitigated is the intended, disclosed outcome
+#   refs       list of committed repo paths that prove the failure is real
+
+- id: forecast-does-not-beat-baselines
+  surface: forecast
+  category: calibration
+  query: "Does the listing-day forecaster beat naive baselines on held-out IPOs?"
+  expected: "A calibrated model that does better than predict-zero, global-median and trailing-12 baselines on out-of-sample error."
+  actual: >-
+    It does not. On the live walk-forward panel (n=1,132 out-of-sample) global_median and
+    trailing_12 beat the model; the Diebold-Mariano test rejects at p<1e-5. R2 is -0.009 and
+    the P9 release gate FAILS.
+  postmortem: >-
+    This is the honest pre-apply result, not a bug. The gate is HARD-asserted to fail rather
+    than be p-hacked, and the model card plus the /snapshot forecast block LEAD with the
+    does-not-beat-baseline verdict. A humble model that admits it is no better than a naive
+    baseline is the correct scientific outcome to publish.
+  status: open
+  by_design: true
+  refs:
+    - "model_card/MODEL_CARD.md"
+    - "model_card/card_data.json"
+
+- id: forecast-one-feature-live-panel
+  surface: forecast
+  category: features
+  query: "How many features actually drive the live forecast model?"
+  expected: "A four-family feature pool (issue-structure, market-regime, DRHP-derived, anchor-demand), all populated from the live panel."
+  actual: >-
+    Effectively one. On the 05-11 live build only trailing_listing_gain was populated; the
+    market-regime, DRHP-derived and anchor-demand families were all-NaN, so the real SHAP
+    attributions describe a de-facto one-feature model.
+  postmortem: >-
+    Disclosed openly via a "Populated live?" column and a one-feature limitation in the model
+    card, not hidden. The feature scaffolding exists and is leakage-gated; wiring the remaining
+    families to live sources is future work, and the surface says so plainly.
+  status: open
+  refs:
+    - "model_card/MODEL_CARD.md"
+
+- id: rag-recall-saturates-coarse-spans
+  surface: rag
+  category: retrieval
+  query: "Is recall@k = 1.00 a real retrieval win?"
+  expected: "A discriminating recall@k that separates good from bad retrieval configurations."
+  actual: >-
+    recall@k saturates at 1.00 because the gold spans are coarse (mean 44.5 pages). At that
+    span width almost any retrieval hits the right page, so the metric cannot discriminate.
+  postmortem: >-
+    Documented as a measurement limitation, not a win, in the eval report's Interpretation
+    section. Tightening the gold spans to true span-level ground truth is a disclosed Phase-6.1
+    follow-up; until then recall@k reads as a floor, not a headline.
+  status: open
+  refs:
+    - "eval/reports/2026-07-29-rag-eval.md"
+
+- id: rag-citation-saturates-floor
+  surface: rag
+  category: cite
+  query: "Does citation accuracy 1.00 mean citations are perfectly precise?"
+  expected: "A citation-accuracy metric that meaningfully separates precise from mis-anchored citations."
+  actual: >-
+    Citation accuracy reads 1.00, saturated by the same coarse gold spans. It is a regression
+    FLOOR that would catch a total break, not a discriminating precision signal.
+  postmortem: >-
+    Kept in the report as a floor guard, not framed as precision. The real discriminating
+    signal needs the tighter gold spans (the same follow-up as recall). Honest labelling stops
+    the 1.00 from being over-claimed.
+  status: open
+  refs:
+    - "eval/reports/2026-07-29-rag-eval.md"
+
+- id: rag-faithfulness-not-measured
+  surface: rag
+  category: faithfulness
+  query: "What is the LLM-judge faithfulness score?"
+  expected: "A calibrated faithfulness figure from the DeepEval judge."
+  actual: >-
+    Not measured. faithfulness_deepeval is the -1.0 sentinel — the judge-vs-human calibration
+    has not been done — so every surface renders "not measured" verbatim instead of a number.
+  postmortem: >-
+    The -1.0 sentinel is rendered honestly as "not measured" everywhere (never 0.00 or a
+    guess). Judge calibration is a disclosed Phase-6.1 follow-up; publishing a mis-calibrated
+    judge score would be worse than admitting the metric is unmeasured.
+  status: open
+  refs:
+    - "eval/reports/2026-07-29-rag-eval.md"
+    - "eval/reports/eval_summary.json"
+
+- id: rag-numeric-faithfulness-zero-crash
+  surface: rag
+  category: numeric
+  query: "Did the numeric-faithfulness track ever score 0.000?"
+  expected: "A numeric-faithfulness score above the 0.95 release gate."
+  actual: >-
+    On 2026-07-22 and 07-23 the numeric-faithfulness batch scored 0.000 and crashed before the
+    deterministic cite-check antibody landed.
+  postmortem: >-
+    Root-caused to a missing deterministic (non-LLM) cite_check node. After that antibody was
+    added the numeric gate reached 0.957 PASS on 2026-07-25. The failing reports stay committed
+    as the audit trail rather than being deleted.
+  status: mitigated
+  refs:
+    - "eval/reports/2026-07-22-numeric-faithfulness.md"
+    - "eval/reports/2026-07-23-numeric-faithfulness.md"
+    - "eval/reports/2026-07-25-numeric-gate.md"
+
+- id: extraction-macro-f1-zero
+  surface: extraction
+  category: f1
+  query: "How well is structured red-flag extraction actually evaluated?"
+  expected: "A meaningful macro-F1 over a labelled DRHP set."
+  actual: >-
+    Macro F1 is 0.000 on a tiny labelled set (n=7 labelled, 0 scored). Extraction is not yet
+    meaningfully evaluated.
+  postmortem: >-
+    Reported at face value rather than dressed up. A larger hand-labelled gold set is required
+    before the F1 carries any signal; the honest 0.000 keeps the claim scoped to what the data
+    supports today.
+  status: open
+  refs:
+    - "eval/reports/2026-06-25-extraction-f1.md"
+
+- id: rag-gate1-refused-answerable
+  surface: rag
+  category: gate1
+  query: "Did the answerability gate refuse valid DRHP questions?"
+  expected: "gate1 admits answerable DRHP questions and refuses only genuine out-of-scope ones."
+  actual: >-
+    The bge-reranker's negative logits pushed gate1 into refusing answerable DRHP questions —
+    the accept threshold was mis-set for the reranker's score distribution.
+  postmortem: >-
+    Recalibrated the gate1 threshold against the reranker's real logit distribution and pinned
+    the corrected behaviour so the regression cannot return silently.
+  status: mitigated
+  refs:
+    - "scripts/calibrate_gate1.py"
+    - "tests/unit/test_gate1.py"
+
+- id: rag-mis-anchored-citation
+  surface: rag
+  category: cite
+  query: "What happens when a numeric claim cites the wrong chunk?"
+  expected: "Every numeric claim anchors to the chunk that actually holds the number."
+  actual: >-
+    A numeric claim was mis-anchored to a neighbouring chunk that did not contain the figure.
+  postmortem: >-
+    The repair_citations / cite-check recalibration re-anchors a claim to its holding chunk
+    before emit; the fix is pinned by a dedicated cite-check test so a mis-anchor fails CI.
+  status: mitigated
+  refs:
+    - "scripts/calibrate_cite_check.py"
+    - "tests/unit/test_cite_check.py"
+
+- id: rag-oversized-preamble-section
+  surface: rag
+  category: parsing
+  query: "Why did some cited windows come back empty or wrong?"
+  expected: "Every section maps to a bounded, page-anchored window."
+  actual: >-
+    An oversized "Preamble" mega-section swallowed many pages, so the cited windows resolved to
+    wrong or empty page ranges.
+  postmortem: >-
+    Re-parsed with page-anchored windows so a single section's size can no longer blow up the
+    cited range; pinned by the DRHP page-parse and parse-quality tests.
+  status: mitigated
+  refs:
+    - "tests/unit/test_parse_drhp_pages.py"
+    - "tests/unit/test_parse_quality.py"
+
+- id: rag-out-of-scope-answered
+  surface: rag
+  category: refusal
+  query: "Does the agent answer out-of-scope questions it should refuse?"
+  expected: "Out-of-scope questions (e.g. a Zomato comparison the DRHP does not support) are refused, not answered."
+  actual: >-
+    An out-of-scope question was answered instead of refused.
+  postmortem: >-
+    Added a deterministic out-of-scope / gate refusal path so the agent declines rather than
+    guesses; pinned by the reformulation-refusal and scrub-node tests.
+  status: mitigated
+  refs:
+    - "tests/unit/test_refuse_with_reformulation.py"
+    - "tests/unit/test_scrub_node.py"
+
+- id: forecast-r2-leakage-alarm
+  surface: forecast
+  category: leakage-guard
+  query: "What stops a T0-violating feature from leaking into the forecast?"
+  expected: "A guard that catches any feature carrying post-T0 information into the walk-forward model."
+  actual: >-
+    A high out-of-sample R2 would signal a leaking feature. The R2-leakage alarm was wired
+    precisely because that near-miss is possible on an expanding feature pool.
+  postmortem: >-
+    The alarm HARD-fails the release gate if out-of-sample R2 > 0.5, and every feature carries
+    an available_at <= T0 stamp checked by the no-lookahead walk-forward test. A guarded
+    near-miss, caught by design.
+  status: mitigated
+  by_design: true
+  refs:
+    - "model_card/MODEL_CARD.md"
+    - "tests/unit/test_walkforward_no_lookahead.py"
