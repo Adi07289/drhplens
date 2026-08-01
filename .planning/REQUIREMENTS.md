@@ -86,7 +86,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **METHOD-01**: "Show your work" methodology pane — expandable on any answer to reveal retrieval query, retrieved chunks with scores, prompt used, sources cited, and faithfulness/citation eval scores for that specific claim (pulled forward to Phase 3 per CEO review)
 - [ ] **LAND-01**: Recruiter landing page at `/methodology` deep-linkable URL — renders model card + methodology writeup + failure gallery link + per-IPO eval dashboard summary (Phase 6, with stub link from Phase 1 home page)
-- [ ] **FAILGAL-01**: Live browseable failure gallery at `/failures` page — renders ≥10 documented failures across RAG / extraction / forecast surfaces with category, query, expected vs actual, and post-mortem note (Phase 6; replaces the markdown-only file in `eval/`)
+- [x] **FAILGAL-01**: Live browseable failure gallery at `/failures` page — renders ≥10 documented failures across RAG / extraction / forecast surfaces with category, query, expected vs actual, and post-mortem note (Phase 6; replaces the markdown-only file in `eval/`)
 
 ## v2 Requirements
 
@@ -188,7 +188,7 @@ Which phases cover which requirements. Updated by roadmap creation.
 | OPS-03 | Phase 6.2 | Pending |
 | METHOD-01 | Phase 3 | Complete |
 | LAND-01 | Phase 6.2 | Pending |
-| FAILGAL-01 | Phase 6.2 | Pending |
+| FAILGAL-01 | Phase 6.2 | Complete |
 
 **Coverage:**
 - v1 requirements: 45 total

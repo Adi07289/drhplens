@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-08-01T11:21:24.041Z"
+last_updated: "2026-08-01T11:54:02.764Z"
 last_activity: 2026-08-01
 progress:
   total_phases: 8
   completed_phases: 4
   total_plans: 46
-  completed_plans: 40
+  completed_plans: 41
   percent: 50
 ---
 
@@ -26,13 +26,14 @@ progress:
 
 **Audience:** Indian retail investors (mobile-first); secondary audience is the DS-recruiter reviewing the portfolio piece.
 
-**Current Focus:** Phase 06 split (2026-07-28) into decimal sub-phases **6.1 / 6.2 / 6.3** (see ROADMAP.md; "6a/6b/6c" aliases). **Phase 6.1 — Eval Harness + Inline Metrics + Langfuse Ops (EVAL-01/02/05)** is the active slice: **Phase 6.1 EXECUTED (2026-07-28)** — all 6 plans done wave-by-wave (6 SUMMARY.md), 605 tests pass, committed on `phase6/6a-eval-harness`. Built: `eval/metrics/` (deterministic recall@k/citation TDD + EvalSummary schema), `faithfulness_deepeval` (gemini-3.5-flash judge, reported, -1 sentinel), Langfuse direct-API trace enrichment (cost/latency/tool-calls + failure-mode custom scores; no-op fallback), runner → committed `eval/reports/eval_summary.json` (recall/citation=1.000 REAL, **faithfulness=-1 "not measured" per P10 guard**) + dated `.md` with recall-floor interpretation, `release_gate.py` deterministic hard-gates (citation≥0.95 + recall@10≥0.85; faithfulness reported-only; numeric gate unchanged), honest inline eval surface (`ui/eval_inline.py`, neutral `.drhp-eval-live`, per-IPO Swiggy only) + `/methodology` rows filled. **Next: `/gsd-eval-review` (THE critical P10 gate)** + `/gsd-ui-review` + `/gsd-code-review` + `/gsd-secure-phase` + `verify` → `/gsd-ship`. Deferred (see `.planning/phases/06.1.../deferred-items.md`): live e2e Gemini flake; ≥0.7 judge calibration (≥50-ex) before surfacing a real faithfulness number; gold-set span tightening so recall discriminates. Free-tier Gemini daily quota (20/day gemini-3.5-flash) was spent this session. Phases 1–5 complete; Phase 4 + Phase 5 goal-backward verified 2026-07-27.
+**Current Focus:** Phase 06.2 — portfolio-surfaces
 
 ## Current Position
 
-Phase: 06 (full eval harness + agentic polish + portfolio surface) — NEXT / not started. Phases 1–5 complete; Phase 4 + Phase 5 goal-backward verified 2026-07-27 (04-VERIFICATION.md / 05-VERIFICATION.md).
+Phase: 06.2 (portfolio-surfaces) — EXECUTING
+Plan: 2 of 4
 **Status:** Ready to execute
-**Progress:** [████████▆░] 83% (5/6 phases; Phase 6 remaining)
+**Progress:** [█████████░] 89%
 
 **05-11 LIVE CRAWL (2026-07-25) + residuals close (2026-07-27):** Real panel built live — 1,378 IPOs (5 withdrawn, P3), 1,245 scorable, median 10.2% (WITHIN the ~7% [-5%,20%] sanity band, not survivor-inflated). Walk-forward **P9 gate FAILS HONESTLY** (R²=-0.009, no leakage; global_median + trailing_12 beat the model, DM p<1e-5) — the EXPECTED humble pre-apply result (D5-01/P9), never p-hacked. The model card + /snapshot forecast block now LEAD with the honest "does-not-beat-baseline" verdict; real SHAP shows the live panel is effectively one-feature (trailing_listing_gain), disclosed via a "Populated live?" column + a one-feature limitation. Per-IPO record metrics reconciled to the live run (coverage 0.800 / n=1,132). Full unit suite: 530 passed, 0 failed. Evidence: `data/forecasts/_gate/release_gate.json`, `model_card/`, `05-VERIFICATION.md`.
 
@@ -209,6 +210,7 @@ Phase 5 Wave 3 feature layer (05-04) COMPLETE — the leakage-gated issue-struct
 | Phase 05 P05-06 | ~15 min | 2 tasks | 4 files; 442 passed / 0 skipped / 1 pre-existing embedder fail (+13 new tests); global metrics + precompute CLI + local MLflow |
 | Phase 05 P05-08 | ~26 min | 3 tasks | 7 files; 455 passed / 0 skipped / 1 pre-existing embedder fail (+13 new tests); four-family feature pool + anchor audit + sector pooling + lean walk-forward selection |
 | Phase 05 P05-09 | ~35 min (resume) | 3 tasks | 5 files; 474 passed / 0 skipped / 1 pre-existing embedder fail (+19 new tests); four baselines + inline Diebold–Mariano P9 release gate + D5-09 abstention (honesty gate) |
+| Phase 06.2 P01 | 30min | 3 tasks | 8 files |
 
 ## Decisions
 
@@ -254,6 +256,7 @@ Phase 5 Wave 3 feature layer (05-04) COMPLETE — the leakage-gated issue-struct
 - [Phase 05]: 05-09: Rule-1 fix — the interrupted baselines.py docstring literally named xgboost/mapie/shap + the DM package, failing its own inspect.getsource isolation audit (the 'shape'→'shap'-class gotcha); reworded to describe the avoided libraries without the literal tokens. Atomicity: baselines.py arrived with release_gate already present (Task 2 code); backed up the full file, committed a Task-1 version without release_gate (deterministic byte-safe transform), then restored the exact original bytes for the Task-2 commit (111 pure insertions, no Task-1 modifications).
 - [Phase 05]: 05-09: D5-09 abstention wired into walk_forward as OPT-IN kwargs — check_support (out_of_support via pipelines.features.select.is_out_of_support on the proper-train [q01,q99] support, checked BEFORE fitting) + max_width (absolute) / width_iqr_mult (× the proper-train return IQR) → interval_too_wide via _width_guard (tighter of the two). Both default OFF because the thresholds are untuned until the live panel (Open Q3) AND a probe showed enabling them would flip 6/36 covered synthetic folds to out_of_support + trip the width guard (max band ≈ 4× the min training IQR), breaking test_walkforward_no_lookahead.py's "all abstains are insufficient_history" assertion. select imported LAZILY inside walk_forward to break the select↔walkforward import cycle (module load stays offline). Production enables + tunes them at 05-11. Suite 455→474 (+19). FCAST-05/FCAST-03 left Pending (offline-fixture proof only; model card 05-10, real-panel gate run 05-11).
 - [Phase 05]: 05-11 (live checkpoint, PARTIAL): Task 1 — `nse` (NseIndiaApi) verified at the blocking-human legitimacy checkpoint (Sigstore attestation + PyPI Trusted Publishing + GPL-3.0 + 50 releases, 152★) and installed 3.1.2 (`84a5a9d`). Task 2 — the live pull proved the build was UNWIRED: `build_panel` never called `fetch_listing_day_close`, and NSE past-issues carries no close, so `listing_day_return` (the target) was all-NaN → `walk_forward` would get ZERO scorable rows; plus `coerce_date` couldn't parse the live `DD-Mon-YYYY` shape (NSE `issue_date`=T0 → None) and the NSE parser probed `issueStartDate` not the real `ipoStartDate`, and the Source-B withdrawn HTML scrapers were dead (0 rows, the 04-07 pattern). Fixed all four + committed (`e7737c8`): DD-Mon-YYYY date format, `ipoStartDate`+`symbol`, chittorgarh withdrawn repointed to the `webnodejs` JSON API (report 202, `data-read/202/1/50/{fyEnd}/{FY}/0/0`, +SSRF allow-list), and `_enrich_listing_closes` wired into `build_panel`. Bounded live validation: Source A 42 rows/120d all parsed (12y → ~1,436 listed); Source B 5 real withdrawn (non-zero P3). +6 offline monkeypatched tests; suite 496→502. The ~1,400-symbol crawl + walk-forward + HARD-asserted P9 gate + `/methodology` human-verify are DEFERRED to a supervised run — runbook in `05-11-LIVE-BUILD-RUNBOOK.md`. FCAST-03/FCAST-05 stay Pending; 05-11 stays `[ ]`; phase NOT marked complete.
+- [Phase 06.2-01]: /failures renderer keeps empty-state copy as LOCAL constants (mirrored in ui/copy.py) to preserve the P19 AST-import allowlist; by_design boolean drives OPEN·BY DESIGN without breaking status in {open,mitigated}; cards stamp an id= deep-link anchor
 
 ## Quick Tasks Completed
 
