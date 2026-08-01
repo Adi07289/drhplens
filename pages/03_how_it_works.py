@@ -3,7 +3,7 @@ pages/03_how_it_works.py — dedicated "How it works" page (route: /how_it_works
 
 A plain-English walkthrough of the DRHP → cited-answer pipeline for the retail
 investor, plus the honesty "will / won't" contract. Distinct from /methodology,
-which is the DS-rigor surface (eval scores, model card, failure gallery).
+which is the DS-rigor surface (eval scores, model card, and the /failures gallery).
 """
 import streamlit as st
 

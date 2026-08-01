@@ -1908,6 +1908,11 @@ a.drhp-ipo-card:hover { border-color: rgba(224, 162, 78, 0.4) !important; }
   margin-top: var(--drhp-space-lg); display: flex; flex-wrap: wrap;
   gap: var(--drhp-space-md); align-items: center;
 }
+.drhp-archhero-link {
+  font-family: var(--drhp-font-mono); font-size: 13px; color: var(--drhp-accent-link);
+  text-decoration: none; border-bottom: 1px solid var(--drhp-border-subtle);
+}
+.drhp-archhero-link:hover { border-bottom-color: var(--drhp-accent-link); }
 .drhp-archhero-demo {
   font-family: var(--drhp-font-mono); font-size: 12px; color: var(--drhp-text-muted);
 }

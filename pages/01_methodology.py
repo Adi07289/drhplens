@@ -2,9 +2,9 @@
 pages/01_methodology.py — the DS-rigor / transparency surface (route: /methodology).
 
 Distinct from /how_it_works (the retail-investor explainer): this page is for the
-data-science reviewer — the RAG architecture, the evaluation plan + metrics, the
-honesty guardrails, and the stack. Phase 6 (LAND-01) wires the LIVE eval numbers
-and the failure gallery in; today the targets/gates and status are shown honestly.
+data-science reviewer — a systems-breadth architecture hero (the REAL pipeline),
+the evaluation plan + live metrics, the forecaster model card, the honesty
+guardrails, the stack, and a link to the /failures gallery (LAND-01, Phase 6.2).
 """
 import html
 import json
@@ -29,51 +29,56 @@ if _css_html:
 init_session_state(st.session_state)
 st.markdown(render_nav(), unsafe_allow_html=True)
 
-# ── Hero ─────────────────────────────────────────────────────────────────────
+# ── C1 systems-breadth architecture hero (LAND-01, Phase 6.2) ────────────────
+# The recruiter landing lead: a NEW top hero naming the REAL parser stack
+# (PyMuPDF + pdfplumber). The old closed-parser reference is scrubbed whole-page —
+# it cannot run in-env, so naming it would breach the honesty invariant. Additive
+# .drhp-archhero-* classes (never the retail .drhp-arch* flow). Static markup (no
+# external interpolation); the single amber-filled node is the output. Deliberately
+# denser/technical vs the vertical /how_it_works .drhp-flow.
 st.markdown(
-    '<div class="drhp-hero2" style="padding:52px 0 36px">'
-    '<div class="drhp-glow drhp-glow-a"></div>'
-    '<div class="drhp-hero-eyebrow">Methodology</div>'
-    '<h1 class="drhp-hero-title">How DRHPLens<br>keeps itself honest.</h1>'
-    '<p class="drhp-hero-sub">The rigour behind the answers — retrieval, evaluation, and the '
-    'guardrails that keep it factual. Built to be inspected, not trusted blindly.</p>'
+    '<div class="drhp-archhero">'
+    '<div class="drhp-archhero-eyebrow">Methodology · How it actually works</div>'
+    '<h1 class="drhp-archhero-h1">A 400-page prospectus, read honestly.</h1>'
+    '<p class="drhp-archhero-sub">An agentic RAG&nbsp;+&nbsp;forecasting system that reads an '
+    'Indian IPO&rsquo;s DRHP, cites every claim to the page, and forecasts listing-day '
+    'behaviour with calibrated uncertainty &mdash; evaluated, not vibed.</p>'
+    '<div class="drhp-archhero-cap">System architecture&nbsp;&nbsp;·&nbsp;&nbsp;'
+    '<b>&#9670; the real pipeline — no black boxes</b></div>'
+    '<div class="drhp-archhero-lanes">'
+    '<div class="drhp-archhero-lane"><div class="drhp-archhero-lane-label">Ingest</div>'
+    '<div class="drhp-archhero-node"><div class="n-t">DRHP PDF</div>'
+    '<div class="n-d">400-page SEBI filing</div></div>'
+    '<div class="drhp-archhero-node"><div class="n-t">Parse</div>'
+    '<div class="n-d">PyMuPDF + pdfplumber · page-anchored chunks</div></div></div>'
+    '<div class="drhp-archhero-conn">&rarr;</div>'
+    '<div class="drhp-archhero-lane"><div class="drhp-archhero-lane-label">Retrieve · Reason</div>'
+    '<div class="drhp-archhero-node"><div class="n-t">Embed + index</div>'
+    '<div class="n-d">bge-m3 · Qdrant hybrid (dense + sparse)</div></div>'
+    '<div class="drhp-archhero-node"><div class="n-t">Rerank</div>'
+    '<div class="n-d">bge-reranker-v2-m3 · top-50 &rarr; top-5</div></div>'
+    '<div class="drhp-archhero-node"><div class="n-t">Agent · LangGraph</div>'
+    '<div class="drhp-archhero-chips"><span class="drhp-archhero-chip">gate1</span>'
+    '<span class="drhp-archhero-chip">generate</span>'
+    '<span class="drhp-archhero-chip">scrub</span>'
+    '<span class="drhp-archhero-chip">cite-check</span></div></div></div>'
+    '<div class="drhp-archhero-conn">&rarr;</div>'
+    '<div class="drhp-archhero-lane"><div class="drhp-archhero-lane-label">Extract · Forecast · Answer</div>'
+    '<div class="drhp-archhero-node"><div class="n-t">Extract</div>'
+    '<div class="n-d">Instructor · structured signals (Pydantic)</div></div>'
+    '<div class="drhp-archhero-node"><div class="n-t">Forecast</div>'
+    '<div class="n-d">XGBoost + MAPIE · conformal interval</div></div>'
+    '<div class="drhp-archhero-node drhp-archhero-node--out">'
+    '<div class="n-t">Cited, calibrated answer &#10003;</div>'
+    '<div class="n-d">every claim &rarr; its DRHP page</div></div></div>'
+    '</div>'
+    '<div class="drhp-archhero-links">'
+    '<a class="drhp-archhero-link" href="/failures" target="_self">Browse the failure gallery &rarr;</a>'
+    '<span class="drhp-archhero-demo">Live demo — coming with the public deploy (Phase 6.3).</span>'
+    '</div>'
     '</div>',
     unsafe_allow_html=True,
 )
-
-# ── The retrieval pipeline ───────────────────────────────────────────────────
-st.markdown(render_section_head("Retrieval", "The RAG pipeline"), unsafe_allow_html=True)
-_ARCH = [
-    ("01", "Parse", "Docling · layout-aware · page-anchored chunks"),
-    ("02", "Retrieve", "hybrid · BM25 + bge-m3 · Qdrant"),
-    ("03", "Rerank", "bge-reranker-v2-m3 · top-50 &rarr; top-5"),
-    ("04", "Synthesise", "LLM answers only from retrieved context"),
-    ("05", "Cite-check", "verify each claim's page · drop unsupported"),
-]
-_STAGES_UNUSED = [
-    ("01", "Parse &amp; chunk",
-     "Docling parses the DRHP layout-aware. Chunks are 512–1024 tokens, page-anchored "
-     "(<code>drhp_id · section · page</code>), and never split across a section boundary — "
-     "financial tables are stored as structured records, not flattened text."),
-    ("02", "Retrieve (hybrid)",
-     "BM25 sparse retrieval + <code>bge-m3</code> dense embeddings over Qdrant, so both exact-term "
-     "and semantic matches surface — recall is easy on repetitive DRHP boilerplate; precision is hard."),
-    ("03", "Rerank",
-     "A <code>bge-reranker-v2-m3</code> cross-encoder reranks the top ~50 hits down to the ~5 the "
-     "model actually reads — the step that turns high recall into high precision."),
-    ("04", "Synthesise",
-     "The LLM answers only from those retrieved passages. Whole-section long-context synthesis is "
-     "used when a query needs it, RAG when it's a needle-in-haystack lookup."),
-    ("05", "Cite-check",
-     "A verification step confirms each claim's cited page actually contains it. Unsupported claims "
-     "are dropped, not shown — this is the anti-hallucination gate, not a nice-to-have."),
-]
-_stages_html = '<div class="drhp-arch-arrow">&rarr;</div>'.join(
-    f'<div class="drhp-arch-stage"><div class="s-n">{n}</div>'
-    f'<div class="s-t">{t}</div><div class="s-d">{sd}</div></div>'
-    for n, t, sd in _ARCH
-)
-st.markdown(f'<div class="drhp-arch">{_stages_html}</div>', unsafe_allow_html=True)
 
 # ── Evaluation ───────────────────────────────────────────────────────────────
 st.markdown(render_section_head("Evaluation", "Measured, not vibed"), unsafe_allow_html=True)
@@ -105,13 +110,15 @@ _EVAL_SUMMARY_PATH = (
     Path(__file__).resolve().parents[1] / "eval" / "reports" / "eval_summary.json"
 )
 _eval_agg = None
+_eval_per_ipo = {}
 if _EVAL_SUMMARY_PATH.is_file():
     try:
-        _eval_agg = json.loads(
-            _EVAL_SUMMARY_PATH.read_text(encoding="utf-8")
-        ).get("aggregate", {})
+        _eval_doc = json.loads(_EVAL_SUMMARY_PATH.read_text(encoding="utf-8"))
+        _eval_agg = _eval_doc.get("aggregate", {})
+        _eval_per_ipo = _eval_doc.get("per_ipo", {}) or {}
     except Exception:
         _eval_agg = None
+        _eval_per_ipo = {}
 
 
 def _eval_live(text: str) -> str:
@@ -152,6 +159,20 @@ st.markdown(
     '<div class="drhp-metrics-wrap"><table class="drhp-metrics">'
     '<thead><tr><th>Metric</th><th>How it\'s measured</th><th>Target</th><th>Status</th></tr></thead>'
     f'<tbody>{_rows_html}</tbody></table></div>',
+    unsafe_allow_html=True,
+)
+
+# Honest per-IPO framing (LAND-01): name ONLY Swiggy — the sole IPO with a real
+# per_ipo gold set. Never fabricate a per-IPO number for any other IPO; everything
+# else is the system-level aggregate shown above (read from the same eval_summary.json).
+_swiggy_gold = "swiggy_2024_11" in _eval_per_ipo
+_ipo_note = (
+    "1 IPO has a real gold set (Swiggy); others show the system-level figure."
+    if _swiggy_gold
+    else "The figures above are system-level; a real per-IPO gold set exists only for Swiggy."
+)
+st.markdown(
+    f'<p class="drhp-method-note">{html.escape(_ipo_note)}</p>',
     unsafe_allow_html=True,
 )
 
@@ -388,7 +409,7 @@ st.markdown(f'<div class="drhp-hiw drhp-guard-grid">{_guards_html}</div>', unsaf
 # ── Stack ────────────────────────────────────────────────────────────────────
 st.markdown(render_section_head("Stack", "Built with"), unsafe_allow_html=True)
 _STACK = [
-    "LangGraph", "LlamaIndex", "Docling", "bge-m3", "bge-reranker-v2-m3", "Qdrant",
+    "LangGraph", "LlamaIndex", "PyMuPDF", "pdfplumber", "bge-m3", "bge-reranker-v2-m3", "Qdrant",
     "Instructor", "Pydantic", "RAGAS", "DeepEval", "Langfuse", "XGBoost", "MAPIE", "Streamlit",
 ]
 _chips = "".join(f'<span class="drhp-chip">{s}</span>' for s in _STACK)
