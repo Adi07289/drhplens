@@ -140,7 +140,7 @@ def render_site_footer() -> str:
         '<div class="drhp-ft-col"><h5>Project</h5>'
         '<a href="https://github.com/REPLACE-ME/drhplens" target="_blank">GitHub</a>'
         '<a href="/methodology" target="_self">Model card</a>'
-        '<a href="/methodology" target="_self">Failure gallery</a></div>'
+        '<a href="/failures" target="_self">Failure gallery</a></div>'
         '</div>'
         '<div class="drhp-ft-legal">'
         '<span>© 2026 DRHPLens · Built on free, public data (SEBI · NSE · BSE · screener.in).</span>'
