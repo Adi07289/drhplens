@@ -170,6 +170,29 @@ METHODOLOGY_STUB_BODY: str = (
 )
 
 # ---------------------------------------------------------------------------
+# Phase 6.2 — /failures gallery chrome (FAILGAL-01; 06.2-UI-SPEC §Copywriting Contract)
+# ---------------------------------------------------------------------------
+# Only the CHROME strings live here (scrubber-checked at import). The evaluative
+# FAILURE CONTENT lives in eval/failures/failures.yaml, which is deliberately NOT
+# scrubbed — failures describe real behaviour with evaluative words, and that is the
+# point (the honesty thesis made concrete).
+
+FAILURES_EYEBROW: str = "FAILURE GALLERY"
+"""Section eyebrow on /failures (mono, letter-spaced) — UI-SPEC verbatim."""
+
+FAILURES_HEADING: str = "Where it breaks — and what I did about it"
+"""Section heading on /failures — UI-SPEC verbatim."""
+
+# Empty-state copy. Also MIRRORED as local constants in ui/failures.py (which cannot
+# import ui.copy without breaking its P19 AST-import allowlist) — keep the two byte-
+# identical. Source of truth for the copy contract is here.
+FAILURES_EMPTY_HEADING: str = "No failures loaded."
+"""Empty-state heading (absent/unreadable/empty failures.yaml) — UI-SPEC verbatim."""
+
+FAILURES_EMPTY_BODY: str = "Run the eval suite to populate `eval/failures/failures.yaml`."
+"""Empty-state body — UI-SPEC verbatim."""
+
+# ---------------------------------------------------------------------------
 # Phase 2 — Catalogue page copy (02-UI-SPEC.md §Copywriting Contract)
 # ---------------------------------------------------------------------------
 
