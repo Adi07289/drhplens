@@ -115,3 +115,64 @@ def test_committed_card_artifacts_exist_for_offline_render():
     for artifact in ("card_data.json", "calibration.png", "pit.png", "shap.png"):
         p = mc / artifact
         assert p.is_file() and p.stat().st_size > 0, f"missing committed {artifact}"
+
+
+# ── LAND-01: /methodology recruiter landing extension (Phase 6.2) ─────────────
+# Whole-page source audits (the page is a Streamlit script; importing it would
+# execute it — read from disk, same as the isolation audits above).
+
+def test_land01_c1_hero_names_the_real_pipeline_and_no_docling():
+    """The C1 systems-breadth hero leads the page and names the REAL stack. Docling
+    is ABSENT whole-page — it cannot run in-env, so naming it anywhere on the honesty
+    surface would breach the honesty invariant (LAND-01)."""
+    src = _page_source()
+    assert "drhp-archhero" in src, "the C1 architecture hero must be present"
+    for component in ("PyMuPDF", "Qdrant", "LangGraph", "MAPIE"):
+        assert component in src, f"the architecture hero must name {component!r}"
+    assert "Docling" not in src, (
+        "Docling must be absent whole-page (the diagram, the dead stage block, and "
+        "the stack chip) — it does not run in-env; naming it breaches the honesty "
+        "invariant (LAND-01)."
+    )
+
+
+def test_land01_links_the_failures_gallery():
+    src = _page_source()
+    assert 'href="/failures"' in src, "the page must link to the /failures gallery"
+
+
+def test_land01_per_ipo_framing_is_swiggy_only():
+    """The per-IPO eval framing names only Swiggy (the sole IPO with a real per_ipo
+    gold set). No other catalogue IPO id may appear — printing one would be a
+    fabricated per-IPO number (honesty invariant)."""
+    src = _page_source()
+    assert "Swiggy" in src, "the honest per-IPO caveat must name Swiggy"
+    non_swiggy_ids = (
+        "hyundai_2024", "ola_electric", "zomato_2021", "nykaa_2021",
+        "paytm_2021", "lic_2022", "honasa_2023", "ather_2025",
+    )
+    for drhp_id in non_swiggy_ids:
+        assert drhp_id not in src, (
+            f"{drhp_id!r} must not appear on /methodology — only Swiggy has a real "
+            f"per-IPO gold set; any other would be a fabricated per-IPO figure."
+        )
+
+
+def test_land01_no_red_green_verdict_color():
+    """Honesty invariant: the C1 hero (and the whole page) introduces no red/green
+    verdict color — mono/token colors only."""
+    import re
+
+    src = _page_source()
+    assert not re.search(r"color:\s*(red|green)\b", src, re.IGNORECASE), (
+        "no literal red/green verdict color is allowed"
+    )
+    for bad_hex in ("#e5484d", "#d33682", "#2ecc71", "#3fb950"):
+        assert bad_hex.lower() not in src.lower(), f"{bad_hex} is a verdict color"
+
+
+def test_eval04_show_your_work_pane_is_surfaced():
+    """EVAL-04 coverage: the page still surfaces the METHOD-01 'Show your work' pane
+    (delivered on the answer surface in Phase 3 — reused here, not rebuilt)."""
+    src = _page_source()
+    assert "Show your work" in src
