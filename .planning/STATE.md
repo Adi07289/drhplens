@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
-last_updated: "2026-08-01T06:03:27.793Z"
-last_activity: "2026-07-31 — Phase 6.1 verified (UAT 6/6 pass, `06.1-VERIFICATION.md` status: pass) and **shipped as PR #2** (`phase6/6a-eval-harness` → `phase5/05-11-residuals`, stacked on open PR #1; auto-retargets to `main` on PR #1 merge). Deferred (non-blocking, disclosed): judge calibration, CI gate lane, gold-set span-tightening, WR-03."
+status: executing
+last_updated: "2026-08-01T11:21:24.041Z"
+last_activity: 2026-08-01
 progress:
   total_phases: 8
   completed_phases: 4
-  total_plans: 42
+  total_plans: 46
   completed_plans: 40
   percent: 50
 ---
@@ -16,7 +16,7 @@ progress:
 # STATE: DRHPLens
 
 **Last Updated:** 2026-07-31
-**Last activity:** 2026-07-31 — Phase 6.1 verified (UAT 6/6 pass, `06.1-VERIFICATION.md` status: pass) and **shipped as PR #2** (`phase6/6a-eval-harness` → `phase5/05-11-residuals`, stacked on open PR #1; auto-retargets to `main` on PR #1 merge). Deferred (non-blocking, disclosed): judge calibration, CI gate lane, gold-set span-tightening, WR-03.
+**Last activity:** 2026-08-01
 
 ## Project Reference
 
@@ -31,7 +31,7 @@ progress:
 ## Current Position
 
 Phase: 06 (full eval harness + agentic polish + portfolio surface) — NEXT / not started. Phases 1–5 complete; Phase 4 + Phase 5 goal-backward verified 2026-07-27 (04-VERIFICATION.md / 05-VERIFICATION.md).
-**Status:** Milestone v1.0 at 5/6 phases. Phase 5 closed honestly — the 05-11 live crawl ran, the P9 gate FAILS by design (the expected D5-01 result), and the real model card + real SHAP are committed. The three 05-11 residuals (real SHAP, honest forecast-block P9-fail banner, /methodology verify) are DONE + render-verified; 04-07 closed (median sanity surfaced on /methodology); the requirement ledger is reconciled (10 shipped reqs marked Complete, RAG-01/02/03 live-smoke verified). All this work is on branch `phase5/05-11-residuals` (10 commits, unpushed).
+**Status:** Ready to execute
 **Progress:** [████████▆░] 83% (5/6 phases; Phase 6 remaining)
 
 **05-11 LIVE CRAWL (2026-07-25) + residuals close (2026-07-27):** Real panel built live — 1,378 IPOs (5 withdrawn, P3), 1,245 scorable, median 10.2% (WITHIN the ~7% [-5%,20%] sanity band, not survivor-inflated). Walk-forward **P9 gate FAILS HONESTLY** (R²=-0.009, no leakage; global_median + trailing_12 beat the model, DM p<1e-5) — the EXPECTED humble pre-apply result (D5-01/P9), never p-hacked. The model card + /snapshot forecast block now LEAD with the honest "does-not-beat-baseline" verdict; real SHAP shows the live panel is effectively one-feature (trailing_listing_gain), disclosed via a "Populated live?" column + a one-feature limitation. Per-IPO record metrics reconciled to the live run (coverage 0.800 / n=1,132). Full unit suite: 530 passed, 0 failed. Evidence: `data/forecasts/_gate/release_gate.json`, `model_card/`, `05-VERIFICATION.md`.
