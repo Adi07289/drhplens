@@ -132,6 +132,13 @@ def render_failures(surface: str | None = None, query: str | None = None) -> Non
         _empty_state()
         return
 
+    # Defensive: the file is hand-curated — drop any non-mapping list element so a stray
+    # bare string / null can never AttributeError on .get() in the filters/loop below (WR-01).
+    entries = [e for e in entries if isinstance(e, dict)]
+    if not entries:
+        _empty_state()
+        return
+
     # ── Render-only filters (in-memory over already-loaded entries; NO live call) ──
     if surface and surface != "all":
         entries = [e for e in entries if e.get("surface") == surface]

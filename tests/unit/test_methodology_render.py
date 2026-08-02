@@ -176,3 +176,16 @@ def test_eval04_show_your_work_pane_is_surfaced():
     (delivered on the answer surface in Phase 3 — reused here, not rebuilt)."""
     src = _page_source()
     assert "Show your work" in src
+
+
+def test_page_never_aborts_via_stop_cr01():
+    """CR-01 regression: the page must never call a page-level stop(). A missing or
+    corrupt model-card artifact must degrade to a note and let the page finish — an
+    early abort would drop the footer compliance disclaimer (informational-only app)."""
+    import re
+
+    calls = [
+        ln for ln in _page_source().splitlines()
+        if re.search(r"\bst\.stop\s*\(", ln) and not ln.lstrip().startswith("#")
+    ]
+    assert not calls, f"pages/01_methodology.py must not call st.stop() (CR-01): {calls}"

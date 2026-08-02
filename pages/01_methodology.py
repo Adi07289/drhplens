@@ -229,23 +229,24 @@ if _ps is not None:
     )
 
 
-if not _card_data_path.is_file():
+_card = None
+if _card_data_path.is_file():
+    try:  # corrupt/unreadable card degrades to the fallback, never ABORTS the page (CR-01):
+        _card = json.loads(_card_data_path.read_text(encoding="utf-8"))
+    except (ValueError, OSError):
+        _card = None
+
+if _card is None:
+    # Missing OR corrupt → one honest fallback note, then the page CONTINUES so the
+    # guardrails, stack, "show your work" CTA, and the footer disclaimer still render.
+    # (Previously the corrupt-artifact branch aborted the whole page via a page-level stop — CR-01.)
     st.markdown(
         '<p class="drhp-method-note drhp-not-disclosed">'
-        "The forecaster model card has not been generated yet.</p>",
+        "The forecaster model card is unavailable — it has not been generated yet, or the "
+        "committed artifact could not be read. The rest of the page still renders.</p>",
         unsafe_allow_html=True,
     )
 else:
-    try:  # corrupt/unreadable card degrades to the same fallback, never crashes (WR-05)
-        _card = json.loads(_card_data_path.read_text(encoding="utf-8"))
-    except (ValueError, OSError):
-        st.markdown(
-            '<p class="drhp-method-note drhp-not-disclosed">'
-            "The forecaster model card could not be read (corrupt artifact).</p>",
-            unsafe_allow_html=True,
-        )
-        st.stop()
-
     if _card.get("seed"):
         st.markdown(
             '<p class="drhp-method-note">Seed / not-yet-regenerated: these numbers are '
