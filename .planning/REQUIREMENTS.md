@@ -80,7 +80,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **OPS-01**: v1 covers 5–10 recent mainboard IPOs and 1–2 currently-open mainboard IPOs
 - [ ] **OPS-02**: App is publicly deployed on a free-tier host (e.g., Hugging Face Spaces) and accessible via URL
-- [ ] **OPS-03**: Repo is portfolio-presentable — README, methodology writeup, model card, failure gallery, eval dashboards committed
+- [x] **OPS-03**: Repo is portfolio-presentable — README, methodology writeup, model card, failure gallery, eval dashboards committed
 
 ### Methodology Transparency (CEO-approved cherry-picks)
 
@@ -185,7 +185,7 @@ Which phases cover which requirements. Updated by roadmap creation.
 | UI-04 | Phase 4 | Complete |
 | OPS-01 | Phase 2 | Complete |
 | OPS-02 | Phase 1 | Pending |
-| OPS-03 | Phase 6.2 | Pending |
+| OPS-03 | Phase 6.2 | Complete |
 | METHOD-01 | Phase 3 | Complete |
 | LAND-01 | Phase 6.2 | Complete |
 | FAILGAL-01 | Phase 6.2 | Complete |

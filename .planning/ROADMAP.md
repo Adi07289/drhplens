@@ -14,7 +14,7 @@
 - [x] **Phase 4: Historical IPO Dataset + Peer Comparator + GMP Display** - Survivorship-corrected historical IPO dataset (SEBI-sourced universe with status column), peer multiples comparison table, GMP read-only display, Indian-context formatting throughout. (completed 2026-07-27)
 - [x] **Phase 5: Calibrated Listing-Day Forecaster** - XGBoost + MAPIE conformal regression with walk-forward backtest, four baselines, committed model card, GMP-vs-model gap signal, uncertainty rendered as first-class UI. (completed 2026-07-25; honest model card — forecaster does not beat baselines, the expected D5-01 result)
 - [x] **Phase 6.1: Eval Harness + Inline Metrics + Langfuse Ops** - Committed RAGAS/DeepEval/custom eval suite (faithfulness + recall@k + citation accuracy), honest inline metric surfacing on IPO pages, and Langfuse trace enrichment + failure-mode ops dashboard. (EVAL-01/02/05; alias "6a" — built first) (completed 2026-07-31; UAT 6/6, shipped PR #2 merged to main; 4 disclosed follow-ups gate a production-ready stamp only)
-- [ ] **Phase 6.2: Portfolio Surfaces** - "Show your work" pane, portfolio-presentable README + model card + committed HTML eval dashboards, recruiter /methodology landing page, and browseable /failures gallery. (EVAL-04/OPS-03/LAND-01/FAILGAL-01; alias "6b")
+- [x] **Phase 6.2: Portfolio Surfaces** - "Show your work" pane, portfolio-presentable README + model card + committed HTML eval dashboards, recruiter /methodology landing page, and browseable /failures gallery. (EVAL-04/OPS-03/LAND-01/FAILGAL-01; alias "6b") (completed 2026-08-02)
 - [ ] **Phase 6.3: Agent Polish + Launch Gate** - Full multi-tool LangGraph orchestration (TTL + semantic call dedup + supervisor stress-tested) and the SEBI legal-review checkpoint gating public launch. (alias "6c")
 
 ## Phase Details
@@ -253,7 +253,7 @@ Plans:
 | 4. Historical IPO Dataset + Peer Comparator + GMP | 7/7 | Complete (survivorship panel built live; median sanity on /methodology) | 2026-07-27 |
 | 5. Calibrated Listing-Day Forecaster | 11/11 | Complete (honest model card; forecaster does not beat baselines) | 2026-07-25 |  |
 | 6.1 Eval Harness + Inline Metrics + Langfuse Ops | 6/6 | Executed (verification pending) | 4 waves |
-| 6.2 Portfolio Surfaces | 3/4 | In Progress|  |
+| 6.2 Portfolio Surfaces | 4/4 | Complete   | 2026-08-02 |
 | 6.3 Agent Polish + Launch Gate | 0/0 | Not started | - |
 
 ## Cross-Cutting Invariants
