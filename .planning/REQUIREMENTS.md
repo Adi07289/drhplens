@@ -59,7 +59,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **EVAL-01**: System reports RAG faithfulness, retrieval recall@k, and citation accuracy per IPO using a committed eval suite (RAGAS / DeepEval / custom citation metric)
 - [ ] **EVAL-02**: A subset of eval metrics is surfaced in the UI ("This page's RAG faithfulness: 0.91", retrieval coverage, citation accuracy)
 - [x] **EVAL-03**: Numeric-faithfulness has a dedicated eval track with a release gate of ≥0.95 (no shipping below threshold)
-- [ ] **EVAL-04**: A "show your work" pane reveals retrieval query, retrieved chunks, prompt, sources, and eval scores for any claim
+- [x] **EVAL-04**: A "show your work" pane reveals retrieval query, retrieved chunks, prompt, sources, and eval scores for any claim
 - [ ] **EVAL-05**: Agent traces are captured via Langfuse (or equivalent) and reviewable
 
 ### Trust (Compliance & Honesty Posture)
@@ -85,7 +85,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Methodology Transparency (CEO-approved cherry-picks)
 
 - [x] **METHOD-01**: "Show your work" methodology pane — expandable on any answer to reveal retrieval query, retrieved chunks with scores, prompt used, sources cited, and faithfulness/citation eval scores for that specific claim (pulled forward to Phase 3 per CEO review)
-- [ ] **LAND-01**: Recruiter landing page at `/methodology` deep-linkable URL — renders model card + methodology writeup + failure gallery link + per-IPO eval dashboard summary (Phase 6, with stub link from Phase 1 home page)
+- [x] **LAND-01**: Recruiter landing page at `/methodology` deep-linkable URL — renders model card + methodology writeup + failure gallery link + per-IPO eval dashboard summary (Phase 6, with stub link from Phase 1 home page)
 - [x] **FAILGAL-01**: Live browseable failure gallery at `/failures` page — renders ≥10 documented failures across RAG / extraction / forecast surfaces with category, query, expected vs actual, and post-mortem note (Phase 6; replaces the markdown-only file in `eval/`)
 
 ## v2 Requirements
@@ -173,7 +173,7 @@ Which phases cover which requirements. Updated by roadmap creation.
 | EVAL-01 | Phase 6.1 | Pending |
 | EVAL-02 | Phase 6.1 | Pending |
 | EVAL-03 | Phase 3 | Complete |
-| EVAL-04 | Phase 6.2 | Pending |
+| EVAL-04 | Phase 6.2 | Complete |
 | EVAL-05 | Phase 6.1 | Pending |
 | TRUST-01 | Phase 1 | Complete |
 | TRUST-02 | Phase 1 | Complete |
@@ -187,7 +187,7 @@ Which phases cover which requirements. Updated by roadmap creation.
 | OPS-02 | Phase 1 | Pending |
 | OPS-03 | Phase 6.2 | Pending |
 | METHOD-01 | Phase 3 | Complete |
-| LAND-01 | Phase 6.2 | Pending |
+| LAND-01 | Phase 6.2 | Complete |
 | FAILGAL-01 | Phase 6.2 | Complete |
 
 **Coverage:**
