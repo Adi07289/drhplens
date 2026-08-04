@@ -1797,7 +1797,7 @@ a.drhp-ipo-card:hover { border-color: rgba(224, 162, 78, 0.4) !important; }
   font-family: var(--drhp-font-mono); font-size: 10.5px; letter-spacing: 0.14em;
   text-transform: uppercase; color: var(--drhp-accent-link);
   background: var(--drhp-surface-secondary); border: 1px solid var(--drhp-border-subtle);
-  border-radius: 999px; padding: 3px 10px;
+  border-radius: 999px; padding: var(--drhp-space-xs) var(--drhp-space-sm);
 }
 .drhp-fail-cat {
   font-family: var(--drhp-font-mono); font-size: 12px; color: var(--drhp-text-muted);
@@ -1807,7 +1807,7 @@ a.drhp-ipo-card:hover { border-color: rgba(224, 162, 78, 0.4) !important; }
   font-family: var(--drhp-font-mono); font-size: 10.5px; letter-spacing: 0.12em;
   text-transform: uppercase; color: var(--drhp-text-muted);
   border: 1px dashed var(--drhp-border-subtle);        /* NEUTRAL dashed — never a verdict colour */
-  border-radius: 6px; padding: 3px 9px;
+  border-radius: 6px; padding: var(--drhp-space-xs) var(--drhp-space-sm);
 }
 .drhp-fail-title {
   font-family: var(--drhp-font-serif); font-size: 17px; font-weight: 600;
@@ -1843,6 +1843,20 @@ a.drhp-ipo-card:hover { border-color: rgba(224, 162, 78, 0.4) !important; }
 .drhp-fail-empty {
   font-size: 14px; color: var(--drhp-text-muted); font-style: italic;
   line-height: 1.6; margin: var(--drhp-space-md) 0;
+}
+/* Surface-group label between rag/extraction/forecast runs (UI-SPEC C2 "grouped by
+ * surface"); reuses the eyebrow/lane-label mono role. Neutral — never a verdict colour. */
+.drhp-fail-group {
+  font-family: var(--drhp-font-mono); font-size: 10.5px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--drhp-text-muted);
+  margin: var(--drhp-space-lg) 0 var(--drhp-space-sm); padding-top: var(--drhp-space-sm);
+  border-top: 1px solid var(--drhp-border-subtle);
+}
+.drhp-fail-group:first-child { border-top: 0; padding-top: 0; margin-top: 0; }
+/* Filter-result count ("N of M failures shown") — muted mono, no verdict weight. */
+.drhp-fail-count {
+  font-family: var(--drhp-font-mono); font-size: 12px; color: var(--drhp-text-muted);
+  margin: 0 0 var(--drhp-space-md);
 }
 
 @media (max-width: 820px) {
@@ -1884,7 +1898,7 @@ a.drhp-ipo-card:hover { border-color: rgba(224, 162, 78, 0.4) !important; }
 }
 .drhp-archhero-node {
   background: var(--drhp-surface); border: 1px solid var(--drhp-border-subtle);
-  border-radius: 10px; padding: 12px 14px;
+  border-radius: 10px; padding: var(--drhp-space-sm) var(--drhp-space-md);
 }
 .drhp-archhero-node .n-t {
   font-family: var(--drhp-font-mono); font-size: 12.5px; color: var(--drhp-text-primary);
@@ -1897,11 +1911,14 @@ a.drhp-ipo-card:hover { border-color: rgba(224, 162, 78, 0.4) !important; }
 .drhp-archhero-node--out .n-t, .drhp-archhero-node--out .n-d { color: var(--drhp-bg); }
 .drhp-archhero-chips { display: flex; flex-wrap: wrap; gap: var(--drhp-space-xs); margin-top: 6px; }
 .drhp-archhero-chip {
-  font-family: var(--drhp-font-mono); font-size: 10px; color: var(--drhp-accent-link);
-  border: 1px solid var(--drhp-border-subtle); border-radius: 5px; padding: 1px 5px;
+  /* muted, NOT amber — the LangGraph micro-chips are not on the UI-SPEC accent-reserved
+   * list, so keep the accent for connectors + the output node only (UI-REVIEW Color). */
+  font-family: var(--drhp-font-mono); font-size: 10px; color: var(--drhp-text-muted);
+  border: 1px solid var(--drhp-border-subtle); border-radius: 5px;
+  padding: var(--drhp-space-xs) var(--drhp-space-sm);
 }
 .drhp-archhero-conn {
-  display: flex; align-items: center; justify-content: center; padding: 0 6px;
+  display: flex; align-items: center; justify-content: center; padding: 0 var(--drhp-space-sm);
   color: var(--drhp-accent); font-size: 18px; flex: 0 0 auto;
 }
 .drhp-archhero-links {
@@ -1918,6 +1935,6 @@ a.drhp-ipo-card:hover { border-color: rgba(224, 162, 78, 0.4) !important; }
 }
 @media (max-width: 720px) {
   .drhp-archhero-lanes { flex-direction: column; }
-  .drhp-archhero-conn { transform: rotate(90deg); padding: 6px 0; }
+  .drhp-archhero-conn { transform: rotate(90deg); padding: var(--drhp-space-sm) 0; }
   .drhp-archhero-h1 { font-size: 30px; }
 }

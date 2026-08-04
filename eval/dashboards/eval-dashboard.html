@@ -14,6 +14,10 @@
   --muted: #9A9BA0;
   --accent: #E0A24E;
   --accent-link: #E6AC5C;
+  /* Spacing scale mirrored from app/static/drhplens.css :root (4px grid — the UI-SPEC
+     C3 contract "mirrors the same tokens inline", spacing as well as colour). */
+  --sp-xs: 4px; --sp-sm: 8px; --sp-md: 16px; --sp-lg: 24px;
+  --sp-xl: 32px; --sp-2xl: 48px; --sp-3xl: 64px;
   --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   --sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --serif: 'IBM Plex Serif', Georgia, 'Times New Roman', serif;
@@ -27,7 +31,7 @@ body {
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
 }
-.wrap { max-width: 860px; margin: 0 auto; padding: 64px 24px 96px; }
+.wrap { max-width: 860px; margin: 0 auto; padding: var(--sp-3xl) var(--sp-lg) var(--sp-3xl); }
 .eyebrow {
   font-family: var(--mono);
   font-size: 11px;
@@ -54,8 +58,8 @@ section {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 24px;
-  margin-top: 24px;
+  padding: var(--sp-lg);
+  margin-top: var(--sp-lg);
   box-shadow: 0 1px 2px rgba(0,0,0,.45), 0 16px 32px -20px rgba(0,0,0,.80);
 }
 .section-label {
@@ -65,7 +69,7 @@ section {
   text-transform: uppercase;
   color: var(--accent-link);
   border-left: 3px solid var(--accent);
-  padding-left: 10px;
+  padding-left: var(--sp-sm);
 }
 h2 { font-family: var(--serif); font-size: 22px; font-weight: 600; margin: 10px 0 4px; }
 .sec-sub { color: var(--muted); font-size: 14px; margin: 0 0 16px; }
@@ -73,9 +77,9 @@ h2 { font-family: var(--serif); font-size: 22px; font-weight: 600; margin: 10px 
 .metric {
   display: grid;
   grid-template-columns: 220px 130px 1fr;
-  gap: 12px;
+  gap: var(--sp-sm);
   align-items: baseline;
-  padding: 8px 0;
+  padding: var(--sp-sm) 0;
   border-top: 1px solid var(--border);
 }
 .metric:first-child { border-top: none; }
@@ -90,8 +94,8 @@ h2 { font-family: var(--serif); font-size: 22px; font-weight: 600; margin: 10px 
 .honest {
   font-size: 14px;
   color: var(--text);
-  margin: 16px 0 0;
-  padding: 14px 16px;
+  margin: var(--sp-md) 0 0;
+  padding: var(--sp-md);
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-left: 3px solid var(--accent);
@@ -99,7 +103,7 @@ h2 { font-family: var(--serif); font-size: 22px; font-weight: 600; margin: 10px 
 }
 .honest b { font-weight: 600; }
 .ref { font-family: var(--mono); font-size: 12px; color: var(--muted); }
-.plot { margin: 18px 0 6px; }
+.plot { margin: var(--sp-md) 0 var(--sp-sm); }
 .plot img {
   display: block;
   width: 100%;

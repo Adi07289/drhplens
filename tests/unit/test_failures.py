@@ -211,3 +211,7 @@ def test_render_surface_and_text_filter(tmp_path, monkeypatch):
     # a no-match query renders the muted empty-state, no crash.
     none_out = _render(failures_mod, tmp_path, monkeypatch, entries, query="zzz-no-such-thing")
     assert "drhp-fail-empty" in none_out
+    # ...and it is FILTER-aware copy — the file IS loaded, so it must NOT wrongly tell the
+    # user to run the eval suite (06.2-UI-REVIEW Experience-Design #2).
+    assert "Run the eval suite" not in none_out
+    assert "match" in none_out.lower()

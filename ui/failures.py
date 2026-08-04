@@ -43,6 +43,12 @@ _FAILURES_PATH = (
 _EMPTY_HEADING = "No failures loaded."
 _EMPTY_BODY = "Run the eval suite to populate `eval/failures/failures.yaml`."
 
+# No-MATCH copy — the file IS loaded and has entries; the user's surface/text filter
+# simply matched none. Distinct from _EMPTY_* so a searching recruiter is never wrongly
+# told to "run the eval suite" (06.2-UI-REVIEW Experience-Design #2).
+_NOMATCH_HEADING = "No failures match that filter."
+_NOMATCH_BODY = "Clear the search or choose a different surface."
+
 # Surface grouping order for the vertical stack (stable within a surface).
 _SURFACE_ORDER = {"rag": 0, "extraction": 1, "forecast": 2}
 
@@ -56,6 +62,17 @@ def _empty_state() -> None:
     st.markdown(
         f'<p class="drhp-fail-empty">{html.escape(_EMPTY_HEADING)} '
         f'{html.escape(_EMPTY_BODY)}</p>',
+        unsafe_allow_html=True,
+    )
+
+
+def _no_match_state() -> None:
+    """Filter matched zero of the loaded entries (the file IS loaded and non-empty).
+    Same muted <p class="drhp-fail-empty"> chrome as _empty_state, but filter-aware
+    copy — never the "run the eval suite" guidance (06.2-UI-REVIEW #2)."""
+    st.markdown(
+        f'<p class="drhp-fail-empty">{html.escape(_NOMATCH_HEADING)} '
+        f'{html.escape(_NOMATCH_BODY)}</p>',
         unsafe_allow_html=True,
     )
 
@@ -139,6 +156,9 @@ def render_failures(surface: str | None = None, query: str | None = None) -> Non
         _empty_state()
         return
 
+    total = len(entries)  # committed, mapping-valid entries before filtering
+    filter_active = bool((surface and surface != "all") or (query and query.strip()))
+
     # ── Render-only filters (in-memory over already-loaded entries; NO live call) ──
     if surface and surface != "all":
         entries = [e for e in entries if e.get("surface") == surface]
@@ -150,13 +170,32 @@ def render_failures(surface: str | None = None, query: str | None = None) -> Non
         ]
 
     if not entries:
-        _empty_state()
+        # The file loaded fine and HAS entries — the filter just matched none. Give
+        # filter-aware guidance, never the "run the eval suite" copy (UI-REVIEW #2).
+        _no_match_state()
         return
+
+    # Filter-result count feedback, only when a filter narrows the set (UI-REVIEW ExpDesign).
+    if filter_active:
+        st.markdown(
+            f'<p class="drhp-fail-count">{len(entries)} of {total} failures shown</p>',
+            unsafe_allow_html=True,
+        )
 
     # Group/order the vertical stack by surface (stable within a surface).
     entries = sorted(entries, key=lambda e: _SURFACE_ORDER.get(e.get("surface", ""), 99))
 
+    _prev_surface = None
     for entry in entries:
+        # Emit a mono surface-group label whenever the surface changes, so the sorted
+        # stack reads as GROUPED, not one undifferentiated list (UI-SPEC C2 / UI-REVIEW #3).
+        _surface = str(entry.get("surface", ""))
+        if _surface != _prev_surface:
+            st.markdown(
+                f'<p class="drhp-fail-group">{html.escape(_surface.upper())}</p>',
+                unsafe_allow_html=True,
+            )
+            _prev_surface = _surface
         # st.container(border=True, key="drhpcard-fail-…") is the lifted-depth card hook —
         # the `drhpcard-` prefix inherits the ambient shadow/bevel (drhplens.css:1358-1374).
         # One inner st.markdown for the whole card (never a split <div> — the Phase-3
