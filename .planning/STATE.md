@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: ready_to_plan
-last_updated: 2026-08-02T10:35:00.616Z
-last_activity: 2026-08-01
+status: planning
+last_updated: "2026-08-04T07:55:37.083Z"
+last_activity: 2026-08-02
 progress:
   total_phases: 8
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 46
   completed_plans: 44
-  percent: 50
-stopped_at: Phase 06.2 complete (4/4) — ready to discuss Phase 6.3
+  percent: 63
+stopped_at: Phase 6.3 context gathered — ready to /gsd-plan-phase 6.3
 ---
 
 # STATE: DRHPLens
@@ -145,6 +145,10 @@ Plan: Not started
 ## Session Continuity
 
 ### What I Was Doing
+
+Ran `/gsd-discuss-phase 6.3` (Agent Polish + Launch Gate) — captured `06.3-CONTEXT.md` + `06.3-DISCUSSION-LOG.md` (14 decisions across 4 areas). **Agent:** full-hybrid multi-tool agent (RAG + forecast + peers + redflag/financials, GMP read-only) whose bounded supervisor **wraps** the existing 10-node cite-Q&A graph unchanged and **fuses** tool outputs into one cited answer with per-number provenance; routing = LLM-classify + deterministic guardrails (bounded, not ReAct); GMP-vs-model gap surfaces in chat. **P8:** belt-and-suspenders loop-safety (hard hop/tool-call + wall-clock bound + semantic result-cache w/ TTL spanning runs) + a 4-category weird-query stress-test **pytest suite that gates deploy** (compliance-bait / injection / off-topic-gibberish / cross-IPO+fabricated-precision); on failure = **honest partial always**. **SEBI gate:** honest **self-audit doc only** (`compliance/SEBI-REVIEW.md`, NOT lawyer-reviewed), full re-audit of the new conversational surfaces + public exposure. **Launch (OPS-02):** live public chat with rate-limit/daily-cap/graceful-fallback guards; **stay Streamlit for v1** (Next.js→v2, resolves the flagged Phase-5-exit gate); **close ALL 4** production-stamp follow-ups (WR-03 pure-code; CI-lane needs repo secrets; ⚠ judge-calibration ≥50-ex + gold-set span-tightening are **human-in-the-loop**, not executor-completable). Committed `5528702` on branch `phase6/6b-portfolio-surfaces` (docs-only, unpushed). **Next: `/clear` then `/gsd-plan-phase 6.3`.**
+
+### (Phase 5) What I Was Doing
 
 Resumed + completed Phase 5 Plan 05-09 (Wave 7 — the phase's HONESTY GATE: four baselines + inline Diebold–Mariano P9 release gate + D5-09 abstention; FCAST-05/FCAST-03/P9/D5-01/D5-09). The prior executor was session-limit-interrupted with `baselines.py` + `test_baselines_dm.py` uncommitted on disk. Task 1 `7d78b6b` (feat): reviewed the uncommitted `pipelines/forecast/baselines.py` — `baselines_asof(pool, sector)` (predict_zero=0.0 / global_median / trailing_12 / sector_mean, ALL from the as-of-T0 pool `listing_date < T0_i`, identical to the model, P9; NaN-honest on an empty pool), `_pool_sector_labels` (local D5-10 'Other'-pooling), `score_baselines` (rebuilds each covered OOS row's as-of-T0 pool + aligns baseline abs-errors to the model's), inline `dm_test` (MAE-loss differential, Harvey 1997 small-sample correction, scipy.stats.t; dm<0 & p<0.05 => model wins; degenerate→(0.0,1.0); n<2→(NaN,NaN)), `wilcoxon_robustness` (A7 paired signed-rank cross-check). Rule-1 fix: the module docstring literally named `xgboost`/`mapie`/`shap`/the DM package, failing its own `inspect.getsource` isolation audit (the 'shape'→'shap'-class gotcha) — reworded to avoid the tokens. Committed `baselines.py` (minus release_gate, split for atomicity) + `test_baselines_dm.py` (10 tests). Task 2 `783ecfe` (feat): the ahead-of-schedule `release_gate(oos_df, panel)` was found COMPLETE — verified by writing `tests/unit/test_release_gate.py` (4 tests) and running it. It scores the four baselines, DM-tests the model's abs-errors vs each, consumes `r2_leakage_alarm` (05-05) as a HARD gate, returns a plain-data verdict `{passed, r2, r2_alarm, per_baseline{dm_stat,p_value,wilcoxon_p,model_beats_sig,baseline_beats_model_sig,n}, n_scored, notes}`; FAILS on R²>0.5 leakage OR any baseline significantly beating the model (p<0.05), PASSES honestly on a tie with an explicit "does not significantly outperform" note (D5-01, no p-hacking). Task 3 `0a722c0` (feat): wired the D5-09 conformal-native abstention into `walk_forward` (`pipelines/forecast/walkforward.py`) as OPT-IN kwargs `check_support` (out_of_support via `is_out_of_support` on the proper-train support, before fitting) + `max_width`/`width_iqr_mult` (interval_too_wide via `_width_guard` = tighter of the absolute + IQR-relative guards, after predict_band); both default OFF (untuned until 05-11, Open Q3) so the existing no-lookahead fixture is behaviourally unchanged; `select` imported LAZILY inside `walk_forward` to break the select↔walkforward cycle. `tests/unit/test_walkforward_abstention.py` (5 tests). Suite: **474 passed / 0 skipped / 1 pre-existing ignorable embedder failure** (sentence-transformers not installed — unrelated; 455→474 = +19 new tests, no regression); `test_walkforward_no_lookahead.py` stays green. FCAST-05/FCAST-03 left Pending (baselines/DM/gate + abstention offline-green; model card render is 05-10, real-panel gate run is 05-11).
 
