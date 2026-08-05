@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-last_updated: "2026-08-04T07:55:37.083Z"
-last_activity: 2026-08-02
+last_updated: "2026-08-05T00:00:00.000Z"
+last_activity: 2026-08-05
 progress:
   total_phases: 8
   completed_phases: 5
   total_plans: 46
   completed_plans: 44
   percent: 63
-stopped_at: Phase 6.3 context gathered — ready to /gsd-plan-phase 6.3
+stopped_at: Phase 6.3 pre-planning contracts done (CONTEXT + AI-SPEC + UI-SPEC) — ready to /gsd-plan-phase 6.3
 ---
 
 # STATE: DRHPLens
@@ -145,6 +145,10 @@ Plan: Not started
 ## Session Continuity
 
 ### What I Was Doing
+
+**Phase 6.3 pre-planning contracts (2026-08-05):** After discuss-phase, the user chose to run the AI-SPEC + UI-SPEC gates before planning (like 6.1/6.2). **`/gsd-ai-integration-phase 6.3` → `06.3-AI-SPEC.md` (committed `e22831a`):** framework-selector CONFIRMED LangGraph 1.2.2 (pre-locked, not reopened); system = Hybrid bounded multi-tool agent; ai-researcher wrote §3/§4/§4b (supervisor-wraps-existing-subgraph D-02 entry point, read-only loader tool-nodes NOT @tool, explicit hop/tool-call counter as the real P8 bound — 5 `planner-verify` caveats: SqliteSaver constructor, Gemini temp/token via Instructor, parallel-fan-out reducer, recursion_limit-is-only-a-backstop, FusedClaim must not loosen the claim_id regex); domain-researcher wrote §1b (Indian IPO/DRHP + SEBI RA/IA + Jan-2025 finfluencer framework, honest flags on unverified reg claims — feeds D-10/D-11 self-audit); eval-planner wrote §5/§6/§7 (EXTENDS the 6.1 harness with the D-09 weird-query stress suite + fused-answer provenance; tracing = Langfuse, overriding the template's Phoenix default; faithfulness stays honest `-1` until ≥0.7 calibration). **`/gsd-ui-phase 6.3` → `06.3-UI-SPEC.md` + `06.3-ui-mock.html` (committed `8d3dd0e`):** 4 new surfaces approved element-by-element via preview (granular-design-consultation rule) — C1 fused prose-first cited answer, C2 doc=number/tool=letter provenance chips (tap-to-expand), C3 neutral honest-partial banner, C4 quota fallback card + rate-limit notice; reuses locked Graphite+Amber system, additive `.drhp-fused/-prov/-partial/-quota` only. ⚠ Both the ai-researcher (once) and the ui-researcher/ui-checker hit API/session limits mid-run — ai-researcher was resumed & finished; the UI-SPEC + mock were authored INLINE by the orchestrator from the 4 approved decisions, and the **formal `gsd-ui-checker` sign-off is DEFERRED** (6-dim self-assessment inline; account session limit resets 5:10am Asia/Calcutta). **NEXT: `/gsd-plan-phase 6.3`** (research→plan→verify; will consume CONTEXT + AI-SPEC + UI-SPEC). All docs committed on branch `phase6/6b-portfolio-surfaces` (unpushed); a fresh `phase6/6c-agent-launch` branch off main is advisable before execution once 6.2's PR merges.
+
+### (prior) What I Was Doing
 
 Ran `/gsd-discuss-phase 6.3` (Agent Polish + Launch Gate) — captured `06.3-CONTEXT.md` + `06.3-DISCUSSION-LOG.md` (14 decisions across 4 areas). **Agent:** full-hybrid multi-tool agent (RAG + forecast + peers + redflag/financials, GMP read-only) whose bounded supervisor **wraps** the existing 10-node cite-Q&A graph unchanged and **fuses** tool outputs into one cited answer with per-number provenance; routing = LLM-classify + deterministic guardrails (bounded, not ReAct); GMP-vs-model gap surfaces in chat. **P8:** belt-and-suspenders loop-safety (hard hop/tool-call + wall-clock bound + semantic result-cache w/ TTL spanning runs) + a 4-category weird-query stress-test **pytest suite that gates deploy** (compliance-bait / injection / off-topic-gibberish / cross-IPO+fabricated-precision); on failure = **honest partial always**. **SEBI gate:** honest **self-audit doc only** (`compliance/SEBI-REVIEW.md`, NOT lawyer-reviewed), full re-audit of the new conversational surfaces + public exposure. **Launch (OPS-02):** live public chat with rate-limit/daily-cap/graceful-fallback guards; **stay Streamlit for v1** (Next.js→v2, resolves the flagged Phase-5-exit gate); **close ALL 4** production-stamp follow-ups (WR-03 pure-code; CI-lane needs repo secrets; ⚠ judge-calibration ≥50-ex + gold-set span-tightening are **human-in-the-loop**, not executor-completable). Committed `5528702` on branch `phase6/6b-portfolio-surfaces` (docs-only, unpushed). **Next: `/clear` then `/gsd-plan-phase 6.3`.**
 
