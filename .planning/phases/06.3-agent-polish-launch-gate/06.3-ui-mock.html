@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DRHPLens 6.3 — new-surface mock</title>
+<style>
+  /* Self-contained mock of the LOCKED Graphite+Amber Deep-Slate tokens (drhplens.css).
+     Font uses a web-safe stack approximating IBM Plex (the real app loads IBM Plex). P19: zero external assets. */
+  :root{
+    --drhp-bg:#16171A; --drhp-surface:#1E2024; --drhp-secondary:#26282D;
+    --drhp-border-subtle:#33363C; --drhp-text:#ECECEA; --drhp-muted:#9A9BA0;
+    --drhp-accent:#E0A24E; --drhp-link:#E6AC5C;
+    --serif:Georgia,"Times New Roman",serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--drhp-bg);color:var(--drhp-text);font-family:var(--sans);
+       line-height:1.55;margin:0;padding:32px 16px;max-width:760px;margin:0 auto;}
+  h1{font-family:var(--serif);font-weight:600;font-size:28px;line-height:1.12;margin:0 0 4px}
+  .sub{color:var(--drhp-muted);font-size:13px;margin:0 0 32px}
+  .eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--drhp-muted);margin:40px 0 10px}
+  /* fused answer */
+  .drhp-fused{background:var(--drhp-surface);border:1px solid var(--drhp-border-subtle);
+       border-radius:8px;padding:16px 18px;font-size:15px}
+  .drhp-prov{font-family:var(--mono);font-size:10.5px;vertical-align:super;color:var(--drhp-muted);
+       cursor:pointer;padding:0 1px}
+  .drhp-prov:hover,.drhp-prov:focus{color:var(--drhp-accent);text-decoration:underline}
+  .drhp-fused-legend{font-family:var(--mono);font-size:11.5px;color:var(--drhp-muted);
+       border-top:1px solid var(--drhp-border-subtle);margin-top:14px;padding-top:10px}
+  .caveat{color:var(--drhp-muted);font-size:12.5px;font-style:italic}
+  /* expanded source */
+  details{margin:10px 0 0}
+  summary{font-family:var(--mono);font-size:12px;color:var(--drhp-link);cursor:pointer}
+  .drhp-prov-src{background:var(--drhp-secondary);border:1px solid var(--drhp-border-subtle);
+       border-radius:6px;padding:8px 10px;margin-top:6px;font-size:12.5px}
+  .drhp-prov-src .lbl{font-family:var(--mono);color:var(--drhp-muted);font-size:11px;display:block;margin-bottom:3px}
+  .drhp-prov-src a{color:var(--drhp-link)}
+  /* partial banner */
+  .drhp-partial{border:1px dashed var(--drhp-border-subtle);border-radius:6px;background:transparent;
+       padding:9px 12px;margin-bottom:12px}
+  .drhp-partial-eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--drhp-muted)}
+  .drhp-partial-body{color:var(--drhp-muted);font-size:13px;margin-top:2px}
+  /* quota card + ratelimit */
+  .drhp-quota{border:1px dashed var(--drhp-border-subtle);border-radius:8px;background:var(--drhp-surface);
+       padding:18px 20px}
+  .drhp-quota h3{font-family:var(--serif);font-weight:600;font-size:16px;margin:0 0 8px}
+  .drhp-quota-links{list-style:none;padding:0;margin:8px 0 0;font-size:13px}
+  .drhp-quota-links li{margin:4px 0}
+  .drhp-quota-links a{color:var(--drhp-link);text-decoration:none}
+  .drhp-ratelimit{color:var(--drhp-muted);font-size:12.5px;font-family:var(--mono);
+       border-left:2px solid var(--drhp-border-subtle);padding:4px 10px;margin-bottom:8px}
+  .inputbar{margin-top:8px;border:1px solid var(--drhp-border-subtle);border-radius:8px;
+       padding:11px 14px;color:var(--drhp-muted);background:var(--drhp-secondary);font-size:14px}
+  .note{color:var(--drhp-muted);font-size:11.5px;font-family:var(--mono);margin-top:6px}
+</style>
+</head>
+<body>
+  <h1>DRHPLens — Phase 6.3 new surfaces</h1>
+  <p class="sub">Mock of the four element-by-element-approved surfaces, in the locked Deep-Slate / Graphite+Amber theme. Honesty invariant: neutral mono, no red/green.</p>
+
+  <!-- C1 + C2 -->
+  <div class="eyebrow">C1 · fused multi-tool answer + C2 · provenance chips</div>
+  <div class="drhp-fused">
+    Swiggy's issue is 100% OFS — no fresh capital goes to the company.<span class="drhp-prov drhp-prov--doc" tabindex="0">5</span>
+    Its 3-year revenue CAGR of 42%<span class="drhp-prov drhp-prov--doc" tabindex="0">3</span> sits above the listed-peer
+    median of ~28%<span class="drhp-prov drhp-prov--tool" tabindex="0">P</span>. The GMP-free model puts listing-day return in a
+    −4% to +18% band<span class="drhp-prov drhp-prov--tool" tabindex="0">F</span>, while the current GMP implies ~+9%<span class="drhp-prov drhp-prov--tool" tabindex="0">G</span> (a visible gap).
+    <span class="caveat">GMP is an informal grey-market figure, shown for context — it is not a forecast and never enters the model.</span>
+
+    <details>
+      <summary>tap ³ → expand DRHP source</summary>
+      <div class="drhp-prov-src"><span class="lbl">DRHP p.88</span>"revenue grew from ₹5,705 cr in FY22 to ₹11,247 cr in FY24…" &nbsp; <a href="#">[open page]</a></div>
+    </details>
+    <details>
+      <summary>tap ꜰ → expand forecast source</summary>
+      <div class="drhp-prov-src"><span class="lbl">Forecast · 80% PI</span>GMP-free model · calibrated backtest (does-not-beat-baselines, honest) &nbsp; <a href="#">[see forecast]</a></div>
+    </details>
+
+    <div class="drhp-fused-legend">⁵ DRHP p.312 &nbsp; ³ DRHP p.88 &nbsp; ᴾ peers &nbsp; ꜰ forecast · 80% PI &nbsp; ᴳ GMP · display-only</div>
+  </div>
+
+  <!-- C3 -->
+  <div class="eyebrow">C3 · honest-partial banner (tool abstain)</div>
+  <div class="drhp-partial">
+    <div class="drhp-partial-eyebrow">Incomplete answer</div>
+    <div class="drhp-partial-body">No forecast band for this IPO — answering from the DRHP + peers only.</div>
+  </div>
+  <div class="drhp-fused">
+    Swiggy's issue is 100% OFS.<span class="drhp-prov drhp-prov--doc" tabindex="0">5</span>
+    On the multiples it prices at a premium to its listed-peer median.<span class="drhp-prov drhp-prov--tool" tabindex="0">P</span>
+    <div class="drhp-fused-legend">⁵ DRHP p.312 &nbsp; ᴾ peers</div>
+  </div>
+  <p class="note">budget-trip variant → body reads: "Stopped early — here's what I found so far."</p>
+
+  <!-- C4 -->
+  <div class="eyebrow">C4 · quota fallback card (daily cap exhausted — replaces the chat input)</div>
+  <div class="drhp-quota">
+    <h3>Live demo quota reached for today.</h3>
+    <div style="color:var(--drhp-muted);font-size:13px">Everything else still works — browse:</div>
+    <ul class="drhp-quota-links">
+      <li>· <a href="#">IPO snapshot + forecast &amp; peers</a></li>
+      <li>· <a href="#">/methodology</a> &nbsp; · <a href="#">/failures</a></li>
+      <li>· <a href="#">▶ Recorded chat walkthrough</a></li>
+    </ul>
+  </div>
+
+  <div class="eyebrow">C4 · transient rate-limit (input stays enabled)</div>
+  <div class="drhp-ratelimit">You're sending questions quickly — try again in a few seconds.</div>
+  <div class="inputbar">Ask about this IPO…</div>
+
+</body>
+</html>
