@@ -235,8 +235,33 @@ Plans:
 
   1. A SEBI legal-review checkpoint has been completed before the app ships publicly (P1 final gate); the agent is upgraded to full multi-tool LangGraph orchestration with TTL + semantic call dedup + supervisor stress-tested against weird-user-query inputs (P8 mitigation).
 
-**Plans**: TBD
-**UI hint**: no
+**Plans**: 10 plans in 7 waves
+
+**Wave 1**
+- [ ] 06.3-01-PLAN.md — Contracts foundation: P8 bound constants + SupervisorState superset + ToolClaim/FusedAnswer schema (D-06/D-03)
+
+**Wave 2** *(blocked on Wave 1)*
+- [ ] 06.3-02-PLAN.md — Bounded LLM-classify routing hop (D-05/D-07)
+- [ ] 06.3-03-PLAN.md — Read-only tool nodes (peers/forecast+GMP/redflags) + semantic cache + isolation (D-01/D-04/D-06)
+- [ ] 06.3-04-PLAN.md — Committed adversarial stress corpus + offline stress-suite scaffold (D-07/D-09)
+
+**Wave 3** *(blocked on Wave 2)*
+- [ ] 06.3-05-PLAN.md — Bounded supervisor wraps the existing graph + DRHP-only synthesis + P8 bounds (D-02/D-05/D-06/D-08)
+
+**Wave 4** *(blocked on Wave 3)*
+- [ ] 06.3-06-PLAN.md — Extended cite-check (ToolClaim) + multi-tool fusion synthesis + tool-wiring (D-03/D-04/D-08)
+
+**Wave 5** *(blocked on Wave 4)*
+- [ ] 06.3-07-PLAN.md — Activate stress gate + release_gate stress lane + FAILURE_MODES (D-09/D-07/D-08)
+- [ ] 06.3-08-PLAN.md — UI fused surfaces C1/C2/C3 + chat routes through the supervisor (D-03/D-04/D-08)
+
+**Wave 6** *(blocked on Wave 5)*
+- [ ] 06.3-09-PLAN.md — Public deploy guards (global cap + throttle) + C4 quota fallback + keep-warm; re-verify Gemini RPD (D-12/D-13)
+
+**Wave 7** *(blocked on Wave 6)* — **non-autonomous (HITL launch gate)**
+- [ ] 06.3-10-PLAN.md — SEBI self-audit + WR-03 dep-sync + CI gate lane + judge-calibration/gold-set/deploy HITL (D-10/D-11/D-13/D-14)
+
+**UI hint**: yes (4 new surfaces C1–C4)
 **Alias**: 6c — holds public launch
 
 **Pitfalls owned:** P8 (agent infinite loops — TTL + semantic dedup + supervisor stress-tested), P1 final gate (SEBI legal-review checkpoint before public launch).
@@ -254,7 +279,7 @@ Plans:
 | 5. Calibrated Listing-Day Forecaster | 11/11 | Complete (honest model card; forecaster does not beat baselines) | 2026-07-25 |  |
 | 6.1 Eval Harness + Inline Metrics + Langfuse Ops | 6/6 | Executed (verification pending) | 4 waves |
 | 6.2 Portfolio Surfaces | 4/4 | Complete    | 2026-08-02 |
-| 6.3 Agent Polish + Launch Gate | 0/0 | Not started | - |
+| 6.3 Agent Polish + Launch Gate | 0/10 | Planned (10 plans, 7 waves) | - |
 
 ## Cross-Cutting Invariants
 
