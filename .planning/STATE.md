@@ -2,22 +2,21 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-last_updated: "2026-08-05T00:00:00.000Z"
-last_activity: 2026-08-05
+status: executing
+last_updated: "2026-08-06T04:39:29.195Z"
+last_activity: 2026-08-06
 progress:
   total_phases: 8
   completed_phases: 5
-  total_plans: 46
+  total_plans: 56
   completed_plans: 44
   percent: 63
-stopped_at: Phase 6.3 pre-planning contracts done (CONTEXT + AI-SPEC + UI-SPEC) — ready to /gsd-plan-phase 6.3
 ---
 
 # STATE: DRHPLens
 
 **Last Updated:** 2026-07-31
-**Last activity:** 2026-08-02
+**Last activity:** 2026-08-06
 
 ## Project Reference
 
@@ -33,7 +32,7 @@ stopped_at: Phase 6.3 pre-planning contracts done (CONTEXT + AI-SPEC + UI-SPEC) 
 
 Phase: 6.3
 Plan: Not started
-**Status:** Ready to plan
+**Status:** Ready to execute
 **Progress:** [█████████░] 89%
 
 **05-11 LIVE CRAWL (2026-07-25) + residuals close (2026-07-27):** Real panel built live — 1,378 IPOs (5 withdrawn, P3), 1,245 scorable, median 10.2% (WITHIN the ~7% [-5%,20%] sanity band, not survivor-inflated). Walk-forward **P9 gate FAILS HONESTLY** (R²=-0.009, no leakage; global_median + trailing_12 beat the model, DM p<1e-5) — the EXPECTED humble pre-apply result (D5-01/P9), never p-hacked. The model card + /snapshot forecast block now LEAD with the honest "does-not-beat-baseline" verdict; real SHAP shows the live panel is effectively one-feature (trailing_listing_gain), disclosed via a "Populated live?" column + a one-feature limitation. Per-IPO record metrics reconciled to the live run (coverage 0.800 / n=1,132). Full unit suite: 530 passed, 0 failed. Evidence: `data/forecasts/_gate/release_gate.json`, `model_card/`, `05-VERIFICATION.md`.
