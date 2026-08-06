@@ -197,3 +197,64 @@ regression tripwire set just below real performance — never self-blocking, nev
 trivially low, and NEVER advertised as a quality win. The pre-deploy gate exits
 non-zero when recall@10 < this threshold — enforced, not a tunable to relax.
 """
+
+# ---------------------------------------------------------------------------
+# Phase 6.3 — P8 bounded multi-tool supervisor loop-safety bounds (D-06)
+#
+# The belt-and-suspenders loop guard for the multi-tool supervisor. These five
+# constants are the SINGLE-SOURCE CONTROL SURFACE for P8: the supervisor's
+# deterministic `route()` reads the three budget bounds to force termination,
+# and the cross-run semantic result-cache reads the dedup threshold + TTL.
+#
+# SEMANTICS are locked by D-06 (a hard hop / tool-call / wall-clock bound is the
+# real P8 guard, backed by a semantic result-cache with a TTL that spans runs).
+# The NUMERIC VALUES here are calibration / discretion values (CONTEXT.md
+# "numeric budget values" — Claude/planner discretion), tuned against the D-09
+# weird-query stress fixtures exactly like GATE1_THRESHOLD / MAX_REGENERATE_ATTEMPTS
+# above; the semantics do not change when a value is re-tuned.
+# ---------------------------------------------------------------------------
+
+MAX_SUPERVISOR_HOPS: int = 4  # Calibration value (D-06); tune against the D-09 stress fixtures like GATE1_THRESHOLD.
+"""
+Hard cap on supervisor routing hops before the deterministic `route()` forces a
+halt-to-synthesis (D-06, the real P8 guard — a counter, not merely a cache hit).
+SEMANTICS locked by D-06; the value 4 is a starting calibration point (RESEARCH
+Open Q1) chosen so a worst-case adversarial query still fans out to only a handful
+of Gemini calls (P8), never dozens. Re-tune against the stress suite; the
+`recursion_limit` framework backstop is NOT this bound (RESEARCH caveat d).
+"""
+
+MAX_TOOL_CALLS: int = 4  # Calibration value (D-06); tune against the D-09 stress fixtures.
+"""
+Hard cap on total tool invocations across a single run (D-06). `route()` halts to
+synthesis once `tool_calls >= MAX_TOOL_CALLS`, bounding fan-in so at most this many
+structured tool records reach the fused prompt (keeps the Gemini window + free-tier
+quota lean). SEMANTICS locked by D-06; the value 4 is a starting calibration point
+(RESEARCH Open Q1) — re-tune against the stress fixtures.
+"""
+
+WALL_CLOCK_S: float = 45.0  # Calibration value (D-06); tune against the D-09 stress fixtures.
+"""
+Wall-clock backstop in seconds (D-06). If the run exceeds this budget the
+supervisor deterministically halts to an honest labelled partial (D-08) rather
+than looping — the third belt-and-suspenders termination mechanism alongside the
+hop and tool-call counters. SEMANTICS locked by D-06; 45.0s is a starting
+calibration point (RESEARCH Open Q1), tuned against the stress fixtures.
+"""
+
+DEDUP_THRESHOLD: float = 0.95  # Calibration value (D-06); tune against the D-09 stress fixtures.
+"""
+Cosine-similarity floor for the semantic tool-RESULT cache (D-06). A new tool
+request whose query embeds to >= this similarity against a live cache entry is
+served from cache instead of re-invoked — tightening within-run loops AND saving
+free-tier quota / P19 demo-safety across runs. SEMANTICS locked by D-06; 0.95
+is a starting calibration point (RESEARCH Open Q1), tuned against the fixtures.
+"""
+
+CACHE_TTL_S: int = 21600  # Calibration value (D-06) = 6h; tune against demo/free-tier needs.
+"""
+Time-to-live in seconds for a semantic tool-result cache entry (D-06), spanning
+runs so the cache doubles as free-tier-quota / P19 demo-safety. SEMANTICS locked
+by D-06; 21600s (6h) is a starting calibration point within the RESEARCH Open Q1
+6–24h range — re-tune against demo cadence and free-tier limits.
+"""

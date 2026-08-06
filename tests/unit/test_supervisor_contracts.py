@@ -26,6 +26,19 @@ SUPERVISOR_ONLY_KEYS = {
 }
 
 
+def _ann_str(annotation) -> str:
+    """Normalize a TypedDict annotation to its source string.
+
+    Under ``from __future__ import annotations`` the TypedDict metaclass stores
+    OWN keys as ``typing.ForwardRef('int')`` while INHERITED keys arrive as plain
+    strings. Both forms carry the same source text — normalize before comparing.
+    """
+    if isinstance(annotation, str):
+        return annotation
+    forward_arg = getattr(annotation, "__forward_arg__", None)
+    return forward_arg if forward_arg is not None else str(annotation)
+
+
 class TestP8BoundConstants:
     """D-06: the five bound constants are the single-source control surface."""
 
@@ -76,9 +89,9 @@ class TestSupervisorStateSuperset:
 
     def test_new_keys_have_expected_annotations(self):
         anns = SupervisorState.__annotations__
-        assert anns["hops"] == "int"
-        assert anns["tool_calls"] == "int"
-        assert anns["tool_plan"] == "list[str]"
-        assert anns["tool_results"] == "list[dict]"
-        assert anns["started_at"] == "float"
-        assert anns["is_partial"] == "bool"
+        assert _ann_str(anns["hops"]) == "int"
+        assert _ann_str(anns["tool_calls"]) == "int"
+        assert _ann_str(anns["tool_plan"]) == "list[str]"
+        assert _ann_str(anns["tool_results"]) == "list[dict]"
+        assert _ann_str(anns["started_at"]) == "float"
+        assert _ann_str(anns["is_partial"]) == "bool"
