@@ -168,3 +168,145 @@ def idf_corpus_3doc() -> list[str]:
             "and the loss of this customer would materially harm our business."
         ),
     ]
+
+
+# ===========================================================================
+# Phase 6.3 (06.3-04) — shared deterministic fakes for the OFFLINE stress suite (D-09)
+#
+# These power tests/eval/test_stress_suite.py: it stubs the two LLM hops (classify +
+# synthesize) with these per-fixture builders so every gated assertion is pure Python —
+# fast, free, reproducible, asserting on the FINAL validated supervisor state, never a
+# live LLM. The builders construct their schema objects LAZILY (import inside the body)
+# so conftest import never hard-fails; the whole stress module importorskips until
+# agent/supervisor.py lands (Wave 3), then auto-activates.
+# ===========================================================================
+
+_STRESS_ALLOWED_TOOLS = frozenset(
+    {"drhp_rag", "query_peers", "query_forecast", "query_redflags"}
+)
+
+
+@pytest.fixture
+def fake_routing():
+    """Return a builder ``fake_routing(case) -> RoutingDecision`` driven by the fixture category.
+
+    Category → routing (D-05/D-07):
+      - compliance_bait      → is_advice_seeking=True,  tools=[]  → educational refusal (D-07a)
+      - jailbreak / offtopic → is_out_of_scope=True,    tools=[]  → graceful refusal (D-07b/c)
+      - cross_ipo redirect   → is_out_of_scope=True,    tools=[]  → single-IPO redirect (D-07d)
+      - cross_ipo fabricated_precision → tools=["drhp_rag"] (answers the single IPO; the
+        'not disclosed' honesty is the synthesis node's job — no fabricated precision)
+      - partial_and_provenance → the row's relevant tool set (clamped to the allow-list)
+
+    RoutingDecision is imported lazily (Plan 01 landed it in agent/nodes/classify.py).
+    """
+
+    def _build(case: dict):
+        from agent.nodes.classify import RoutingDecision  # lazy: no hard-fail at conftest import
+
+        category = case["category"]
+        if category == "compliance_bait":
+            return RoutingDecision(tools=[], is_advice_seeking=True, is_out_of_scope=False)
+        if category in ("jailbreak", "offtopic"):
+            return RoutingDecision(tools=[], is_advice_seeking=False, is_out_of_scope=True)
+        if category == "cross_ipo":
+            if case.get("mode") == "fabricated_precision":
+                return RoutingDecision(
+                    tools=["drhp_rag"], is_advice_seeking=False, is_out_of_scope=False
+                )
+            return RoutingDecision(tools=[], is_advice_seeking=False, is_out_of_scope=True)
+        if category == "partial_and_provenance":
+            proposed = [t for t in case.get("tools", ["drhp_rag"]) if t in _STRESS_ALLOWED_TOOLS]
+            return RoutingDecision(
+                tools=proposed, is_advice_seeking=False, is_out_of_scope=False
+            )
+        return RoutingDecision(tools=[], is_advice_seeking=False, is_out_of_scope=True)
+
+    return _build
+
+
+@pytest.fixture
+def fake_fuse():
+    """Return a builder ``fake_fuse(case) -> FusedAnswer`` — scrubber-clean, no fabricated numbers.
+
+    The fused prose DESCRIBES context and never concludes (posture, D-07a). A provenance case
+    attaches a ToolClaim whose ``source_record_id`` traces to a committed ``data/*.json`` record
+    (D-03). An ``expect_partial`` case carries ``is_partial=True`` + an unaddressed flag (D-08).
+
+    FusedAnswer / ToolClaim are imported lazily (Plan 01 landed them in agent/schemas.py).
+    """
+
+    def _build(case: dict):
+        from agent.schemas import FusedAnswer, ToolClaim  # lazy: no hard-fail at conftest import
+
+        category = case["category"]
+        expect_partial = bool(case.get("expect_partial"))
+        claims: list = []
+        prose = (
+            "Here is what the prospectus discloses and how comparable IPOs have behaved, "
+            "for your own assessment."
+        )
+        if category == "partial_and_provenance" and not expect_partial:
+            drhp_id = case["drhp_id"]
+            claims = [
+                ToolClaim(
+                    claim_id="c_prov01",
+                    text="peer revenue multiple",
+                    value="see source record",
+                    source_tool="query_peers",
+                    source_record_id=f"data/peers/{drhp_id}.json#revenue_multiple",
+                )
+            ]
+            prose = (
+                "The peer and forecast context are summarized here {{c_prov01}}, "
+                "each number traced to its source record."
+            )
+        unaddressed = ["ran out of steps before finishing"] if expect_partial else []
+        return FusedAnswer(
+            answer_prose=prose,
+            claims=claims,
+            is_partial=expect_partial,
+            unaddressed=unaddressed,
+        )
+
+    return _build
+
+
+@pytest.fixture
+def budget_trip(monkeypatch):
+    """Return ``budget_trip()`` — forces the P8 counter over budget → route() halts (D-06/D-08).
+
+    The three bounds (MAX_SUPERVISOR_HOPS / MAX_TOOL_CALLS) are imported by value into
+    agent/supervisor at module load, so the injector patches them AS BOUND ON THE SUPERVISOR
+    MODULE. ``raising=False`` no-ops safely while agent/supervisor.py is absent (this whole
+    suite importorskips until Wave 3); the activation plan confirms the exact binding.
+    """
+
+    def _apply():
+        monkeypatch.setattr("agent.supervisor.MAX_SUPERVISOR_HOPS", 0, raising=False)
+        monkeypatch.setattr("agent.supervisor.MAX_TOOL_CALLS", 0, raising=False)
+
+    return _apply
+
+
+@pytest.fixture
+def tool_abstain(monkeypatch):
+    """Return ``tool_abstain(tool='query_forecast')`` — makes a read-only tool honestly abstain.
+
+    Forces the committed loader to raise ``FileNotFoundError``, which ``query_forecast.run``
+    already converts into the honest ``abstain=True, record=None`` no-band state (P14) — never a
+    fabricated band. The synthesis node then returns the honest labelled partial (D-08).
+    """
+
+    def _apply(tool: str = "query_forecast"):
+        def _raise(*args, **kwargs):
+            raise FileNotFoundError(
+                "stubbed abstain: no committed record for this field (honest no-band, D-08)"
+            )
+
+        if tool == "query_forecast":
+            monkeypatch.setattr("pipelines.forecast.load_forecast", _raise, raising=False)
+        else:
+            monkeypatch.setattr(f"agent.tools.{tool}.load_record", _raise, raising=False)
+
+    return _apply
