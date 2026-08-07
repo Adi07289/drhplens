@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-08-07T07:53:26.072Z"
+last_updated: "2026-08-07T13:02:21.291Z"
 last_activity: 2026-08-07
 progress:
   total_phases: 8
   completed_phases: 5
   total_plans: 56
-  completed_plans: 45
+  completed_plans: 46
   percent: 63
 ---
 
@@ -31,9 +31,9 @@ progress:
 ## Current Position
 
 Phase: 06.3 (Agent Polish + Launch Gate) — EXECUTING
-Plan: 2 of 10
+Plan: 3 of 10
 **Status:** Ready to execute
-**Progress:** [████████░░] 80%
+**Progress:** [████████░░] 82%
 
 **05-11 LIVE CRAWL (2026-07-25) + residuals close (2026-07-27):** Real panel built live — 1,378 IPOs (5 withdrawn, P3), 1,245 scorable, median 10.2% (WITHIN the ~7% [-5%,20%] sanity band, not survivor-inflated). Walk-forward **P9 gate FAILS HONESTLY** (R²=-0.009, no leakage; global_median + trailing_12 beat the model, DM p<1e-5) — the EXPECTED humble pre-apply result (D5-01/P9), never p-hacked. The model card + /snapshot forecast block now LEAD with the honest "does-not-beat-baseline" verdict; real SHAP shows the live panel is effectively one-feature (trailing_listing_gain), disclosed via a "Populated live?" column + a one-feature limitation. Per-IPO record metrics reconciled to the live run (coverage 0.800 / n=1,132). Full unit suite: 530 passed, 0 failed. Evidence: `data/forecasts/_gate/release_gate.json`, `model_card/`, `05-VERIFICATION.md`.
 
@@ -221,6 +221,7 @@ Phase 5 Wave 3 feature layer (05-04) COMPLETE — the leakage-gated issue-struct
 | Phase 06.2 P01 | 30min | 3 tasks | 8 files |
 | Phase 06.2 P03 | 5min | 2 tasks | 3 files |
 | Phase 06.3 P01 | ~35min | 2 tasks | 5 files |
+| Phase 06.3 P02 | ~20min | 2 tasks | 3 files |
 
 ## Decisions
 
@@ -272,6 +273,7 @@ Phase 5 Wave 3 feature layer (05-04) COMPLETE — the leakage-gated issue-struct
 - [Phase 06.2-03]: extraction Macro F1 hardcoded 0.000 with an inline ref to eval/reports/2026-06-25-extraction-f1.md (no machine-readable extraction JSON exists — RESEARCH Open-Q#2); the parity test re-derives EACH RAG/forecast headline number INDEPENDENTLY from the committed JSON so the committed HTML can never silently drift from the committed metrics (T-06.2-10). OPS-03 stays Pending (OPS-03b README + LAND-01 methodology still outstanding in 6.2).
 - [Phase ?]: 06.3-01: adopted Claim | ToolClaim discriminated union (RESEARCH caveat e), NOT FusedClaim(Claim) — a subclass would force fabricating DRHP-span fields for tool numbers
 - [Phase ?]: 06.3-01: SupervisorState(GraphState) is a strict superset (six disjoint keys); ToolClaim reuses the identical claim_id regex so the C2 chip renderer resolves tool + DRHP chips uniformly
+- [Phase 06.3]: 06.3-02 classify hop: LLM tool proposals are clamped to ALLOWED_TOOLS in run() (D-05 authority is the allow-list, not the Literal); is_advice_seeking/is_out_of_scope force empty tool_plan (D-07a/c); raw question passed only as user-role message (T-1-01 jailbreak defense)
 
 ## Quick Tasks Completed
 

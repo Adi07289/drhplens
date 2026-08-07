@@ -241,7 +241,7 @@ Plans:
 - [x] 06.3-01-PLAN.md — Contracts foundation: P8 bound constants + SupervisorState superset + ToolClaim/FusedAnswer schema (D-06/D-03)
 
 **Wave 2** *(blocked on Wave 1)*
-- [ ] 06.3-02-PLAN.md — Bounded LLM-classify routing hop (D-05/D-07)
+- [x] 06.3-02-PLAN.md — Bounded LLM-classify routing hop (D-05/D-07)
 - [ ] 06.3-03-PLAN.md — Read-only tool nodes (peers/forecast+GMP/redflags) + semantic cache + isolation (D-01/D-04/D-06)
 - [ ] 06.3-04-PLAN.md — Committed adversarial stress corpus + offline stress-suite scaffold (D-07/D-09)
 
@@ -279,7 +279,7 @@ Plans:
 | 5. Calibrated Listing-Day Forecaster | 11/11 | Complete (honest model card; forecaster does not beat baselines) | 2026-07-25 |  |
 | 6.1 Eval Harness + Inline Metrics + Langfuse Ops | 6/6 | Executed (verification pending) | 4 waves |
 | 6.2 Portfolio Surfaces | 4/4 | Complete    | 2026-08-02 |
-| 6.3 Agent Polish + Launch Gate | 1/10 | In Progress|  |
+| 6.3 Agent Polish + Launch Gate | 2/10 | In Progress|  |
 
 ## Cross-Cutting Invariants
 
