@@ -243,7 +243,7 @@ Plans:
 **Wave 2** *(blocked on Wave 1)*
 - [x] 06.3-02-PLAN.md — Bounded LLM-classify routing hop (D-05/D-07)
 - [x] 06.3-03-PLAN.md — Read-only tool nodes (peers/forecast+GMP/redflags) + semantic cache + isolation (D-01/D-04/D-06)
-- [ ] 06.3-04-PLAN.md — Committed adversarial stress corpus + offline stress-suite scaffold (D-07/D-09)
+- [x] 06.3-04-PLAN.md — Committed adversarial stress corpus + offline stress-suite scaffold (D-07/D-09)
 
 **Wave 3** *(blocked on Wave 2)*
 - [ ] 06.3-05-PLAN.md — Bounded supervisor wraps the existing graph + DRHP-only synthesis + P8 bounds (D-02/D-05/D-06/D-08)
@@ -279,7 +279,7 @@ Plans:
 | 5. Calibrated Listing-Day Forecaster | 11/11 | Complete (honest model card; forecaster does not beat baselines) | 2026-07-25 |  |
 | 6.1 Eval Harness + Inline Metrics + Langfuse Ops | 6/6 | Executed (verification pending) | 4 waves |
 | 6.2 Portfolio Surfaces | 4/4 | Complete    | 2026-08-02 |
-| 6.3 Agent Polish + Launch Gate | 3/10 | In Progress|  |
+| 6.3 Agent Polish + Launch Gate | 4/10 | In Progress|  |
 
 ## Cross-Cutting Invariants
 
