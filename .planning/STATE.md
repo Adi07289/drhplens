@@ -3,20 +3,20 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-08-06T04:39:29.195Z"
-last_activity: 2026-08-06
+last_updated: "2026-08-07T07:53:26.072Z"
+last_activity: 2026-08-07
 progress:
   total_phases: 8
   completed_phases: 5
   total_plans: 56
-  completed_plans: 44
+  completed_plans: 45
   percent: 63
 ---
 
 # STATE: DRHPLens
 
 **Last Updated:** 2026-07-31
-**Last activity:** 2026-08-06
+**Last activity:** 2026-08-07
 
 ## Project Reference
 
@@ -26,14 +26,14 @@ progress:
 
 **Audience:** Indian retail investors (mobile-first); secondary audience is the DS-recruiter reviewing the portfolio piece.
 
-**Current Focus:** Phase 6.3 — agent polish + launch gate
+**Current Focus:** Phase 06.3 — Agent Polish + Launch Gate
 
 ## Current Position
 
-Phase: 6.3
-Plan: Not started
+Phase: 06.3 (Agent Polish + Launch Gate) — EXECUTING
+Plan: 2 of 10
 **Status:** Ready to execute
-**Progress:** [█████████░] 89%
+**Progress:** [████████░░] 80%
 
 **05-11 LIVE CRAWL (2026-07-25) + residuals close (2026-07-27):** Real panel built live — 1,378 IPOs (5 withdrawn, P3), 1,245 scorable, median 10.2% (WITHIN the ~7% [-5%,20%] sanity band, not survivor-inflated). Walk-forward **P9 gate FAILS HONESTLY** (R²=-0.009, no leakage; global_median + trailing_12 beat the model, DM p<1e-5) — the EXPECTED humble pre-apply result (D5-01/P9), never p-hacked. The model card + /snapshot forecast block now LEAD with the honest "does-not-beat-baseline" verdict; real SHAP shows the live panel is effectively one-feature (trailing_listing_gain), disclosed via a "Populated live?" column + a one-feature limitation. Per-IPO record metrics reconciled to the live run (coverage 0.800 / n=1,132). Full unit suite: 530 passed, 0 failed. Evidence: `data/forecasts/_gate/release_gate.json`, `model_card/`, `05-VERIFICATION.md`.
 
@@ -220,6 +220,7 @@ Phase 5 Wave 3 feature layer (05-04) COMPLETE — the leakage-gated issue-struct
 | Phase 05 P05-09 | ~35 min (resume) | 3 tasks | 5 files; 474 passed / 0 skipped / 1 pre-existing embedder fail (+19 new tests); four baselines + inline Diebold–Mariano P9 release gate + D5-09 abstention (honesty gate) |
 | Phase 06.2 P01 | 30min | 3 tasks | 8 files |
 | Phase 06.2 P03 | 5min | 2 tasks | 3 files |
+| Phase 06.3 P01 | ~35min | 2 tasks | 5 files |
 
 ## Decisions
 
@@ -269,6 +270,8 @@ Phase 5 Wave 3 feature layer (05-04) COMPLETE — the leakage-gated issue-struct
 - [Phase 06.2-03]: eval-dashboard is a deterministic stdlib-only generator (json/base64/html/pathlib) that reads committed eval_summary.json + card_data.json, base64-inlines calibration.png, and writes ONE self-contained eval/dashboards/eval-dashboard.html — zero external http(s):// URLs, no @import (fresh inline <style> mirroring :root token VALUES, font fallbacks only), byte-identical on rebuild. Imports NO streamlit/agent/model pipeline (P19 render-free).
 - [Phase 06.2-03]: the -1.0 faithfulness sentinel is RE-IMPLEMENTED INLINE in the generator (never imported from the streamlit render layer) so faithfulness renders verbatim "not measured", never -1.0/0.00; the forecast section states does-not-beat-baseline honestly (gate_passed=false, names global_median + trailing_12) with the one-feature + Swiggy-only caveats inline; mono figures, no red/green verdict color (D-03 / UI-SPEC C3).
 - [Phase 06.2-03]: extraction Macro F1 hardcoded 0.000 with an inline ref to eval/reports/2026-06-25-extraction-f1.md (no machine-readable extraction JSON exists — RESEARCH Open-Q#2); the parity test re-derives EACH RAG/forecast headline number INDEPENDENTLY from the committed JSON so the committed HTML can never silently drift from the committed metrics (T-06.2-10). OPS-03 stays Pending (OPS-03b README + LAND-01 methodology still outstanding in 6.2).
+- [Phase ?]: 06.3-01: adopted Claim | ToolClaim discriminated union (RESEARCH caveat e), NOT FusedClaim(Claim) — a subclass would force fabricating DRHP-span fields for tool numbers
+- [Phase ?]: 06.3-01: SupervisorState(GraphState) is a strict superset (six disjoint keys); ToolClaim reuses the identical claim_id regex so the C2 chip renderer resolves tool + DRHP chips uniformly
 
 ## Quick Tasks Completed
 
