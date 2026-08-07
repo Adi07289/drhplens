@@ -221,3 +221,55 @@ def test_run_preserves_inherited_state_keys():
     assert result["drhp_id"] == "swiggy_2024_11"
     assert result["question"] == "What is the issue size?"
     assert result["tool_calls"] == 0
+
+
+# ---------------------------------------------------------------------------
+# classify.md prompt coverage (Task 2)
+#
+# The four-category few-shot exemplars are what make routing stable and
+# jailbreak-aware. These tests pin the exemplar coverage so it cannot silently
+# regress, and assert the classifier framing carries ZERO banned prescriptive
+# tokens (it is a classifier, not an answer).
+# ---------------------------------------------------------------------------
+
+
+def _load_classify_prompt() -> str:
+    from agent.nodes.classify import _load_prompt
+
+    _load_prompt.cache_clear()  # ignore any cache primed by another test
+    return _load_prompt()
+
+
+def test_prompt_loads_non_empty():
+    text = _load_classify_prompt()
+    assert text.strip(), "classify.md must load and be non-empty"
+
+
+def test_prompt_covers_four_d07_categories():
+    """All four D-07 weird-query categories must be cued so routing cannot silently regress."""
+    text = _load_classify_prompt().lower()
+    # (a) advice-seeking / compliance-bait
+    assert "advice" in text, "missing the advice-seeking category cue"
+    # (b) jailbreak / prompt-injection
+    assert "ignore" in text and "system prompt" in text, "missing the jailbreak category cue"
+    # (c) off-topic / gibberish
+    assert "off-topic" in text or "gibberish" in text, "missing the off-topic/gibberish cue"
+    # (d) cross-IPO / compare
+    assert (
+        "compare" in text or "cross-ipo" in text or "another ipo" in text
+    ), "missing the cross-IPO/compare cue"
+
+
+def test_prompt_names_all_four_tools():
+    """The prompt must enumerate exactly the four allow-listed tools (D-05 framing)."""
+    text = _load_classify_prompt()
+    for tool in ("drhp_rag", "query_peers", "query_forecast", "query_redflags"):
+        assert tool in text, f"classify.md must name the {tool} tool"
+
+
+def test_prompt_has_no_banned_prescriptive_token():
+    """classify.md is a classifier framing, not an answer — it must carry zero banned tokens."""
+    from compliance.scrubber import scrub
+
+    result = scrub(_load_classify_prompt())
+    assert result.passed, f"classify.md contains a banned prescriptive token: {result.match!r}"
