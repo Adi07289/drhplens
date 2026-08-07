@@ -205,3 +205,88 @@ class RefusalResponse(BaseModel):
         max_length=3,
         description="Up to 3 clickable chip suggestions for the user to try next",
     )
+
+
+class ToolClaim(BaseModel):
+    """A tool-derived claim/number with NON-DRHP provenance (Phase 6.3 D-03, RESEARCH caveat e).
+
+    A SIBLING of Claim — deliberately NOT a Claim subclass. Peer / forecast / red-flag
+    numbers have no DRHP chunk, page, or verbatim span, so they carry provenance to
+    their committed-artifact source record instead. ToolClaim omits every DRHP-span
+    field (drhp_page / verbatim_span / span_offsets / sources); inventing those for a
+    tool number would fabricate a DRHP grounding it does not have (honesty invariant),
+    which is exactly why subclassing Claim was rejected in favour of a discriminated union.
+
+    claim_id reuses the EXACT locked cross-phase pattern r'^c_[a-z0-9]{6,16}$' (SKELETON
+    §B) so the Phase-3 claim-ID chip renderer resolves a ToolClaim chip the same way it
+    resolves a Claim chip — the FusedAnswer union is render-uniform on claim_id (UI-SPEC C2).
+    """
+
+    claim_id: str = Field(
+        ...,
+        pattern=r"^c_[a-z0-9]{6,16}$",
+        description="Stable per-answer id; SAME regex as Claim so the chip renderer resolves it.",
+    )
+    text: str = Field(
+        ...,
+        description="The verbatim claim text as it appears in the fused answer prose",
+    )
+    value: float | str = Field(
+        ...,
+        description="The tool-derived value: a number, or a string like 'not disclosed' (numeric-faithfulness).",
+    )
+    source_tool: Literal["query_peers", "query_forecast", "query_redflags"] = Field(
+        ...,
+        description="Which read-only tool produced this number (GMP folds into query_forecast, D-04)",
+    )
+    source_record_id: str = Field(
+        ...,
+        description="The committed record the number traces to: a data/*.json path + field (D-03 provenance)",
+    )
+
+
+class FusedAnswer(BaseModel):
+    """The fused multi-tool answer — one cited answer weaving DRHP text + tool numbers (D-03).
+
+    answer_prose carries {{claim_id}} markers resolved by the same chip renderer as
+    GroundedAnswer. claims is a discriminated union: DRHP-grounded Claims run the
+    existing span cite-check unchanged; ToolClaims reconcile their number against the
+    source record (extended cite-check dispatches on type — RESEARCH caveat e). is_partial
+    + unaddressed carry the D-08 honest-partial posture (return whatever grounded content
+    exists, explicitly labelled incomplete — never fabricate the missing part).
+    """
+
+    answer_prose: str = Field(
+        ...,
+        description=(
+            "Full fused prose with inline {{claim_id}} markers. "
+            "Renderer replaces each with a numbered (Claim) or lettered (ToolClaim) chip."
+        ),
+    )
+    claims: list[Claim | ToolClaim] = Field(
+        ...,
+        description="Discriminated union of DRHP-grounded Claims and tool-derived ToolClaims",
+    )
+    is_partial: bool = Field(
+        default=False,
+        description="D-08: True iff this is an honest labelled partial (tool abstain/error or budget-trip)",
+    )
+    unaddressed: list[str] = Field(
+        default_factory=list,
+        description="Parts the answer could not cover (rendered as an honest 'ran out of steps' flag, D-08)",
+    )
+
+    @model_validator(mode="after")
+    def claim_ids_unique_within_answer(self) -> "FusedAnswer":
+        """Ensure every claim_id is unique across the whole Claim | ToolClaim union.
+
+        Ported from GroundedAnswer: duplicate claim_ids — whether two Claims, two
+        ToolClaims, or one of each — would make the chip renderer produce ambiguous chips.
+        """
+        ids = [c.claim_id for c in self.claims]
+        if len(ids) != len(set(ids)):
+            dupes = [cid for cid in ids if ids.count(cid) > 1]
+            raise ValueError(
+                f"claim_id values must be unique within a FusedAnswer; duplicates: {set(dupes)}"
+            )
+        return self
