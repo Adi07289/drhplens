@@ -15,7 +15,12 @@ from agent import policies
 from agent.state import GraphState
 from agent.supervisor_state import SupervisorState
 
-# The six supervisor-only keys the superset adds on top of GraphState (Pitfall #1).
+# The supervisor-only keys the superset adds on top of GraphState (Pitfall #1).
+# 06.3-01 landed the first six P8-loop keys; 06.3-05 added the two `synthesize`
+# OUTPUT channels (`fused_answer` + `disclaimer`) — LangGraph only propagates
+# DECLARED channels, so the terminal node's fused answer + post-generation disclaimer
+# must be declared here to survive to the final state. Both remain disjoint from
+# GraphState and never redefine an inherited key (the superset invariant holds).
 SUPERVISOR_ONLY_KEYS = {
     "hops",
     "tool_calls",
@@ -23,6 +28,8 @@ SUPERVISOR_ONLY_KEYS = {
     "tool_results",
     "started_at",
     "is_partial",
+    "fused_answer",
+    "disclaimer",
 }
 
 
@@ -68,7 +75,7 @@ class TestP8BoundConstants:
 class TestSupervisorStateSuperset:
     """Pitfall #1: SupervisorState EXTENDS GraphState — it never forks it."""
 
-    def test_annotations_are_graphstate_plus_exactly_six_new_keys(self):
+    def test_annotations_are_graphstate_plus_the_supervisor_only_keys(self):
         assert set(SupervisorState.__annotations__) == (
             set(GraphState.__annotations__) | SUPERVISOR_ONLY_KEYS
         )
@@ -95,3 +102,6 @@ class TestSupervisorStateSuperset:
         assert _ann_str(anns["tool_results"]) == "list[dict]"
         assert _ann_str(anns["started_at"]) == "float"
         assert _ann_str(anns["is_partial"]) == "bool"
+        # 06.3-05 synthesize output channels.
+        assert _ann_str(anns["fused_answer"]) == "FusedAnswer | None"
+        assert _ann_str(anns["disclaimer"]) == "str"

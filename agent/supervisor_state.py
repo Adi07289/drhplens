@@ -20,6 +20,7 @@ module carries only the state shape, no logic.
 """
 from __future__ import annotations
 
+from agent.schemas import FusedAnswer
 from agent.state import GraphState
 
 
@@ -41,6 +42,12 @@ class SupervisorState(GraphState):
     - started_at: monotonic/epoch start time for the WALL_CLOCK_S backstop (D-06).
     - is_partial: True iff the run returned an honest labelled partial (D-08) —
       a single-tool abstain/error or a hard budget-trip; never a fabrication.
+    - fused_answer: the terminal `synthesize` node's fused multi-tool answer object
+      (D-03); None on the DRHP-only path (the answer is in `grounded_answer`) or a
+      refusal. A DECLARED channel so LangGraph propagates it to the final state.
+    - disclaimer: the post-generation disclaimer string the `synthesize` node injects
+      AFTER generation (D-07b — cannot be prompt-stripped); a declared channel so the
+      renderer + the D-09 stress envelope read it from the final state.
     """
 
     hops: int
@@ -49,3 +56,5 @@ class SupervisorState(GraphState):
     tool_results: list[dict]
     started_at: float
     is_partial: bool
+    fused_answer: FusedAnswer | None
+    disclaimer: str
