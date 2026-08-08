@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-08-08T05:27:44.874Z"
+last_updated: "2026-08-08T06:07:51.451Z"
 last_activity: 2026-08-08
 progress:
   total_phases: 8
@@ -31,7 +31,7 @@ progress:
 ## Current Position
 
 Phase: 06.3 (Agent Polish + Launch Gate) — EXECUTING
-Plan: 6 of 10
+Plan: 7 of 10
 **Status:** Ready to execute
 **Progress:** [█████████░] 88%
 
@@ -225,6 +225,7 @@ Phase 5 Wave 3 feature layer (05-04) COMPLETE — the leakage-gated issue-struct
 | Phase 06.3 P03 | 45min | 3 tasks | 9 files |
 | Phase 06.3 P04 | ~30min | 2 tasks | 8 files |
 | Phase 06.3 P05 | 120 | 2 tasks | 6 files |
+| Phase 06.3 P06 | ~90min | 3 tasks | 5 files; 748 offline passed / 16 skipped (+20 new tests); D-09 stress 26 passed / 4 honest live skips; multi-tool fusion + extended cite-check (Claim/ToolClaim) live |
 
 ## Decisions
 
@@ -244,6 +245,10 @@ Phase 5 Wave 3 feature layer (05-04) COMPLETE — the leakage-gated issue-struct
 - [Phase ?]: [Phase 04 / 04-03]: peer multiples ladder screener(s)->yfinance(y)->NSE(n) first-available per cell; 0/None/NaN->missing (P15), yfinance ROE fraction x100 as percent, rapidfuzz name->ticker allow-list keeps SSRF hosts hard-coded; live scrape + DRHP-date extraction deferred (CODE-NOW-DEFER, seed unblocks 04-05)
 - [Phase 05]: numpy stepped 2.4.6->2.3.5 (still 2.x) so shap imports (shap->numba hard-caps numpy<2.4; no numba supports 2.4); pandas KEPT at 3.0.3 (mlflow pandas<3 is soft, imports fine). Resolved: xgboost 3.2.0/mapie 1.4.1/sklearn 1.9.0/mlflow 3.14.0/matplotlib 3.11.0/shap 0.51.0; libomp installed for xgboost OpenMP.
 - [Phase 05]: data/forecasts/{swiggy_2024_11,hyundai_2024_10}.json are hand-seeded ForecastRecords (full-render + abstain) to unblock the render slice offline; regenerated from the real walk-forward run in 05-06/05-11 (Phase 4 GMP CODE-NOW-DEFER seed posture).
+- [Phase 06.3 / 06.3-06]: extended cite-check DISPATCHES on claim type without forking the algo — a Claim runs the EXISTING DRHP-span path unchanged; a ToolClaim reconciles its number against the in-memory tool_results source record (source_record_id = `<provenance>#<field_path>`, walked with dot + `[n]` indexing, incl. the D-04 gmp_gap block) via the existing NUMERIC_GROUNDING_REL_TOLERANCE + lakh/crore/million normalization. An unresolvable number FAILS and is DROPPED (FM-3), its orphaned {{marker}} stripped — never fabricated.
+- [Phase 06.3 / 06.3-06]: the fusion hop reconciles against the ALREADY-LOADED tool_results (not a file re-read) — keeps the cite-check side-effect-free and avoids re-introducing path-safety surface; the tool node's allow-list gate already fronted the read.
+- [Phase 06.3 / 06.3-06]: _llm_fuse reserves gemini-3.5-flash PRIMARY (faithfulness-critical, opposite of classify's -lite-first), temperature=0 + explicit max_tokens; raw question is user-role ONLY (T-1-01) with the trusted tool context on the system turn; fed through the D-06 semantic cache best-effort (embedder import guarded — the cache is a quota optimizer, never a hard dep).
+- [Phase 06.3 / 06.3-06]: supervisor tool-node wiring (query_peers/forecast/redflags add_node + conditional edges + _ROUTE_MAP) was already landed in Plan 05; Plan 06 makes the fusion path LIVE (real _llm_fuse) and adds the fused end-to-end coverage. The 4 live-drhp_rag stress cases stay honestly skipped (need Qdrant+reranker+Gemini).
 - [Phase 05]: Phase 05 / 05-02: FCAST-03 left Pending — it spans 5 Phase-5 plans and requires walk-forward CV; 05-02 delivers only the survivorship-universe half (NSE past-issues + SEBI/chittorgarh-withdrawn two-source merge, deduped by issuer+issue_date, listed-core wins collisions). chittorgarh HTML scraper demoted from primary (D5-04); nse lib optional/lazy, gated to 05-11.
 - [Phase ?]: [Phase 05 / 05-03]: FORECASTS_DIR uses Path(__file__).resolve().parents[2] (repo-root data/forecasts), not the plan's literal .parent.parent which would resolve to pipelines/data/forecasts — the loader __init__ sits one level deeper than pipelines/gmp.py (Rule 1 fix, matches RESEARCH sketch).
 - [Phase ?]: [Phase 05 / 05-03]: FCAST-02 isolation pinned in BOTH directions via inspect.getsource — render (ui.forecast_block + snapshot page) imports no model; predictor (loader + record + model/feature modules) imports no display signal. Not-yet-built 05-05/05-07 modules importorskip-guarded so the audit is green today and auto-runs the real check when they land.
