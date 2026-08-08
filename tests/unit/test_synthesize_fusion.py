@@ -20,6 +20,7 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
+import agent.supervisor as sup
 from agent.nodes import synthesize
 from agent.nodes.cite_check import cite_check_claim
 from agent.schemas import FusedAnswer, ToolClaim
@@ -248,3 +249,84 @@ def test_synthesize_prompt_describes_never_concludes_and_mandates_gmp_caveat():
     assert "never enters any forecast" in low  # the D-04 display-only caveat mandate
     assert "source_record_id" in prompt  # per-number provenance mandate
     assert "not disclosed" in low  # no fabricated precision
+
+
+# ===========================================================================
+# Task 3 — fused END-TO-END dispatch through the real bounded supervisor.
+#
+# The three read-only tool nodes are wired into the supervisor graph (Plan 05); these
+# tests prove a multi-tool plan dispatches them SERIALLY under the P8 bound and fuses
+# their real committed records into one answer. classify + the fusion LLM are stubbed;
+# the tool nodes read real data/*.json (no Qdrant, no live LLM). drhp_rag is NOT in the
+# plan so the subgraph is never invoked.
+# ===========================================================================
+
+
+def _route_multitool(tools: list[str]):
+    from agent.nodes.classify import RoutingDecision
+
+    return RoutingDecision(tools=tools, is_advice_seeking=False, is_out_of_scope=False)
+
+
+def test_supervisor_route_map_covers_all_four_tools_and_synthesize():
+    """_ROUTE_MAP wires every tool name the classify allow-list can emit + synthesize."""
+    assert set(sup._ROUTE_MAP) >= {
+        "drhp_rag",
+        "query_peers",
+        "query_forecast",
+        "query_redflags",
+        "synthesize",
+    }
+
+
+def test_supervisor_dispatches_multitool_serially_and_fuses_one_answer():
+    """A multi-tool plan dispatches each tool serially (tool_calls increments per tool,
+    each pops itself), reaches synthesize ONCE, and returns one fused answer whose
+    resolvable number survives — all within budget, no exception."""
+    fused = FusedAnswer(
+        answer_prose="Comparable IPOs listed from -4.2% {{c_fcst01}}.",
+        claims=[_forecast_toolclaim(-4.2)],
+        is_partial=False,
+    )
+    routing = _route_multitool(["query_forecast", "query_peers"])
+    with patch("agent.nodes.classify._llm_classify", return_value=routing), patch(
+        "agent.nodes.synthesize._llm_fuse", return_value=fused
+    ):
+        final = sup.invoke_supervisor(
+            "How do the peers and forecast compare?", drhp_id=_DRHP_ID
+        )
+
+    # Serial dispatch: each of the two tools popped itself + incremented tool_calls.
+    assert final["tool_calls"] == 2
+    assert final["tool_plan"] == []
+    # One fused answer; the resolvable ToolClaim survived the extended cite-check.
+    assert final["is_partial"] is False
+    assert final.get("refusal") is None
+    assert {c.claim_id for c in final["fused_answer"].claims} == {"c_fcst01"}
+    assert scrub(final["fused_answer"].answer_prose).passed
+    assert PER_ANSWER_FOOTER in final["disclaimer"]
+    # Bounded: one classify hop, tool_calls under the cap.
+    assert final["hops"] <= sup.MAX_SUPERVISOR_HOPS + 1
+    assert final["tool_calls"] <= sup.MAX_TOOL_CALLS
+
+
+def test_supervisor_plan_exceeding_max_tool_calls_trips_to_partial():
+    """A plan that would exceed MAX_TOOL_CALLS halts to synthesize with an honest
+    labelled partial (D-06/D-08) — the bound stops the fan-in, never a loop."""
+    fused = FusedAnswer(
+        answer_prose="Here is what was gathered before the step budget was reached.",
+        claims=[],
+        is_partial=False,
+    )
+    routing = _route_multitool(["query_forecast", "query_peers", "query_redflags"])
+    with patch.object(sup, "MAX_TOOL_CALLS", 1), patch(
+        "agent.nodes.classify._llm_classify", return_value=routing
+    ), patch("agent.nodes.synthesize._llm_fuse", return_value=fused):
+        final = sup.invoke_supervisor("Give me everything at once.", drhp_id=_DRHP_ID)
+
+    assert final["tool_calls"] == 1  # halted after the first tool (bound tripped)
+    assert final["is_partial"] is True  # unfinished plan → honest partial (D-08)
+    assert final.get("refusal") is None
+    assert final["fused_answer"].is_partial is True
+    assert scrub(final["fused_answer"].answer_prose).passed
+    assert PER_ANSWER_FOOTER in final["disclaimer"]
