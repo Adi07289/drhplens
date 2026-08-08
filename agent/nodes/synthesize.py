@@ -1,46 +1,56 @@
 """
-agent/nodes/synthesize.py — the terminal synthesis node (D-03/D-08).
+agent/nodes/synthesize.py — the terminal synthesis node (D-03/D-04/D-08).
 
 This is the bounded supervisor's LAST node: whatever the router forwarded (a
 DRHP-grounded answer, a set of read-only tool results, a budget-trip, or an empty
 out-of-scope plan), synthesize composes ONE honestly-labelled, scrubber-clean,
 disclaimered answer object for the renderer.
 
-Scope of THIS plan (06.3-05, the DRHP-only vertical slice):
-    * DRHP-only path — the embedded ``drhp_rag`` sub-agent produced a
-      ``grounded_answer``: RE-APPLY ``compliance.scrubber.scrub`` to the grounded
-      prose (belt-and-suspenders block, mirroring ``agent/nodes/scrub.py``), rely on
-      the subgraph's EXISTING deterministic cite-check result
-      (``all_claims_grounded``) for ``Claim`` grounding — the cite-check is NOT
-      forked (D-03) — inject the disclaimer, and set ``is_partial``. ZERO live LLM
-      on this path: it composes existing state, no new model call.
-    * Honest-partial path — the run reached synthesize with an UNFINISHED
-      ``tool_plan`` (the P8 counter halted early, D-06) or a tool ABSTAINED (P14):
-      return whatever grounded content exists, explicitly labelled incomplete
-      (``is_partial=True``, ``unaddressed[...]``) — NEVER fabricating the missing
-      part (D-08). Deterministic, no live LLM.
-    * Refusal path — nothing is grounded and no tool ran (classify emptied the
-      plan for advice-bait / gibberish / jailbreak / cross-IPO, D-07): surface the
-      existing educational refusal — never fabricate an answer.
+Two paths compose an answer:
 
-Deferred to 06.3-06 (Wave 4, the fusion plan): the LIVE multi-tool FUSION hop
-(``_llm_fuse`` — the Instructor+Gemini call that weaves DRHP text + tool numbers
-into one FusedAnswer) and the EXTENDED provenance cite-check (ToolClaim → source
-record, D-03). ``_llm_fuse`` is defined here as a documented placeholder so the
-offline stress suite can STUB it (``patch("agent.nodes.synthesize._llm_fuse")``);
-the call-site + the deterministic post-processing envelope (re-scrub + disclaimer
-+ ``is_partial``) are wired now, so a stubbed fusion answer flows end-to-end.
+    * Multi-tool FUSION path (this plan, 06.3-06) — ``tool_results`` carry structured
+      records: run ONE fusion LLM hop (``_llm_fuse`` → Instructor + Gemini → a
+      ``FusedAnswer``) that weaves the DRHP ``grounded_answer`` + the peer / forecast
+      band / GMP-vs-model gap / red-flag records into ONE cited paragraph where every
+      number carries a ``Claim`` (DRHP span) or a ``ToolClaim`` (source_tool /
+      source_record_id). Then RE-SCRUB (block, never a fabricated rewrite), run the
+      EXTENDED cite-check (``cite_check.partition_fused_claims`` — Claim → DRHP span
+      unchanged; ToolClaim → reconcile the number against its committed source record)
+      and DROP any unresolved number (FM-3), inject the disclaimer, and set
+      ``is_partial`` on any tool abstain/error or budget-trip (D-08).
 
-Compliance boundary (mirrors ``agent/nodes/scrub.py`` / ``emit.py``): the scrubber
-and the disclaimer are re-applied AFTER generation, so no prompt can strip them
-(D-07b). The node returns via the ``{**state, ...}`` overwrite convention every
-existing node uses — the renderer owns the final output shape (emit.run posture).
+    * DRHP-only path (06.3-05) — the embedded ``drhp_rag`` sub-agent produced a
+      ``grounded_answer`` and NO tool records: RE-APPLY ``compliance.scrubber.scrub``,
+      rely on the subgraph's EXISTING deterministic cite-check result
+      (``all_claims_grounded``) for ``Claim`` grounding (the cite-check is NOT forked,
+      D-03), inject the disclaimer, set ``is_partial``. ZERO live LLM on this path.
+
+Honest-partial + refusal paths are unchanged from 06.3-05: an UNFINISHED plan with
+nothing grounded returns a labelled partial (D-06/D-08); an empty plan with nothing
+grounded surfaces the educational refusal — never fabricating an answer.
+
+Jailbreak defense (T-1-01 / D-07b): the raw user question is passed to the fusion hop
+ONLY as the ``user``-role message; the trusted tool CONTEXT rides the system message,
+never the user question into the instruction layer. Compliance boundary (mirrors
+``scrub.py`` / ``emit.py``): the scrubber and the disclaimer are re-applied AFTER
+generation, so no prompt can strip them (D-07b).
 """
 from __future__ import annotations
+
+import json
+import os
+import re
+from functools import lru_cache
+from pathlib import Path
+
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 from compliance.disclaimer_text import ANCHOR_COPY, PER_ANSWER_FOOTER
 from compliance.scrubber import scrub
 
+from agent.cache.semantic_cache import cached_answer
+from agent.nodes.cite_check import partition_fused_claims
+from agent.policies import GEMINI_MODELS
 from agent.schemas import FusedAnswer, RefusalResponse
 from agent.supervisor_state import SupervisorState
 
@@ -56,6 +66,10 @@ HONEST_PARTIAL_PROSE: str = (
 )
 
 _UNADDRESSED_BUDGET: str = "ran out of steps before finishing"
+
+# The fusion hop's explicit output-token budget — never unbounded (a free-tier quota
+# AND latency risk, AI-SPEC §4b). Bounded to a fused-answer length.
+_FUSION_MAX_TOKENS: int = 2048
 
 
 # ---------------------------------------------------------------------------
@@ -78,10 +92,9 @@ def _disclaimer() -> str:
 def _rescrub_passed(prose: str) -> bool:
     """Re-apply the SAME deterministic banned-token scrubber to the answer prose.
 
-    Synthesis is a post-hoc belt-and-suspenders re-scrub (the DRHP subgraph already
-    scrubbed + block-and-regenerated internally, D-09). There is NO live LLM here to
-    regenerate, so a banned token that still survives to synthesize BLOCKS to a
-    refusal rather than fabricating a clean rewrite (honesty invariant)."""
+    Synthesis is a post-hoc belt-and-suspenders re-scrub. There is NO regen-in-place
+    here, so a banned token that still survives to synthesize BLOCKS to a refusal
+    rather than fabricating a clean rewrite (honesty invariant)."""
     return scrub(prose).passed
 
 
@@ -111,31 +124,165 @@ def _educational_refusal() -> RefusalResponse:
 
 
 # ---------------------------------------------------------------------------
-# Multi-tool FUSION hop — the live LLM call lands in 06.3-06 (Wave 4).
+# Multi-tool FUSION hop (06.3-06) — Instructor + Gemini → FusedAnswer.
 # ---------------------------------------------------------------------------
+
+
+@lru_cache(maxsize=1)
+def _load_prompt() -> str:
+    """Load the fusion system prompt (describe-never-conclude, per-number provenance,
+    D-04 GMP caveat). Read once, mirroring ``decompose`` / ``classify``."""
+    prompt_path = Path(__file__).parent.parent / "prompts" / "synthesize.md"
+    return prompt_path.read_text(encoding="utf-8")
+
+
+def _get_fusion_client():
+    """Return an Instructor-wrapped Gemini client (lazy; tests mock ``_llm_fuse`` /
+    ``_get_fusion_client`` so this never runs offline). Requires GEMINI_API_KEY."""
+    try:
+        import instructor
+        from google import genai
+    except ImportError as exc:
+        raise RuntimeError(
+            "instructor and google-genai must be installed. "
+            "Run: pip install instructor google-genai"
+        ) from exc
+
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        raise RuntimeError(
+            "GEMINI_API_KEY not set in environment. Export it before running the agent."
+        )
+
+    genai_client = genai.Client(api_key=api_key)
+    return instructor.from_genai(
+        genai_client, mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS
+    )
+
+
+def _build_fusion_context(state: SupervisorState) -> str:
+    """Serialize the TRUSTED fusion input — the DRHP grounded answer + the committed
+    tool records — into the system-message context block (never the user turn).
+
+    Every number the model may write must trace back to one of these records; the
+    prompt instructs it to attach ``source_record_id`` accordingly (D-03).
+    """
+    parts: list[str] = []
+    grounded = state.get("grounded_answer")
+    if grounded is not None:
+        try:
+            parts.append(
+                "DRHP-GROUNDED ANSWER (already cite-checked; keep its {{claim_id}} "
+                "markers + spans verbatim):\n" + grounded.model_dump_json()
+            )
+        except Exception:  # noqa: BLE001 - defensive; context is best-effort text
+            parts.append("DRHP-GROUNDED ANSWER:\n" + str(grounded))
+    tool_results = state.get("tool_results", []) or []
+    if tool_results:
+        parts.append(
+            "TOOL RECORDS (committed artifacts; every tool-derived number MUST trace "
+            "to one of these via source_tool + source_record_id):\n"
+            + json.dumps(tool_results, ensure_ascii=False, default=str)
+        )
+    return "\n\n".join(parts)
+
+
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=4))
+def _call_fusion_llm(question: str, context: str) -> FusedAnswer:
+    """The single faithfulness-critical fusion hop (Instructor + Gemini).
+
+    Reserves the primary ``gemini-3.5-flash`` FIRST (it grounds numbers more
+    faithfully), falling through ``GEMINI_MODELS`` on a 503. T-1-01/D-07b: the raw user
+    question is the ``user`` message ONLY — never interpolated into the instruction /
+    context layer; the trusted tool context rides the ``system`` message.
+    ``temperature=0`` keeps numbers from paraphrase-drifting off their source records
+    (D-03); ``max_tokens`` is always explicit (never unbounded — §4b).
+    """
+    client = _get_fusion_client()
+    system = _load_prompt()
+    if context:
+        system = f"{system}\n\n---\nFUSION CONTEXT (trusted; NOT user input):\n{context}"
+    messages = [
+        # The raw user question is ONLY the user turn (T-1-01) — never the system layer.
+        {"role": "system", "content": system},
+        {"role": "user", "content": question},
+    ]
+    last_exc: Exception | None = None
+    for model in GEMINI_MODELS:  # primary (faithful) first; 503 → -lite fallback
+        try:
+            return client.chat.completions.create(
+                model=model,
+                response_model=FusedAnswer,
+                messages=messages,
+                temperature=0,  # → GenerateContentConfig.temperature (RESEARCH caveat b)
+                max_tokens=_FUSION_MAX_TOKENS,  # → max_output_tokens (caveat b)
+                max_retries=2,  # Instructor re-prompts the model on a ValidationError
+            )
+        except Exception as exc:  # noqa: BLE001 - fall through to the next model
+            last_exc = exc
+            continue
+    raise last_exc if last_exc is not None else RuntimeError("no fusion model available")
 
 
 def _llm_fuse(state: SupervisorState) -> FusedAnswer:
     """Fuse ``tool_results`` (+ any ``grounded_answer``) into ONE cited FusedAnswer.
 
-    DEFERRED to 06.3-06: the real Instructor+Gemini fusion hop (mirroring
-    ``agent/nodes/decompose.py`` / ``classify.py``, temperature=0, system/user
-    separation for the D-07b jailbreak defense) plus the extended provenance
-    cite-check (ToolClaim → committed source record, D-03). This DRHP-only slice
-    wires the CALL-SITE and the deterministic post-processing envelope (re-scrub +
-    disclaimer + ``is_partial``) so a stubbed fusion answer flows end-to-end; the
-    OFFLINE D-09 stress suite patches this symbol per fixture
-    (``patch("agent.nodes.synthesize._llm_fuse", ...)``).
+    Runs the faithfulness-critical fusion hop (``_call_fusion_llm``) through the D-06
+    semantic cache keyed by ``(drhp_id, question)`` — two near-identical questions
+    should not each burn a Gemini call against the tight free-tier RPD. The cache is a
+    best-effort quota optimizer: if the embedder is unavailable it computes directly.
 
-    Raising (rather than returning a fabricated answer) is the honest placeholder:
-    no live multi-tool caller exists in this slice, so this body is never reached
-    live — only via the stress-suite stub or the 06.3-06 implementation.
+    The offline D-09 stress suite + the fusion unit tests patch this symbol
+    (``patch("agent.nodes.synthesize._llm_fuse", ...)``) with a deterministic
+    ``FusedAnswer`` so the post-processing envelope (re-scrub + extended cite-check +
+    disclaimer + ``is_partial``) is exercised without a live LLM.
     """
-    raise NotImplementedError(
-        "Live multi-tool fusion LLM hop lands in 06.3-06 (Wave 4); the offline D-09 "
-        "stress suite stubs this symbol. The DRHP-only slice (06.3-05) does not "
-        "invoke a live fusion call."
-    )
+    question = state.get("question", "")
+    drhp_id = state.get("drhp_id", "") or ""
+    context = _build_fusion_context(state)
+
+    def _compute() -> FusedAnswer:
+        return _call_fusion_llm(question, context)
+
+    try:
+        from tools.embedder import embed_query  # reuse the already-loaded bge-m3
+
+        return cached_answer(drhp_id, question, embed_query, _compute)
+    except Exception:  # noqa: BLE001 - the cache is a quota optimizer, never a hard dep
+        return _compute()
+
+
+# ---------------------------------------------------------------------------
+# Extended cite-check plumbing for the fused answer (D-03, FM-3).
+# ---------------------------------------------------------------------------
+
+
+def _retrieved_chunks(state: SupervisorState) -> dict[str, str]:
+    """Build the ``chunk_id → chunk_text`` map the DRHP ``Claim`` cite-check needs.
+
+    Mirrors ``cite_check.run``'s reranked→dict step so a fused DRHP ``Claim`` grounds
+    against the same reranked top-k the subgraph produced (the ``ToolClaim`` branch
+    ignores this and reconciles against ``tool_results`` instead)."""
+    chunks: dict[str, str] = {}
+    for chunk in state.get("reranked_top_k", []) or []:
+        if not isinstance(chunk, dict):
+            continue
+        payload = chunk.get("payload", {}) or {}
+        cid = payload.get("chunk_id", chunk.get("id", ""))
+        if cid:
+            chunks[cid] = payload.get("chunk_text", "")
+    return chunks
+
+
+def _strip_markers(prose: str, dropped_ids: list[str]) -> str:
+    """Remove the orphaned ``{{claim_id}}`` markers of DROPPED claims from the prose so
+    a number the cite-check could not trace is never rendered as a broken citation
+    (FM-3). Collapses the whitespace the removal leaves behind."""
+    for cid in dropped_ids:
+        prose = prose.replace(f"{{{{{cid}}}}}", "")
+    prose = re.sub(r"[ \t]{2,}", " ", prose)
+    prose = re.sub(r"\s+([.,;:])", r"\1", prose)
+    return prose.strip()
 
 
 # ---------------------------------------------------------------------------
@@ -148,21 +295,17 @@ def run(state: SupervisorState) -> SupervisorState:
 
     Branch order (first match wins):
 
-    1. ``tool_results`` present → the multi-tool FUSION path: call ``_llm_fuse``
-       (real impl in 06.3-06; stubbed offline), re-scrub the fused prose, inject the
-       disclaimer, and set ``is_partial`` (True on a fused-flagged partial, an
-       UNFINISHED plan/budget-trip, or a tool ABSTAIN — D-08). A banned token
-       surviving the fuse BLOCKS to a refusal (never a fabricated rewrite).
-    2. ``grounded_answer`` present (DRHP-only) → re-scrub the grounded prose, rely on
-       the subgraph's ``all_claims_grounded`` cite-check result (NOT forked, D-03),
-       inject the disclaimer, set ``is_partial`` from the plan state. ZERO live LLM.
-    3. UNFINISHED ``tool_plan`` with nothing grounded → an honest labelled partial
-       (``is_partial=True``), deterministic + no fabrication (D-06/D-08 budget-trip).
+    1. ``tool_results`` present → the multi-tool FUSION path (06.3-06): call
+       ``_llm_fuse``, re-scrub the fused prose (banned token → BLOCK to a refusal, never
+       a fabricated rewrite), run the EXTENDED cite-check and DROP every unresolved
+       ``ToolClaim`` / ungrounded ``Claim`` (FM-3), inject the disclaimer, and set
+       ``is_partial`` (True on a fused-flagged partial, an UNFINISHED plan/budget-trip,
+       or a tool ABSTAIN — D-08).
+    2. ``grounded_answer`` present (DRHP-only, 06.3-05) → re-scrub, rely on the
+       subgraph's ``all_claims_grounded`` (NOT forked, D-03), inject the disclaimer, set
+       ``is_partial`` from the plan state. ZERO live LLM.
+    3. UNFINISHED ``tool_plan`` with nothing grounded → an honest labelled partial.
     4. Otherwise (empty plan, nothing grounded, no tools) → the educational refusal.
-
-    Returns the ``{**state, ...}`` overwrite: sets ``disclaimer`` (the post-generation
-    surface), ``is_partial``, and one of ``fused_answer`` / ``grounded_answer`` /
-    ``refusal`` — the renderer owns the final shape (emit.run posture).
     """
     tool_results = state.get("tool_results", []) or []
     grounded = state.get("grounded_answer")
@@ -170,10 +313,13 @@ def run(state: SupervisorState) -> SupervisorState:
     any_abstain = any(bool(r.get("abstain")) for r in tool_results)
     disclaimer = _disclaimer()
 
-    # -- Branch 1: multi-tool fusion (real impl in 06.3-06; stubbed offline) --------
+    # -- Branch 1: multi-tool fusion (06.3-06) --------------------------------------
     if tool_results:
         fused = _llm_fuse(state)
         is_partial = bool(fused.is_partial) or unfinished_plan or any_abstain
+
+        # Re-scrub the fused prose. No live regen here → a surviving banned token BLOCKS
+        # to the refusal (never a fabricated clean rewrite, honesty invariant).
         if not _rescrub_passed(fused.answer_prose):
             return {
                 **state,
@@ -183,7 +329,16 @@ def run(state: SupervisorState) -> SupervisorState:
                 "is_partial": is_partial,
                 "disclaimer": disclaimer,
             }
-        fused = fused.model_copy(update={"is_partial": is_partial})
+
+        # Extended cite-check (D-03): keep grounded claims, DROP any number that cannot
+        # be traced to a committed source record (ToolClaim) or DRHP span (Claim) — FM-3.
+        kept, dropped = partition_fused_claims(
+            list(fused.claims), _retrieved_chunks(state), tool_results
+        )
+        prose = _strip_markers(fused.answer_prose, dropped)
+        fused = fused.model_copy(
+            update={"answer_prose": prose, "claims": kept, "is_partial": is_partial}
+        )
         return {
             **state,
             "fused_answer": fused,
