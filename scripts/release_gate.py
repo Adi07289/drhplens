@@ -3,7 +3,7 @@ scripts/release_gate.py — the DRHPLens RELEASE GATE (EVAL-01 / EVAL-03 / D3-12
 
 Enforcement over discipline (RESEARCH Pitfall 4): a regression must physically
 block deploy, not merely print a warning. `make release` invokes this script; it
-runs TWO gates, both of which `sys.exit(1)` (and write a dated report) on breach:
+runs THREE gates, each of which `sys.exit(1)` (and writes a dated report) on breach:
 
   1. Deterministic eval gate (offline) — reads the committed
      `eval/reports/eval_summary.json` via the SHARED `eval.metrics.EvalSummary`
@@ -12,26 +12,40 @@ runs TWO gates, both of which `sys.exit(1)` (and write a dated report) on breach
      REPORTED, never gated (the LLM-judge is non-deterministic; hard-gating it is
      itself a flaky-gate failure mode) — a low value or the `-1` "not measured"
      sentinel never affects the exit code.
-  2. Numeric-faithfulness gate (live) — enforces
+  2. Deterministic D-09 stress gate (offline) — runs the committed adversarial
+     weird-query stress suite (`tests/eval/test_stress_suite.py`) as a subprocess
+     and `sys.exit(1)`s on ANY failure. The suite is offline + deterministic (the
+     two LLM hops are stubbed), so it gates deploy for free: it asserts the full
+     guardrail envelope (scrubber-clean, disclaimer present, no system-prompt leak,
+     bounded hops/tool-calls, single-IPO scope, honest-partial) across the four
+     D-07 categories. Advice-by-implication is DELIBERATELY not part of this gate —
+     it stays a separate REPORTED judge lane (AI-SPEC §5), same posture as
+     `faithfulness_deepeval`.
+  3. Numeric-faithfulness gate (live) — enforces
      `agent.policies.NUMERIC_FAITHFULNESS_GATE` (0.95), UNCHANGED.
 
 Two-layer design so each enforcement is unit-testable offline:
-  - `enforce_gate(numeric_faithfulness, report_dir=...)` and
-    `enforce_eval_gates(summary, report_dir=...)` are PURE: they take the parsed
+  - `enforce_gate(numeric_faithfulness, report_dir=...)`,
+    `enforce_eval_gates(summary, report_dir=...)` and
+    `enforce_stress_gate(result, report_dir=...)` are PURE: they take the parsed
     inputs directly, read thresholds from policy, write the report + exit non-zero
-    on breach, and return None otherwise. NO live-infra import lives in either —
-    `tests/eval/test_release_gate.py` drives both branches with no live call.
-  - `main()` runs the offline eval gate against the committed artifact, then the
+    on breach, and return None otherwise. NO live-infra import lives in any of them —
+    `tests/eval/test_release_gate.py` + `tests/unit/test_release_gate_stress.py`
+    drive every branch with no live call.
+  - `main()` runs the two offline gates against committed artifacts, then the
     LIVE numeric track (reusing run_eval + the importable
     compute_numeric_faithfulness). The only live-infra call lives there.
 
 Usage:
-    python scripts/release_gate.py          # runs both gates; exits non-zero on breach
+    python scripts/release_gate.py          # runs all three gates; exits non-zero on breach
     make release                            # same, via the Makefile target
 """
 from __future__ import annotations
 
+import re
+import subprocess
 import sys
+from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 
@@ -51,6 +65,7 @@ from eval.metrics import EvalSummary  # noqa: E402
 
 DEFAULT_REPORT_DIR = PROJECT_ROOT / "eval" / "reports"
 DEFAULT_EVAL_SUMMARY = DEFAULT_REPORT_DIR / "eval_summary.json"
+DEFAULT_STRESS_SUITE = PROJECT_ROOT / "tests" / "eval" / "test_stress_suite.py"
 
 
 def _write_gate_report(
@@ -315,23 +330,217 @@ def enforce_eval_gates_from_file(
     enforce_eval_gates(summary, report_dir=report_dir)
 
 
+# ===========================================================================
+# Deterministic D-09 stress gate (06.3-07) — offline, gates deploy on ANY breach.
+# ===========================================================================
+
+
+@dataclass
+class StressResult:
+    """The parsed outcome of one offline D-09 stress-suite run.
+
+    ``passed`` is the SOLE enforcement input (mirrors ``enforce_gate`` taking a
+    float): True iff the suite ran clean (no failures, no collection errors, and at
+    least one case actually passed — an all-skipped run is NOT a pass). The counts +
+    ``failures`` (failing pytest node-ids) ride along for the auditable report.
+    """
+
+    passed: bool
+    passed_count: int = 0
+    failed_count: int = 0
+    skipped_count: int = 0
+    error_count: int = 0
+    returncode: int = 0
+    failures: tuple[str, ...] = field(default_factory=tuple)
+
+
+def _write_stress_gate_report(result: StressResult, report_dir: Path) -> Path:
+    """Write the dated deterministic stress-gate markdown report.
+
+    Pure I/O — no live-infra import (mirrors ``_write_eval_gate_report``). Called by
+    ``enforce_stress_gate`` on BOTH branches so a pass leaves an auditable record too;
+    the gate's *enforcement* (sys.exit) is what blocks deploy.
+    """
+    report_dir.mkdir(parents=True, exist_ok=True)
+    report_path = report_dir / f"{date.today()}-stress-gate.md"
+
+    status = "PASS" if result.passed else "FAIL"
+    decision = (
+        "Deploy ALLOWED — the offline D-09 stress envelope holds across every case."
+        if result.passed
+        else "Deploy BLOCKED — a stress case breached the envelope; the build halts here."
+    )
+
+    lines = [
+        f"# Deterministic D-09 Stress Release Gate — {date.today()}",
+        "",
+        "## Decision",
+        "",
+        "| Metric | Value | Gate | Status |",
+        "|---|---|---|---|",
+        f"| stress cases passed | {result.passed_count} | >= 1 | {status} |",
+        f"| stress cases failed | {result.failed_count} | == 0 | {status} |",
+        f"| collection errors | {result.error_count} | == 0 | {status} |",
+        f"| stress cases skipped | {result.skipped_count} | (honest live-drhp_rag skips) | — |",
+        "",
+        f"**{decision}**",
+        "",
+    ]
+    if result.failures:
+        lines += ["## Breaching cases", ""]
+        lines += [f"- `{nodeid}`" for nodeid in result.failures]
+        lines += [""]
+    lines += [
+        "## Interpretation (D-09)",
+        "",
+        "- The stress suite (`tests/eval/test_stress_suite.py`) asserts the "
+        "DETERMINISTIC guardrail envelope OFFLINE (the two LLM hops are stubbed): "
+        "scrubber-clean answer, disclaimer present, no system-prompt leak, bounded "
+        "hops/tool-calls (P8), single-IPO scope, and honest-partial labelling — "
+        "across the four D-07 weird-query categories.",
+        "- A FAIL means the bounded multi-tool agent breached the SEBI no-advice / "
+        "loop-safety / honesty envelope on an adversarial input. Fix the "
+        "supervisor/synthesis behaviour and re-run; do NOT weaken the assertions.",
+        "- **Advice-by-implication is NOT gated here** (a regex cannot catch a "
+        "clean-token lean, AI-SPEC §5) — it stays a separate REPORTED judge lane, "
+        "the same posture as `faithfulness_deepeval`.",
+        "",
+        f"- Suite: `tests/eval/test_stress_suite.py` (offline; no live LLM, no --run flag).",
+        f"- Generated: {date.today()} by scripts/release_gate.py.",
+    ]
+    report_path.write_text("\n".join(lines), encoding="utf-8")
+    return report_path
+
+
+def enforce_stress_gate(
+    result: StressResult,
+    report_dir: Path | None = None,
+) -> None:
+    """Refuse (sys.exit(1) + report) on ANY stress breach; pass on a clean run.
+
+    PURE enforcement logic — takes an already-parsed ``StressResult`` directly and
+    contains NO live-infra call and NO subprocess (the subprocess lives in
+    ``run_stress_suite``), so it is unit-tested offline on injected green/red
+    results. This mirrors ``enforce_gate`` / ``enforce_eval_gates``.
+
+    Args:
+        result: the parsed StressResult (from ``run_stress_suite`` or a test stub).
+        report_dir: where to write the dated stress-gate report
+            (defaults to eval/reports/). Tests pass a tmp dir.
+
+    Returns:
+        None when the suite ran clean (deploy allowed).
+
+    Raises:
+        SystemExit(1) on any stress failure / collection error / all-skipped run
+        (deploy blocked) — a report is written first so the failure is auditable.
+    """
+    target_dir = report_dir if report_dir is not None else DEFAULT_REPORT_DIR
+    report_path = _write_stress_gate_report(result, target_dir)
+
+    if not result.passed:
+        detail = (
+            f"{result.failed_count} failed, {result.error_count} error(s), "
+            f"{result.passed_count} passed"
+        )
+        print(f"RELEASE GATE FAILED: D-09 stress suite breached ({detail}).")
+        if result.failures:
+            print("Breaching cases: " + ", ".join(result.failures))
+        print(f"Report written to: {report_path}")
+        print("Deploy is BLOCKED. Fix the agent behaviour; do not weaken the assertions.")
+        sys.exit(1)
+
+    print(
+        f"STRESS GATE OK: D-09 stress suite clean "
+        f"({result.passed_count} passed, {result.skipped_count} skipped). "
+        f"Report: {report_path}"
+    )
+
+
+def _parse_pytest_summary(output: str, returncode: int) -> StressResult:
+    """Parse a ``pytest -q`` run's terminal output into a StressResult.
+
+    Pure text parsing (no subprocess) so it is unit-testable directly. ``passed`` is
+    True iff the process exited 0 AND no failures/errors were reported AND at least
+    one case actually passed (an all-skipped / no-tests-collected run is NOT a pass —
+    it means the offline gate silently did nothing).
+    """
+
+    def _count(word: str) -> int:
+        match = re.search(rf"(\d+) {word}", output)
+        return int(match.group(1)) if match else 0
+
+    passed_count = _count("passed")
+    failed_count = _count("failed")
+    skipped_count = _count("skipped")
+    error_count = _count("error") + _count("errors")
+    failures = tuple(re.findall(r"^FAILED (\S+)", output, flags=re.MULTILINE))
+
+    clean = (
+        returncode == 0
+        and failed_count == 0
+        and error_count == 0
+        and passed_count >= 1
+    )
+    return StressResult(
+        passed=clean,
+        passed_count=passed_count,
+        failed_count=failed_count,
+        skipped_count=skipped_count,
+        error_count=error_count,
+        returncode=returncode,
+        failures=failures,
+    )
+
+
+def run_stress_suite(suite_path: Path | None = None) -> StressResult:
+    """Run the offline D-09 stress suite as a subprocess and parse the outcome.
+
+    OFFLINE by construction — the suite stubs the two LLM hops, so this needs no live
+    infra (unlike the numeric gate). Kept separate from ``enforce_stress_gate`` so the
+    enforcement stays offline-unit-testable on injected results.
+    """
+    path = suite_path if suite_path is not None else DEFAULT_STRESS_SUITE
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            str(path),
+            "-q",
+            "-rf",  # list FAILED node-ids in the summary so the report can name them
+            "-p",
+            "no:cacheprovider",
+        ],
+        cwd=str(PROJECT_ROOT),
+        capture_output=True,
+        text=True,
+    )
+    return _parse_pytest_summary(proc.stdout + "\n" + proc.stderr, proc.returncode)
+
+
 def main() -> None:
-    """Run BOTH release gates: the deterministic eval gate AND the live numeric gate.
+    """Run all THREE release gates: the two deterministic offline gates AND the live numeric gate.
 
     1. Deterministic eval gate (offline): read the committed
        ``eval/reports/eval_summary.json`` via the shared ``EvalSummary`` schema and
        hard-gate citation_accuracy + recall@10 (faithfulness reported-only).
-    2. Live numeric gate: reuse run_eval._check_env fail-fast and the importable
+    2. Deterministic D-09 stress gate (offline): run the committed stress suite and
+       block on ANY envelope breach (no live LLM — the two hops are stubbed).
+    3. Live numeric gate: reuse run_eval._check_env fail-fast and the importable
        compute_numeric_faithfulness so the gate enforces the SAME number the
        numeric-track report shows. This is the only live-infra path in this module.
 
-    Both gates fire; neither is removed. The deterministic gate runs first so an
+    All gates fire; none is removed. The two deterministic gates run first so an
     already-committed regression blocks deploy without touching live infra.
     """
     # 1) Deterministic eval gate — offline, reads the committed artifact.
     enforce_eval_gates_from_file()
 
-    # 2) Live numeric-faithfulness gate — UNCHANGED.
+    # 2) Deterministic D-09 stress gate — offline (no live LLM), gates on any breach.
+    enforce_stress_gate(run_stress_suite())
+
+    # 3) Live numeric-faithfulness gate — UNCHANGED.
     from scripts.run_eval import compute_numeric_faithfulness
 
     # The gate scores the DISCLOSED subset only — numeric_faithfulness is a GROUNDING

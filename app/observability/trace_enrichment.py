@@ -51,7 +51,25 @@ from app.observability.langfuse_client import get_client, is_enabled
 #                      unreachable from agent-runtime, documented here so it is
 #                      not silently dead.
 #   - crash          : GRAPH.invoke raised (wired in agent/graph.py).
+#
+# APPEND-ONLY CONTRACT (06.3-07 / D-09): the numeric code for each mode is its
+# 1-based index in this tuple (see `_failure_mode_value`), and saved Langfuse Cloud
+# views filter on those codes. New modes are therefore ALWAYS appended at the END so
+# existing indices never shift — never reorder or delete an entry. Phase 6.3 adds five
+# SUPERVISOR-level run modes emitted by the bounded multi-tool agent (agent/supervisor.py),
+# extending the single-tool taxonomy above:
+#   - budget_trip        : the P8 hop/tool-call counter tripped → route halted to
+#                          synthesize before finishing (D-06 bounded termination).
+#   - advice_bait_refused: a compliance-bait / advice-seeking query fired the
+#                          educational refusal (D-07a) — never answered as advice.
+#   - jailbreak_blocked  : a prompt-injection / jailbreak attempt was blocked; the
+#                          disclaimer + posture held, no system-prompt leak (D-07b).
+#   - honest_partial     : a tool abstain/error or budget-trip degraded to an honest
+#                          labelled partial, never a fabricated remainder (D-08).
+#   - tool_abstain       : a read-only tool honestly abstained (e.g. no forecast band)
+#                          — no fabricated record (P14/D-08).
 FAILURE_MODES: tuple[str, ...] = (
+    # --- indices 1-8: the original single-tool taxonomy (codes STABLE) ---
     "low_retrieval_score",
     "unsupported_claim",
     "banned_token",
@@ -60,6 +78,12 @@ FAILURE_MODES: tuple[str, ...] = (
     "cite_check_fail",
     "judge_flag",
     "crash",
+    # --- indices 9-13: appended 06.3-07 supervisor-level modes (D-06/D-07/D-08) ---
+    "budget_trip",
+    "advice_bait_refused",
+    "jailbreak_blocked",
+    "honest_partial",
+    "tool_abstain",
 )
 
 
