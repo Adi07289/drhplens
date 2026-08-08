@@ -369,3 +369,111 @@ def test_drhp_claims_reuse_citation_expander(monkeypatch):
     st = _render(fused, monkeypatch)
     # the reused expander builds the '[N] DRHP page P · Section' label
     assert any("DRHP page 88" in lbl for lbl in st.expanders)
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Task 2 — the chat routes through the multi-tool supervisor.
+# ═══════════════════════════════════════════════════════════════════════════
+
+import ui.snapshot_chat as snapshot_chat  # noqa: E402
+from agent.schemas import GroundedAnswer, RefusalResponse  # noqa: E402
+
+
+def _fused(is_partial: bool = False, unaddressed=None) -> FusedAnswer:
+    return FusedAnswer(
+        answer_prose="The picture: low band {{c_fcst01}}.",
+        claims=[_tool_claim("c_fcst01", "query_forecast", "interval.low_pct")],
+        is_partial=is_partial,
+        unaddressed=unaddressed or [],
+    )
+
+
+def test_chat_routes_through_supervisor(monkeypatch):
+    """The production chat calls invoke_supervisor (the multi-tool agent) and passes its
+    fused result through — NOT the Phase-1 single-graph invoke_with_tracing."""
+    captured = {}
+    fused = _fused()
+
+    def _fake_supervisor(question, drhp_id):
+        captured["args"] = (question, drhp_id)
+        return {"fused_answer": fused, "grounded_answer": None, "refusal": None}
+
+    monkeypatch.setattr(snapshot_chat, "invoke_supervisor", _fake_supervisor)
+    result = snapshot_chat._invoke_agent("What's the picture?", _DRHP_ID)
+    assert captured["args"] == ("What's the picture?", _DRHP_ID)
+    assert result is fused
+
+
+def test_chat_resolves_drhp_only_and_refusal(monkeypatch):
+    """DRHP-only path → the grounded answer; nothing-grounded → the refusal (posture
+    unchanged). Priority: fused > grounded > refusal."""
+    ga = GroundedAnswer(answer_prose="DRHP only.", claims=[])
+    monkeypatch.setattr(
+        snapshot_chat, "invoke_supervisor",
+        lambda q, d: {"fused_answer": None, "grounded_answer": ga, "refusal": None},
+    )
+    assert snapshot_chat._invoke_agent("q", _DRHP_ID) is ga
+
+    refusal = RefusalResponse(reason="unsupported_claim", explanation="nope",
+                              reformulation_suggestions=[])
+    monkeypatch.setattr(
+        snapshot_chat, "invoke_supervisor",
+        lambda q, d: {"fused_answer": None, "grounded_answer": None, "refusal": refusal},
+    )
+    assert snapshot_chat._invoke_agent("q", _DRHP_ID) is refusal
+
+
+def test_chat_partial_result_shows_c3_banner(monkeypatch):
+    """A patched supervisor PARTIAL result renders through ui/fused_answer and surfaces
+    the C3 honest-partial banner."""
+    fused = _fused(is_partial=True, unaddressed=["ran out of steps before finishing"])
+    monkeypatch.setattr(
+        snapshot_chat, "invoke_supervisor",
+        lambda q, d: {"fused_answer": fused, "grounded_answer": None, "refusal": None},
+    )
+    content = snapshot_chat._invoke_agent("q", _DRHP_ID)
+    assert isinstance(content, FusedAnswer) and content.is_partial
+    st = _render(content, monkeypatch)
+    assert "drhp-partial" in "\n".join(st.emitted)
+
+
+def test_history_dispatches_fused_answer_to_renderer(monkeypatch):
+    """A FusedAnswer turn in the chat history is dispatched to render_fused_answer
+    (C1/C2/C3) — prior GroundedAnswer/Refusal turns still render (shape compatible)."""
+    calls: list = []
+
+    class _NullChatCtx:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    class _ChatSt:
+        def __init__(self):
+            self.emitted: list[str] = []
+
+        def chat_message(self, role):
+            return _NullChatCtx()
+
+        def markdown(self, body, unsafe_allow_html=False):
+            self.emitted.append(body)
+
+    st = _ChatSt()
+    monkeypatch.setattr(snapshot_chat, "st", st)
+    monkeypatch.setattr(
+        snapshot_chat, "render_fused_answer",
+        lambda content, key="": calls.append((content, key)),
+    )
+
+    fused = _fused()
+    history = [
+        {"role": "user", "content": "give me the picture"},
+        {"role": "assistant", "content": fused},
+    ]
+    snapshot_chat._render_chat_history(history)
+
+    assert len(calls) == 1
+    assert calls[0][0] is fused
+    # the per-answer disclaimer footer is still wired for the fused answer (D-07/D-08)
+    assert any("drhp-disclaimer-per-answer" in b for b in st.emitted)

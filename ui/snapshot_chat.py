@@ -17,8 +17,8 @@ import os as _os
 
 import streamlit as st
 
-from agent.graph import invoke_with_tracing
-from agent.schemas import GroundedAnswer, RefusalResponse
+from agent.schemas import FusedAnswer, GroundedAnswer, RefusalResponse
+from agent.supervisor import invoke_supervisor
 from data.catalogue_loader import load_catalogue
 from ui.chip import render_answer_with_chips
 from ui.copy import (
@@ -31,6 +31,7 @@ from ui.copy import (
 )
 from ui.disclaimer import render_per_answer_footer
 from ui.expander import render_citation_expanders
+from ui.fused_answer import render_fused_answer
 from ui.methodology_pane import render_methodology_pane
 from ui.refusal_banner import MAX_CHIPS_RENDERED, render_refusal_banner
 from ui.state import append_to_chat_history, get_chat_history
@@ -101,6 +102,14 @@ def _render_chat_history(history: list) -> None:
                         grounded_answer=content,
                         key=f"qa_{turn_index}",
                     )
+
+                elif isinstance(content, FusedAnswer):
+                    # 06.3-08 C1/C2/C3: the multi-tool fused answer — prose-first cited
+                    # paragraph + doc/tool provenance chips + honest-partial banner.
+                    # Render-only (no live call on render/expand). The per-answer
+                    # disclaimer wiring is preserved (D-07/D-08).
+                    render_fused_answer(content, key=f"qa_{turn_index}")
+                    st.markdown(render_per_answer_footer(), unsafe_allow_html=True)
 
                 elif isinstance(content, RefusalResponse):
                     st.markdown(render_refusal_banner(content), unsafe_allow_html=True)
@@ -175,30 +184,7 @@ def _render_input_and_invoke(drhp_id: str, issuer: str) -> None:
     loading_copy = LOADING_ANSWER_COPY_TEMPLATE.format(issuer=issuer)
     with st.status(loading_copy, state="running") as status:
         try:
-            # EVAL-05: route the production chat through invoke_with_tracing so every
-            # real user query emits an enriched Langfuse trace (cost/latency/tool-calls
-            # + failure-mode score). A bare graph.invoke() here bypassed tracing entirely,
-            # so production got zero observability despite the phase's "+ Langfuse Ops".
-            # invoke_with_tracing returns the same final GraphState and no-ops when
-            # Langfuse keys are unset.
-            result_state = invoke_with_tracing(
-                {
-                    "question": question,
-                    "drhp_id": drhp_id,
-                    "regenerate_attempts": 0,
-                },
-                question,
-            )
-            if result_state.get("grounded_answer") is not None:
-                assistant_content = result_state["grounded_answer"]
-            elif result_state.get("refusal") is not None:
-                assistant_content = result_state["refusal"]
-            else:
-                assistant_content = RefusalResponse(
-                    reason="infrastructure_error",
-                    explanation=ERROR_LLM_TIMEOUT,
-                    reformulation_suggestions=[],
-                )
+            assistant_content = _invoke_agent(question, drhp_id)
             status.update(label="Done.", state="complete")
         except Exception:
             logger.exception("Agent invocation failed")
@@ -211,6 +197,30 @@ def _render_input_and_invoke(drhp_id: str, issuer: str) -> None:
 
     append_to_chat_history(st.session_state, role="assistant", content=assistant_content)
     st.rerun()
+
+
+def _invoke_agent(question: str, drhp_id: str):
+    """Route the production chat through the bounded MULTI-TOOL supervisor and resolve
+    its final state to a renderable assistant-content object (06.3-08).
+
+    Replaces the Phase-1 single-tool ``invoke_with_tracing`` path: the fused answer now
+    comes from ``agent.supervisor.invoke_supervisor`` (D-02/D-03), which routes across
+    the read-only tools, fuses one cited answer, emits the enriched Langfuse trace, and
+    crash-degrades to an honest partial (never raises — D-08). The resolver returns, in
+    priority order, the fused answer (C1/C2/C3), a DRHP-only grounded answer (the
+    subgraph-only path), or a refusal (nothing grounded — unchanged posture)."""
+    result_state = invoke_supervisor(question, drhp_id)
+    if result_state.get("fused_answer") is not None:
+        return result_state["fused_answer"]
+    if result_state.get("grounded_answer") is not None:
+        return result_state["grounded_answer"]
+    if result_state.get("refusal") is not None:
+        return result_state["refusal"]
+    return RefusalResponse(
+        reason="infrastructure_error",
+        explanation=ERROR_LLM_TIMEOUT,
+        reformulation_suggestions=[],
+    )
 
 
 def render_snapshot_chat(drhp_id: str) -> None:
