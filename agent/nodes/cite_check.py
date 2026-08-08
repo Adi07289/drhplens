@@ -24,7 +24,13 @@ from agent.policies import (
     CITE_CHECK_TOKEN_RATIO,
     NUMERIC_GROUNDING_REL_TOLERANCE,
 )
-from agent.schemas import GroundedAnswer, RefusalResponse, RetrievedChunkRef
+from agent.schemas import (
+    Claim,
+    GroundedAnswer,
+    RefusalResponse,
+    RetrievedChunkRef,
+    ToolClaim,
+)
 from agent.state import GraphState
 from app.observability.cite_check_metric import score_cite_check
 from app.observability.trace_decorators import attach_claim_ids_to_span
@@ -276,6 +282,150 @@ def cite_check(
 
     all_grounded = len(failures) == 0
     return all_grounded, failures
+
+
+# ---------------------------------------------------------------------------
+# Type-dispatched grounding (Phase 6.3, D-03) — a Claim keeps the EXISTING span
+# path; a ToolClaim reconciles its number against the committed SOURCE RECORD the
+# tool already loaded into tool_results (RESEARCH caveat e). An unresolvable
+# ToolClaim number FAILS and is DROPPED by synthesize (FM-3) — never fabricated.
+#
+# This does NOT fork the deterministic attribution algo above: the Claim branch
+# calls the SAME cite_check() (per-claim), so the DRHP-span behaviour is unchanged.
+# ---------------------------------------------------------------------------
+
+
+# Sentinel for "the source_record_id could not be resolved to any field/record".
+# Distinct from a resolved-but-None cell (an honest NM/missing value) — both fail a
+# numeric reconcile, but the sentinel keeps the two states legible in the code.
+_UNRESOLVED = object()
+
+# A path segment's trailing [n] index accessors (supports nested lists, e.g.
+# "metrics[1]" and "companies[0].metrics[1].current.value").
+_INDEX_RE = re.compile(r"\[(\d+)\]")
+
+
+def _navigate(root: object, field_path: str) -> object:
+    """Walk a dotted + ``[n]``-indexed path through nested dict/list, or _UNRESOLVED.
+
+    Each dot-separated segment is an optional dict key followed by zero or more
+    ``[n]`` list indices. Any missing key / out-of-range index short-circuits to
+    ``_UNRESOLVED`` so a broken provenance path is DROPPED, never guessed.
+    """
+    node = root
+    for segment in field_path.split("."):
+        if not segment:
+            return _UNRESOLVED
+        key = _INDEX_RE.sub("", segment)
+        if key:
+            if not isinstance(node, dict) or key not in node:
+                return _UNRESOLVED
+            node = node[key]
+        for raw_idx in _INDEX_RE.findall(segment):
+            idx = int(raw_idx)
+            if not isinstance(node, (list, tuple)) or idx >= len(node):
+                return _UNRESOLVED
+            node = node[idx]
+    return node
+
+
+def _resolve_tool_source_value(
+    claim: ToolClaim, tool_results: list[dict]
+) -> object:
+    """Resolve a ToolClaim's ``source_record_id`` to the value it names, or _UNRESOLVED.
+
+    ``source_record_id`` is ``<provenance>#<field_path>`` (e.g.
+    ``data/forecasts/<id>.json#interval.low_pct``). We match the ``tool_results``
+    entry the tool node already appended (same ``source_tool`` + ``provenance``) and
+    navigate ``field_path`` within its committed ``record`` — plus any sibling
+    display-only block the tool attached (the D-04 ``gmp_gap``), so a GMP figure can
+    trace to ``gmp_gap.…`` without ever entering a model field. Reconciling against
+    the IN-MEMORY tool result (not a file re-read) keeps the check side-effect-free.
+    """
+    provenance, sep, field_path = (claim.source_record_id or "").partition("#")
+    for result in tool_results or []:
+        if result.get("tool") != claim.source_tool:
+            continue
+        if provenance and result.get("provenance") != provenance:
+            continue
+        if not field_path:
+            return _UNRESOLVED  # no field named → nothing to reconcile against
+        record = result.get("record")
+        root: dict = {}
+        if isinstance(record, dict):
+            root.update(record)
+        if isinstance(result.get("gmp_gap"), dict):
+            root["gmp_gap"] = result["gmp_gap"]  # D-04 display-only block
+        return _navigate(root, field_path)
+    return _UNRESOLVED
+
+
+def _tool_claim_grounded(claim: ToolClaim, tool_results: list[dict]) -> bool:
+    """True iff a ToolClaim's number reconciles with its committed source record (D-03).
+
+    Reuses the EXISTING numeric machinery (``_extract_scaled_numbers`` +
+    ``_number_reconciles``, i.e. ``NUMERIC_GROUNDING_REL_TOLERANCE`` + lakh/crore/
+    million normalization — the Phase-3 numeric-faithfulness reconcile, not a new
+    scheme). A numeric claim value must reconcile with some canonical magnitude in
+    the resolved source value; an honest NON-numeric value ("not disclosed", "NM")
+    grounds iff its source field resolves to a concrete value. An unresolvable /
+    None source drops the claim (FM-3).
+    """
+    source_value = _resolve_tool_source_value(claim, tool_results)
+    if source_value is _UNRESOLVED or source_value is None:
+        return False
+
+    claim_mags = _extract_scaled_numbers(_normalize(str(claim.value)))
+    if claim_mags:
+        source_mags = _extract_scaled_numbers(_normalize(str(source_value)))
+        if not source_mags:
+            return False
+        return all(
+            any(_number_reconciles(c, s) for s in source_mags) for c in claim_mags
+        )
+    # Non-numeric honest value: grounded because the source record field resolved.
+    return True
+
+
+def cite_check_claim(
+    claim: Claim | ToolClaim,
+    retrieved_chunks: dict[str, str],
+    tool_results: list[dict],
+) -> bool:
+    """Dispatch a single fused claim on its type (D-03) — the union grounding check.
+
+    ``Claim`` → the EXISTING DRHP-span + fuzzy ``cite_check`` path, unchanged.
+    ``ToolClaim`` → the source-record numeric reconcile above. Returns True iff the
+    claim is grounded; synthesize DROPS every False claim (FM-3, never rendered).
+    """
+    if isinstance(claim, ToolClaim):
+        return _tool_claim_grounded(claim, tool_results)
+    ok, _ = cite_check(
+        GroundedAnswer(answer_prose=f"x {{{{{claim.claim_id}}}}}", claims=[claim]),
+        retrieved_chunks,
+    )
+    return ok
+
+
+def partition_fused_claims(
+    claims: list[Claim | ToolClaim],
+    retrieved_chunks: dict[str, str],
+    tool_results: list[dict],
+) -> tuple[list[Claim | ToolClaim], list[str]]:
+    """Split a FusedAnswer's claim union into (kept, dropped_ids) via the dispatch.
+
+    ``kept`` are the grounded claims synthesize renders; ``dropped_ids`` are the
+    ``claim_id``s whose number could not be traced to a source (FM-3) — synthesize
+    strips those claims (and their orphaned ``{{claim_id}}`` markers) from the answer.
+    """
+    kept: list[Claim | ToolClaim] = []
+    dropped: list[str] = []
+    for claim in claims:
+        if cite_check_claim(claim, retrieved_chunks, tool_results):
+            kept.append(claim)
+        else:
+            dropped.append(claim.claim_id)
+    return kept, dropped
 
 
 # ---------------------------------------------------------------------------
