@@ -249,7 +249,7 @@ Plans:
 - [x] 06.3-05-PLAN.md — Bounded supervisor wraps the existing graph + DRHP-only synthesis + P8 bounds (D-02/D-05/D-06/D-08)
 
 **Wave 4** *(blocked on Wave 3)*
-- [ ] 06.3-06-PLAN.md — Extended cite-check (ToolClaim) + multi-tool fusion synthesis + tool-wiring (D-03/D-04/D-08)
+- [x] 06.3-06-PLAN.md — Extended cite-check (ToolClaim) + multi-tool fusion synthesis + tool-wiring (D-03/D-04/D-08)
 
 **Wave 5** *(blocked on Wave 4)*
 - [ ] 06.3-07-PLAN.md — Activate stress gate + release_gate stress lane + FAILURE_MODES (D-09/D-07/D-08)
@@ -279,7 +279,7 @@ Plans:
 | 5. Calibrated Listing-Day Forecaster | 11/11 | Complete (honest model card; forecaster does not beat baselines) | 2026-07-25 |  |
 | 6.1 Eval Harness + Inline Metrics + Langfuse Ops | 6/6 | Executed (verification pending) | 4 waves |
 | 6.2 Portfolio Surfaces | 4/4 | Complete    | 2026-08-02 |
-| 6.3 Agent Polish + Launch Gate | 5/10 | In Progress|  |
+| 6.3 Agent Polish + Launch Gate | 6/10 | In Progress|  |
 
 ## Cross-Cutting Invariants
 
