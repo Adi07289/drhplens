@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-08-08T11:12:02.065Z"
+last_updated: "2026-08-08T11:54:04.784Z"
 last_activity: 2026-08-08
 progress:
   total_phases: 8
   completed_phases: 5
   total_plans: 56
-  completed_plans: 50
-  percent: 63
+  completed_plans: 51
+  percent: 91
 ---
 
 # STATE: DRHPLens
@@ -31,9 +31,9 @@ progress:
 ## Current Position
 
 Phase: 06.3 (Agent Polish + Launch Gate) — EXECUTING
-Plan: 8 of 10
-**Status:** Ready to execute
-**Progress:** [█████████░] 89%
+Plan: 9 of 10
+**Status:** 06.3-08 COMPLETE — fused-answer UI surfaces (C1/C2/C3) shipped + chat routed through the multi-tool supervisor. Next: 06.3-09.
+**Progress:** [█████████░] 91%
 
 **05-11 LIVE CRAWL (2026-07-25) + residuals close (2026-07-27):** Real panel built live — 1,378 IPOs (5 withdrawn, P3), 1,245 scorable, median 10.2% (WITHIN the ~7% [-5%,20%] sanity band, not survivor-inflated). Walk-forward **P9 gate FAILS HONESTLY** (R²=-0.009, no leakage; global_median + trailing_12 beat the model, DM p<1e-5) — the EXPECTED humble pre-apply result (D5-01/P9), never p-hacked. The model card + /snapshot forecast block now LEAD with the honest "does-not-beat-baseline" verdict; real SHAP shows the live panel is effectively one-feature (trailing_listing_gain), disclosed via a "Populated live?" column + a one-feature limitation. Per-IPO record metrics reconciled to the live run (coverage 0.800 / n=1,132). Full unit suite: 530 passed, 0 failed. Evidence: `data/forecasts/_gate/release_gate.json`, `model_card/`, `05-VERIFICATION.md`.
 
@@ -227,6 +227,7 @@ Phase 5 Wave 3 feature layer (05-04) COMPLETE — the leakage-gated issue-struct
 | Phase 06.3 P05 | 120 | 2 tasks | 6 files |
 | Phase 06.3 P06 | ~90min | 3 tasks | 5 files; 748 offline passed / 16 skipped (+20 new tests); D-09 stress 26 passed / 4 honest live skips; multi-tool fusion + extended cite-check (Claim/ToolClaim) live |
 | Phase 06.3 P07 | ~40min | 2 tasks | 6 files; 758 offline passed / 16 skipped / 2 xfailed (+13 new tests); D-09 stress 26 passed / 4 honest live skips; the stress suite now GATES deploy (3rd release_gate lane) + Makefile 3-lane + FAILURE_MODES appended (stable codes 9-13) |
+| Phase 06.3 P08 | ~35min | 2 tasks | 6 files; 777 offline passed / 16 skipped / 2 xfailed (+19 new tests); fused-answer render surfaces C1/C2/C3 (render-only, AST-isolated) + chat routes through invoke_supervisor; additive .drhp-fused/-prov/-partial CSS (no verdict palette) |
 
 ## Decisions
 
@@ -289,6 +290,8 @@ Phase 5 Wave 3 feature layer (05-04) COMPLETE — the leakage-gated issue-struct
 - [Phase ?]: 06.3-05: bounded supervisor wraps the 10-node graph UNCHANGED as drhp_rag (D-02); MemorySaver not SqliteSaver; the P8 bound is the explicit hop/tool-call/wall-clock counter (not recursion_limit); GraphRecursionError->honest partial (D-08).
 - [Phase 06.3]: 06.3-07: the D-09 stress suite now GATES deploy — a THIRD deterministic lane in scripts/release_gate.py (enforce_stress_gate, pure/offline-testable) runs the offline stress suite via run_stress_suite() (subprocess pytest) and sys.exit(1)s on ANY envelope breach / collection error / all-skipped run + writes a dated *-stress-gate.md report (mirrors the eval + numeric lanes). main() runs eval → stress (both offline) → live numeric; Makefile: release runs 3 lanes, gate-test covers both offline gate-logics, new stress-gate target runs the envelope suite. Advice-by-implication stays a SEPARATE REPORTED lane, NEVER in the sys.exit(1) gate (AI-SPEC §5).
 - [Phase 06.3]: 06.3-07: FAILURE_MODES (app/observability/trace_enrichment.py) extended APPEND-ONLY — the original 8 modes keep their indices/codes (saved Langfuse Cloud views filter on the 1-based index) and 5 supervisor modes are appended at indices 9-13 (budget_trip/advice_bait_refused/jailbreak_blocked/honest_partial/tool_abstain); classify_failure_mode never emits the new modes, so the existing trace tests stay green.
+- [Phase 06.3]: 06.3-08: the fused-answer render surfaces (ui/fused_answer.py, C1/C2/C3) are RENDER-ONLY — they read the cached FusedAnswer object only, no live LLM/Qdrant on render or expand (P19), pinned by an AST import-allowlist + forbidden-token scan mirroring test_eval_inline. C2 markers are doc=numbered (reuse ui.expander.render_citation_expanders UNCHANGED) vs tool=lettered (ꜰ forecast / ᴾ peers / ᴳ GMP / ᴿ red-flags, GMP detected via the source_record_id gmp_gap field-path); a dropped/unresolved claim renders NO marker (FM-3). C3 honest-partial banner shows iff is_partial (muted mono, dashed neutral — never red/alarm), two copy variants (tool-abstain vs budget-trip via the unaddressed sentinel). GMP renders only as the caveated read-only gap (D-04). All new copy centralized in ui/copy.py (import-time scrubber covers it); additive .drhp-fused*/.drhp-prov*/.drhp-partial* CSS uses only --drhp-space-* tokens + a no-verdict-palette grep guard.
+- [Phase 06.3]: 06.3-08: the production chat now routes through agent.supervisor.invoke_supervisor (multi-tool bounded agent, D-02/D-03) instead of the Phase-1 single-tool invoke_with_tracing — the fused answer + its enriched Langfuse trace both come from the supervisor, which crash-degrades to an honest partial (never raises). ui/snapshot_chat.py resolves fused_answer > grounded_answer > refusal and renders a FusedAnswer via ui.fused_answer; GroundedAnswer/Refusal turns still render (shape compatible). The EVAL-05 traced-path regression guard (test_snapshot_chat_tracing.py) was repointed to invoke_supervisor (still no bare .invoke() bypass).
 
 ## Quick Tasks Completed
 
