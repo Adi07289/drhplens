@@ -1938,3 +1938,84 @@ a.drhp-ipo-card:hover { border-color: rgba(224, 162, 78, 0.4) !important; }
   .drhp-archhero-conn { transform: rotate(90deg); padding: var(--drhp-space-sm) 0; }
   .drhp-archhero-h1 { font-size: 30px; }
 }
+
+/* === PHASE 6.3 · fused-answer additive classes (C1/C2/C3, D-03/D-04/D-08) ====
+ * ADDITIVE ONLY — new .drhp-fused-* / .drhp-prov-* / .drhp-partial-* selectors;
+ * never touches any existing rule. Inherited :root tokens + the declared
+ * --drhp-space-* scale (4/8/16/24) ONLY — no magic numbers, no new palette.
+ *
+ * Honesty invariant (load-bearing): neutral mono, no verdict colour anywhere. The
+ * accent (--drhp-accent-link) is reserved for the marker hover/focus link
+ * affordance + the expanded surface links; it never encodes good/bad. The partial
+ * banner is a muted mono strip with a DASHED NEUTRAL border — an incomplete answer
+ * is honest, not an alarm. GMP carries a marker but no colour. This whole block is
+ * asserted verdict-token-free by test_fused_answer_render.py. */
+
+/* C1 — the one prose-first cited paragraph + its always-present provenance legend. */
+.drhp-fused {
+  font-family: var(--drhp-font-sans); font-size: 15px; line-height: 1.55;
+  color: var(--drhp-text-primary);
+  background: var(--drhp-surface);
+  border: 1px solid var(--drhp-border-subtle);
+  border-radius: 8px;
+  padding: var(--drhp-space-md);
+}
+.drhp-fused-legend {
+  font-family: var(--drhp-font-mono); font-size: 12px; line-height: 1.4;
+  color: var(--drhp-text-muted);
+  border-top: 1px solid var(--drhp-border-subtle);
+  margin-top: var(--drhp-space-sm); padding-top: var(--drhp-space-sm);
+  display: flex; flex-wrap: wrap; gap: var(--drhp-space-md);
+}
+.drhp-fused-legend-item { white-space: nowrap; }
+
+/* C2 — per-number provenance markers. Doc = numbered, tool = lettered; distinct at
+ * a glance (the tool marker carries a dotted data-grounded underline). Both muted by
+ * default, accent on hover/focus (link affordance), keyboard-focusable. */
+.drhp-prov {
+  font-family: var(--drhp-font-mono); font-size: 10.5px; line-height: 1.0;
+  font-variant-numeric: tabular-nums; vertical-align: super;
+  color: var(--drhp-text-muted); cursor: pointer; padding: 0 2px;
+  transition: color 0.2s ease;
+}
+.drhp-prov:hover, .drhp-prov:focus {
+  color: var(--drhp-accent-link); outline: none;
+}
+.drhp-prov:focus-visible {
+  outline: 1px solid var(--drhp-accent-link); outline-offset: 2px;
+}
+.drhp-prov--doc { font-weight: 400; }
+.drhp-prov--tool {
+  border-bottom: 1px dotted var(--drhp-text-muted); letter-spacing: 0.02em;
+}
+.drhp-prov--tool:hover, .drhp-prov--tool:focus {
+  border-bottom-color: var(--drhp-accent-link);
+}
+/* C2 — the expanded one-line tool source descriptor inside the expander. */
+.drhp-prov-src {
+  font-family: var(--drhp-font-mono); font-size: 13px; line-height: 1.45;
+  color: var(--drhp-text-muted);
+}
+
+/* C3 — the honest-partial banner ABOVE the answer. Muted mono, DASHED NEUTRAL
+ * border, uppercase mono eyebrow. Never a verdict colour (D-08). The lg gap below
+ * separates it from the answer (partial-banner → answer, spacing table). */
+.drhp-partial {
+  background: var(--drhp-surface-secondary);
+  border: 1px dashed var(--drhp-border-subtle);
+  border-radius: 8px;
+  padding: var(--drhp-space-sm) var(--drhp-space-md);
+  margin-bottom: var(--drhp-space-lg);
+}
+.drhp-partial-eyebrow {
+  display: block;
+  font-family: var(--drhp-font-mono); font-size: 10.5px; line-height: 1.3;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--drhp-text-muted); margin-bottom: var(--drhp-space-xs);
+}
+.drhp-partial-body {
+  display: block;
+  font-family: var(--drhp-font-sans); font-size: 13px; line-height: 1.45;
+  color: var(--drhp-text-muted);
+}
+/* === END PHASE 6.3 · fused-answer additive classes === */

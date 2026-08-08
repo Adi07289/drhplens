@@ -129,6 +129,65 @@ REFUSAL_BANNED_TOKEN_COPY: str = (
 )
 
 # ---------------------------------------------------------------------------
+# Fused multi-tool answer (Phase 6.3 · C1/C2/C3 · D-03/D-04/D-08)
+#
+# All strings below are auto-enrolled in the import-time banned-token scrubber
+# loop at the bottom of this module (so a banned prescriptive token can never
+# ship inside a fused-answer surface). The honesty invariant is load-bearing:
+# NO advice-adjacent copy, NO verdict framing, GMP stays display-only. The
+# fused renderer (ui/fused_answer.py) imports these verbatim — copy lives here,
+# never inline in the renderer (UI-SPEC Honesty Check).
+# ---------------------------------------------------------------------------
+
+# C1 — provenance footer legend segments (mono line under the answer hairline).
+# Numbered DRHP markers use the DRHP template; lettered tool markers use the
+# per-source segments. Assembled by the renderer into the always-present legend.
+FUSED_LEGEND_DRHP_TEMPLATE: str = "DRHP p.{page}"
+"""One legend entry per numbered DRHP marker. .format(page=...)."""
+
+FUSED_LEGEND_PEERS: str = "peers"
+FUSED_LEGEND_FORECAST: str = "forecast · 80% PI"
+FUSED_LEGEND_GMP: str = "GMP · display-only"
+FUSED_LEGEND_REDFLAGS: str = "red-flags · committed record"
+
+# C2 — expanded source descriptors (one-line, tap-to-expand; read-only, from the
+# cached answer object — NO live call). A DRHP Claim reuses the existing citation
+# expander; these cover the lettered ToolClaim markers (forecast/peers/GMP/red-flags).
+FUSED_EXPANDED_FORECAST_LABEL: str = "Forecast · 80% PI"
+FUSED_EXPANDED_FORECAST_BODY: str = "GMP-free model · calibrated backtest"
+FUSED_EXPANDED_FORECAST_LINK: str = "see forecast"
+
+FUSED_EXPANDED_PEERS_LABEL: str = "Peers"
+FUSED_EXPANDED_PEERS_BODY: str = "listed-peer set · screener.in via committed record"
+FUSED_EXPANDED_PEERS_LINK: str = "see peers"
+
+FUSED_EXPANDED_GMP_LABEL: str = "GMP · display-only"
+FUSED_GMP_CHAT_CAVEAT: str = (
+    "GMP is an informal grey-market figure, shown for context — "
+    "it is not a forecast and never enters the model."
+)
+"""D-04: the mandatory caveat whenever a GMP figure appears. GMP is display-only."""
+FUSED_EXPANDED_GMP_LINK: str = "see forecast"
+
+FUSED_EXPANDED_REDFLAGS_LABEL: str = "Red-flags"
+FUSED_EXPANDED_REDFLAGS_BODY: str = "structured red-flag / financials · committed record"
+FUSED_EXPANDED_REDFLAGS_LINK: str = "see snapshot"
+
+# The DRHP-Claim expander "open page" link copy (reused from the Phase-1 chat path).
+FUSED_OPEN_PAGE_TEMPLATE: str = "View DRHP page {page} on SEBI →"
+"""Doc-Claim expander link. .format(page=...)."""
+
+# C3 — honest-partial banner (muted mono, dashed neutral — NEVER red/alarm, D-08).
+# Two copy variants: a source-specific tool-abstain and a generic budget-trip.
+FUSED_PARTIAL_EYEBROW: str = "INCOMPLETE ANSWER"
+FUSED_PARTIAL_TOOL_ABSTAIN_BODY: str = (
+    "No forecast band for this IPO — answering from the DRHP + peers only."
+)
+FUSED_PARTIAL_BUDGET_BODY: str = (
+    "Stopped early — here's what I found so far."
+)
+
+# ---------------------------------------------------------------------------
 # Error states
 # ---------------------------------------------------------------------------
 
