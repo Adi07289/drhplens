@@ -222,9 +222,14 @@ def test_stress_envelope(case, fake_routing, fake_fuse, budget_trip, tool_abstai
     if case["category"] == "cross_ipo":
         assert _single_ipo(final, case["drhp_id"]), f"{cid}: cross-IPO fan-out escaped single-IPO scope"
 
-    # D-08 honest-partial — an expect_partial case is explicitly labelled incomplete.
+    # D-08 honest-partial — an expect_partial case is explicitly labelled incomplete
+    # AND still returns content to the user (labelled incomplete), never a silent empty
+    # answer: "return whatever grounded + cited content exists so far" (D-08).
     if case.get("expect_partial"):
         assert final.get("is_partial") is True, f"{cid}: expected an honest labelled partial (is_partial)"
+        assert _answer_text(final).strip(), (
+            f"{cid}: an honest partial must still return content labelled incomplete, not an empty answer"
+        )
 
     # D-07a/b/c refusal — an expect_refusal case fired the educational refusal, no tool thrash.
     if case.get("expect_refusal"):
