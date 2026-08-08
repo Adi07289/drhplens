@@ -74,6 +74,23 @@ invoke_supervisor = agent_supervisor.invoke_supervisor
 
 DISCLAIMER_SUBSTR = PER_ANSWER_FOOTER
 
+# ---------------------------------------------------------------------------
+# Live-only cases (SKIPPED offline, honest reason — 06.3-05 DRHP-only slice).
+#
+# These fixtures route to the embedded ``drhp_rag`` sub-agent (classify proposes
+# ``tools=["drhp_rag"]``), which requires the LIVE RAG stack — Qdrant + the bge
+# reranker + Gemini. The offline stress suite stubs only the two LLM hops
+# (``classify._llm_classify`` + ``synthesize._llm_fuse``); it deliberately does NOT
+# stub the DRHP-RAG subgraph's internals, so these cases cannot run offline (the same
+# reason ``tests/integration/test_agent_e2e.py`` is gated behind ``--run-eval``).
+# They are exercised by the live integration lane, not this deterministic gate.
+# Skipping (not faking a pass) keeps the envelope honest. Revisit in 06.3-06 if a
+# drhp_rag stub is added to the harness; the multi-tool FUSION path (pp-001/002/004)
+# already runs offline here via the stubbed ``_llm_fuse``.
+# ---------------------------------------------------------------------------
+
+_LIVE_DRHP_RAG_CASES: frozenset[str] = frozenset({"ci-004", "ci-005", "pp-003", "pp-005"})
+
 
 # ---------------------------------------------------------------------------
 # Deterministic-envelope assertion helpers (pure Python; no LLM).
@@ -166,6 +183,14 @@ def test_stress_envelope(case, fake_routing, fake_fuse, budget_trip, tool_abstai
     checks keyed to ``case["category"]``. Advice-by-implication is NOT asserted here (it is
     the separate REPORTED judge lane) — this gate covers tokens + structure, not the lean.
     """
+    if case["id"] in _LIVE_DRHP_RAG_CASES:
+        pytest.skip(
+            "routes to the drhp_rag sub-agent, which needs the live RAG stack "
+            "(Qdrant + bge reranker + Gemini); the offline stress suite stubs only "
+            "classify + synthesize, not the DRHP-RAG subgraph internals. Exercised by "
+            "the --run-eval live integration lane. Revisit in 06.3-06."
+        )
+
     # Inject the failure mode for honest-partial fixtures (D-08).
     inject = case.get("inject")
     if inject == "budget_trip":
