@@ -15,11 +15,19 @@ keep-warm ``ping.yml``, and the no-verdict-colour C4 CSS block.
 """
 from __future__ import annotations
 
+import html
 import inspect
+import re
+from pathlib import Path
+
+import yaml
 
 import ui.deploy_guard as deploy_guard
 from agent import policies
 
+_REPO = Path(__file__).resolve().parents[2]
+_CSS_PATH = _REPO / "app" / "static" / "drhplens.css"
+_PING_PATH = _REPO / ".github" / "workflows" / "ping.yml"
 _SESSION_KEY = "_drhp_deploy_last_q_ts"
 
 
@@ -140,3 +148,229 @@ def test_policies_define_deploy_constants_not_stale_1500():
     assert "re-verify" in src
     assert "assumed" in src
     assert "1500" in src  # cited only to REJECT it as stale
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Task 2 — the C4 fallback WIRING (guard states → mutually-exclusive UI states),
+# the keep-warm pinger, and the no-verdict-colour C4 CSS block.
+# ═══════════════════════════════════════════════════════════════════════════
+
+import ui.snapshot_chat as snapshot_chat  # noqa: E402
+from agent.schemas import GroundedAnswer  # noqa: E402
+from ui.copy import (  # noqa: E402
+    QUOTA_CARD_HEADING,
+    QUOTA_WALKTHROUGH_LINK,
+    RATELIMIT_NOTICE,
+)
+
+
+class _Rerun(Exception):
+    """Sentinel raised by the fake ``st.rerun`` to halt the script (as Streamlit does)."""
+
+
+class _StatusCtx:
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        return False
+
+    def update(self, *a, **k):
+        return None
+
+
+class _SessionState(dict):
+    """dict that also supports attribute access (mirrors st.session_state)."""
+
+    def __getattr__(self, k):
+        try:
+            return self[k]
+        except KeyError as exc:  # pragma: no cover - defensive
+            raise AttributeError(k) from exc
+
+    def __setattr__(self, k, v):
+        self[k] = v
+
+
+class _ChatFakeSt:
+    """Records markdown bodies + whether the chat input was rendered."""
+
+    def __init__(self, chat_return=None):
+        self.session_state = _SessionState()
+        self.emitted: list[str] = []
+        self.chat_calls = 0
+        self._chat_return = chat_return
+
+    def markdown(self, body, unsafe_allow_html=False):
+        self.emitted.append(body)
+
+    def caption(self, text):
+        self.emitted.append(text)
+
+    def info(self, text):
+        self.emitted.append(text)
+
+    def chat_input(self, placeholder=None, disabled=False):
+        self.chat_calls += 1
+        return self._chat_return
+
+    def status(self, label, state=None):
+        return _StatusCtx()
+
+    def rerun(self):
+        raise _Rerun()
+
+    @property
+    def body(self) -> str:
+        return "".join(self.emitted)
+
+
+def _prep(monkeypatch, *, cap_exhausted, guard_state, chat_return):
+    monkeypatch.setattr(snapshot_chat, "_ENV_CONFIGURED", True)
+    monkeypatch.setattr(snapshot_chat, "is_cap_exhausted", lambda cap: cap_exhausted)
+    monkeypatch.setattr(snapshot_chat, "check_and_consume", lambda cap, secs: guard_state)
+    fake = _ChatFakeSt(chat_return=chat_return)
+    monkeypatch.setattr(snapshot_chat, "st", fake)
+    invoked = {"n": 0}
+
+    def _fake_invoke(question, drhp_id):
+        invoked["n"] += 1
+        return GroundedAnswer(answer_prose="ok", claims=[])
+
+    monkeypatch.setattr(snapshot_chat, "_invoke_agent", _fake_invoke)
+    monkeypatch.setattr(snapshot_chat, "append_to_chat_history", lambda *a, **k: None)
+    return fake, invoked
+
+
+# ── the three guard states are mutually-exclusive UI actions ─────────────────
+def test_guard_ui_action_is_mutually_exclusive():
+    """Each guard state maps to exactly one of the three C4 UI actions."""
+    m = snapshot_chat._guard_ui_action
+    assert m("cap_exhausted") == "card"
+    assert m("rate_limited") == "notice"
+    assert m("ok") == "input"
+    assert {m("cap_exhausted"), m("rate_limited"), m("ok")} == {"card", "notice", "input"}
+
+
+def test_cap_exhausted_replaces_the_input_with_the_card(monkeypatch):
+    """Cap exhausted → the C4 fallback card is rendered and the chat input is NOT
+    rendered (replaced), and the LLM is never called."""
+    fake, invoked = _prep(monkeypatch, cap_exhausted=True, guard_state="ok", chat_return=None)
+    snapshot_chat._render_input_and_invoke("swiggy_2024_11", "Swiggy")
+    assert "drhp-quota" in fake.body  # fallback card present
+    assert fake.chat_calls == 0  # input REPLACED, not rendered
+    assert invoked["n"] == 0  # no LLM call
+
+
+def test_rate_limited_shows_inline_notice_and_keeps_input(monkeypatch):
+    """Throttled → the inline notice renders, the input STAYS enabled, no LLM call."""
+    fake, invoked = _prep(
+        monkeypatch, cap_exhausted=False, guard_state="rate_limited", chat_return="q?"
+    )
+    snapshot_chat._render_input_and_invoke("swiggy_2024_11", "Swiggy")
+    assert "drhp-ratelimit" in fake.body  # non-blocking inline notice
+    assert "drhp-quota" not in fake.body  # not the card
+    assert fake.chat_calls == 1  # input stays enabled
+    assert invoked["n"] == 0  # question NOT sent to the LLM
+
+
+def test_ok_proceeds_to_invoke_supervisor(monkeypatch):
+    """OK → no card, no notice; the question reaches the (multi-tool) agent."""
+    fake, invoked = _prep(
+        monkeypatch, cap_exhausted=False, guard_state="ok", chat_return="q?"
+    )
+    try:
+        snapshot_chat._render_input_and_invoke("swiggy_2024_11", "Swiggy")
+    except _Rerun:
+        pass  # the ok path ends in st.rerun()
+    assert invoked["n"] == 1  # reached the agent
+    assert "drhp-quota" not in fake.body
+    assert "drhp-ratelimit" not in fake.body
+
+
+def test_guard_runs_before_invoke_supervisor():
+    """Acceptance grep: the guard is wired into the chat surface before the agent."""
+    src = inspect.getsource(snapshot_chat)
+    assert src.count("check_and_consume") >= 1
+    fn = inspect.getsource(snapshot_chat._render_input_and_invoke)
+    assert fn.index("check_and_consume") < fn.index("_invoke_agent")
+
+
+# ── the C4 card + notice render the centralized copy ─────────────────────────
+class _RecSt:
+    def __init__(self):
+        self.emitted: list[str] = []
+
+    def markdown(self, body, unsafe_allow_html=False):
+        self.emitted.append(body)
+
+    @property
+    def body(self):
+        return "".join(self.emitted)
+
+
+def test_quota_card_render_routes_to_readonly_surfaces(monkeypatch):
+    rec = _RecSt()
+    monkeypatch.setattr(snapshot_chat, "st", rec)
+    snapshot_chat._render_quota_card()
+    body = html.unescape(rec.body)
+    assert "drhp-quota" in rec.body
+    assert QUOTA_CARD_HEADING in body
+    assert "Everything else still works" in body  # QUOTA_CARD_BODY
+    assert QUOTA_WALKTHROUGH_LINK in body
+    # routes to the always-working read-only surfaces (in-app routes, dead-link-proof)
+    assert "/methodology" in rec.body
+    assert "/failures" in rec.body
+    assert "/how_it_works" in rec.body  # the committed recorded-walkthrough surface
+
+
+def test_ratelimit_notice_render(monkeypatch):
+    rec = _RecSt()
+    monkeypatch.setattr(snapshot_chat, "st", rec)
+    snapshot_chat._render_ratelimit_notice()
+    assert "drhp-ratelimit" in rec.body
+    assert RATELIMIT_NOTICE in html.unescape(rec.body)
+
+
+# ── the keep-warm pinger (P19) ───────────────────────────────────────────────
+def test_ping_workflow_is_well_formed_with_schedule():
+    """.github/workflows/ping.yml exists, parses as YAML, and has a schedule cron."""
+    assert _PING_PATH.exists()
+    text = _PING_PATH.read_text(encoding="utf-8")
+    doc = yaml.safe_load(text)  # raises on malformed YAML
+    assert isinstance(doc, dict)
+    # GitHub maps the ``on:`` key to the YAML 1.1 boolean True — accept either form.
+    trigger = doc.get("on", doc.get(True))
+    assert isinstance(trigger, dict) and "schedule" in trigger
+    assert re.search(r"cron:\s*[\"']?\*/8", text)  # every ~8 min keep-warm
+
+
+# ── no verdict colour in the C4 CSS block (honesty invariant) ────────────────
+_CSS_OPEN = "/* === PHASE 6.3 · quota/rate-limit fallback additive classes"
+_CSS_CLOSE = "=== END PHASE 6.3 · quota/rate-limit fallback additive classes === */"
+
+
+def _c4_css_block() -> str:
+    css = _CSS_PATH.read_text(encoding="utf-8")
+    assert _CSS_OPEN in css and _CSS_CLOSE in css  # block present (not vacuous)
+    return css[css.index(_CSS_OPEN):css.index(_CSS_CLOSE) + len(_CSS_CLOSE)]
+
+
+def test_quota_css_block_has_no_verdict_color_token():
+    block = _c4_css_block()
+    declarations = re.sub(r"/\*.*?\*/", "", block, flags=re.DOTALL).lower()
+    forbidden = (
+        "--drhp-refusal", "red", "green", "crimson", "danger", "success",
+        "destructive", "#dc2626", "#ef4444", "#f87171", "#16a34a", "#22c55e",
+    )
+    for token in forbidden:
+        assert token not in declarations, (
+            f"the C4 quota/rate-limit CSS block must not use the verdict token {token!r}"
+        )
+
+
+def test_quota_css_uses_space_tokens_and_declares_classes():
+    block = _c4_css_block()
+    for cls in (".drhp-quota", ".drhp-quota-links", ".drhp-ratelimit"):
+        assert cls in block, f"missing additive C4 class {cls}"
+    assert "var(--drhp-space-" in block  # spacing via the declared tokens

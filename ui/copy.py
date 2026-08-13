@@ -188,6 +188,37 @@ FUSED_PARTIAL_BUDGET_BODY: str = (
 )
 
 # ---------------------------------------------------------------------------
+# Quota / rate-limit fallback (Phase 6.3 · C4 · D-12)
+#
+# The public chat is bounded by the Gemini free-tier ceiling: a GLOBAL daily cap
+# + a per-session throttle (ui/deploy_guard.py). These strings drive the two C4
+# fallback states — cap-exhausted REPLACES the input with the fallback card that
+# routes to the always-working read-only surfaces; a throttle shows a brief
+# non-blocking inline notice above the input. Muted + honest, NEVER alarm-red / a
+# countdown (honesty invariant). Verbatim from 06.3-UI-SPEC §Copywriting Contract;
+# auto-enrolled in the import-time banned-token scrubber loop below.
+# ---------------------------------------------------------------------------
+
+QUOTA_CARD_HEADING: str = "Live demo quota reached for today."
+"""C4 cap-exhausted card heading (Serif). UI-SPEC verbatim."""
+
+QUOTA_CARD_BODY: str = (
+    "Everything else still works — browse the IPO snapshot, forecast & peers, "
+    "`/methodology`, and `/failures`, or watch the recorded walkthrough."
+)
+"""C4 cap-exhausted card body — routes to the always-working read-only (LLM-free)
+surfaces. UI-SPEC verbatim."""
+
+QUOTA_WALKTHROUGH_LINK: str = "▶ Recorded chat walkthrough"
+"""C4 recorded-walkthrough link text (accent link affordance). UI-SPEC verbatim."""
+
+RATELIMIT_NOTICE: str = (
+    "You're sending questions quickly — try again in a few seconds."
+)
+"""C4 transient per-session throttle notice — muted, above the input, non-blocking,
+auto-clears. UI-SPEC verbatim."""
+
+# ---------------------------------------------------------------------------
 # Error states
 # ---------------------------------------------------------------------------
 

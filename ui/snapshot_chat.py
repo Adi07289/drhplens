@@ -17,6 +17,7 @@ import os as _os
 
 import streamlit as st
 
+from agent.policies import DEPLOY_DAILY_CAP, MIN_SECONDS_BETWEEN
 from agent.schemas import FusedAnswer, GroundedAnswer, RefusalResponse
 from agent.supervisor import invoke_supervisor
 from data.catalogue_loader import load_catalogue
@@ -28,7 +29,12 @@ from ui.copy import (
     HERO_HEADING_TEMPLATE,
     LOADING_ANSWER_COPY_TEMPLATE,
     QUESTION_PLACEHOLDER_TEMPLATE,
+    QUOTA_CARD_BODY,
+    QUOTA_CARD_HEADING,
+    QUOTA_WALKTHROUGH_LINK,
+    RATELIMIT_NOTICE,
 )
+from ui.deploy_guard import check_and_consume, is_cap_exhausted
 from ui.disclaimer import render_per_answer_footer
 from ui.expander import render_citation_expanders
 from ui.fused_answer import render_fused_answer
@@ -155,8 +161,63 @@ def _render_empty_state(issuer: str) -> None:
                 st.rerun()
 
 
+# In-app route to the committed recorded-walkthrough surface (C4). The
+# /how_it_works page is the committed, always-working plain-English walkthrough of
+# the DRHP → cited-answer pipeline — an honest same-app link (dead-link-proof, no
+# headless-capture tooling; consistent with the deferred-screenshots decision). Kept
+# as a code constant (a route, not copy — only the link TEXT lives in ui/copy.py).
+_WALKTHROUGH_HREF = "/how_it_works"
+
+
+def _guard_ui_action(guard_state: str) -> str:
+    """Map a ``ui.deploy_guard`` state to the mutually-exclusive C4 UI action (D-12).
+
+    ``"cap_exhausted"`` → ``"card"`` (REPLACE the input with the fallback card);
+    ``"rate_limited"`` → ``"notice"`` (a non-blocking inline notice ABOVE the input,
+    which stays enabled); anything else (``"ok"``) → ``"input"`` (proceed to the
+    agent). Exactly one action per state — the three are mutually exclusive."""
+    if guard_state == "cap_exhausted":
+        return "card"
+    if guard_state == "rate_limited":
+        return "notice"
+    return "input"
+
+
+def _render_quota_card() -> None:
+    """C4 cap-exhausted fallback: a muted, dashed-neutral card that REPLACES the chat
+    input and routes to the always-working read-only surfaces (snapshot/forecast/peers
+    on this page, /methodology, /failures) + the recorded-walkthrough link. NOT a
+    full-page interstitial — the rest of the app stays fully usable (those surfaces
+    are LLM-free). No alarm-red, no countdown (honesty invariant)."""
+    st.markdown(
+        '<div class="drhp-quota" role="status" aria-live="polite">'
+        f'<div class="drhp-quota-heading">'
+        f'{html.escape(QUOTA_CARD_HEADING, quote=False)}</div>'
+        f'<div class="drhp-quota-body">{html.escape(QUOTA_CARD_BODY, quote=False)}</div>'
+        '<div class="drhp-quota-links">'
+        f'<a href="{_WALKTHROUGH_HREF}" target="_self">'
+        f'{html.escape(QUOTA_WALKTHROUGH_LINK, quote=False)}</a>'
+        '<a href="/methodology" target="_self">/methodology</a>'
+        '<a href="/failures" target="_self">/failures</a>'
+        '</div>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+
+
+def _render_ratelimit_notice() -> None:
+    """C4 throttle: a brief muted inline notice ABOVE the (still-enabled) input. Non-
+    blocking, auto-clears on the next successful send. Never alarm-red (D-12)."""
+    st.markdown(
+        '<div class="drhp-ratelimit" role="status" aria-live="polite">'
+        f'{html.escape(RATELIMIT_NOTICE, quote=False)}</div>',
+        unsafe_allow_html=True,
+    )
+
+
 def _render_input_and_invoke(drhp_id: str, issuer: str) -> None:
-    """Chat input + agent invocation, bound to this page's drhp_id."""
+    """Chat input + agent invocation, bound to this page's drhp_id, guarded by the
+    public-deploy cap/throttle (D-12)."""
     placeholder = QUESTION_PLACEHOLDER_TEMPLATE.format(issuer=issuer)
 
     if not _ENV_CONFIGURED:
@@ -168,6 +229,12 @@ def _render_input_and_invoke(drhp_id: str, issuer: str) -> None:
         st.chat_input(placeholder=placeholder, disabled=True)
         return
 
+    # C4 (D-12): if the GLOBAL daily cap is already exhausted, REPLACE the input with
+    # the fallback card before the user types — a read-only peek (no slot consumed).
+    if is_cap_exhausted(DEPLOY_DAILY_CAP):
+        _render_quota_card()
+        return
+
     if st.session_state.get("draft_question"):
         st.caption(
             f'Suggested: "{st.session_state.draft_question}" '
@@ -176,6 +243,16 @@ def _render_input_and_invoke(drhp_id: str, issuer: str) -> None:
 
     question = st.chat_input(placeholder=placeholder)
     if not question:
+        return
+
+    # C4 (D-12): the deploy guard runs BEFORE invoke_supervisor. Cap/throttle
+    # short-circuits the LLM call into the C4 fallback states.
+    action = _guard_ui_action(check_and_consume(DEPLOY_DAILY_CAP, MIN_SECONDS_BETWEEN))
+    if action == "card":
+        _render_quota_card()  # became exhausted between render and submit
+        return
+    if action == "notice":
+        _render_ratelimit_notice()  # non-blocking; input stays enabled; not sent
         return
 
     st.session_state.draft_question = ""
