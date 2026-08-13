@@ -3,20 +3,20 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-08-08T11:54:04.784Z"
-last_activity: 2026-08-08
+last_updated: "2026-08-13T17:31:47.283Z"
+last_activity: 2026-08-13
 progress:
   total_phases: 8
   completed_phases: 5
   total_plans: 56
-  completed_plans: 51
-  percent: 91
+  completed_plans: 52
+  percent: 63
 ---
 
 # STATE: DRHPLens
 
 **Last Updated:** 2026-07-31
-**Last activity:** 2026-08-08
+**Last activity:** 2026-08-13
 
 ## Project Reference
 
@@ -31,9 +31,9 @@ progress:
 ## Current Position
 
 Phase: 06.3 (Agent Polish + Launch Gate) — EXECUTING
-Plan: 9 of 10
-**Status:** 06.3-08 COMPLETE — fused-answer UI surfaces (C1/C2/C3) shipped + chat routed through the multi-tool supervisor. Next: 06.3-09.
-**Progress:** [█████████░] 91%
+Plan: 10 of 10
+**Status:** 06.3-09 COMPLETE — public-deploy guards (global daily cap + per-session throttle) + the C4 quota/rate-limit fallback UI + keep-warm pinger landed; the cap is a re-verified ~20-RPD-sourced policies constant (NOT 1500, `[ASSUMED — re-verify at deploy]`); D-13 (stay Streamlit for v1) recorded. Next: 06.3-10 (SEBI self-audit + WR-03 + CI lane + HITL).
+**Progress:** [█████████░] 93%
 
 **05-11 LIVE CRAWL (2026-07-25) + residuals close (2026-07-27):** Real panel built live — 1,378 IPOs (5 withdrawn, P3), 1,245 scorable, median 10.2% (WITHIN the ~7% [-5%,20%] sanity band, not survivor-inflated). Walk-forward **P9 gate FAILS HONESTLY** (R²=-0.009, no leakage; global_median + trailing_12 beat the model, DM p<1e-5) — the EXPECTED humble pre-apply result (D5-01/P9), never p-hacked. The model card + /snapshot forecast block now LEAD with the honest "does-not-beat-baseline" verdict; real SHAP shows the live panel is effectively one-feature (trailing_listing_gain), disclosed via a "Populated live?" column + a one-feature limitation. Per-IPO record metrics reconciled to the live run (coverage 0.800 / n=1,132). Full unit suite: 530 passed, 0 failed. Evidence: `data/forecasts/_gate/release_gate.json`, `model_card/`, `05-VERIFICATION.md`.
 
@@ -126,6 +126,15 @@ Plan: 9 of 10
 - The pane reuses `ui.expander.render_citation_expanders` for the escaped Sources-cited `metadata_footer` and reads chunk scores directly from the cached `GroundedAnswer.claims[].sources[].score` (the descriptor omits score)
 - No live LLM/Qdrant call on expand (Pitfall 5 / D3-17), pinned by an `inspect.getsource` no-client substring gate (`test_no_llm_or_qdrant_import`)
 - `latest_eval_scores` picks the newest `eval/reports/*.md` by ISO-date-prefixed filename (lexical == chronological) and degrades to `None` → eval-not-available copy on a missing/empty report dir
+
+### Key Decisions (from Phase 6.3 / 06.3-09 — public-deploy guards + C4)
+
+- **D-13 recorded (stay Streamlit for v1):** the v1 public launch ships on Streamlit + HF Spaces as locked; the Next.js migration stays a v2 concern — this resolves the flagged "Phase-5-exit re-evaluation gate" with an explicit "no UI rewrite in 6.3" decision (a constraint decision, not a build).
+- **The free-tier ceiling is enforced by a GLOBAL daily cap + a per-session throttle, NOT per-IP.** The global cap (`@st.cache_resource`, app-wide, one shared counter per Space process, resets on cold start) is the reliable anti-DoS boundary for the Gemini free-tier RPD; the per-session throttle (`st.session_state`) rate-limits bursts. Per-IP is documented UNRELIABLE behind the HF proxy (`st.context.ip_address` is None) and is never the primary control (T-6.3-IP, accept).
+- **The daily-cap VALUE is a documented `agent/policies.py` constant (`DEPLOY_DAILY_CAP=4`, `MIN_SECONDS_BETWEEN=4.0`), sized from the RE-VERIFIED ~20 RPD** (spike 002 / RESEARCH Pitfall 7), NOT the stale CLAUDE.md 1500/day. Sizing formula documented in the docstring; marked `[ASSUMED — re-verify before deploy]`. This plan is deliberately OFFLINE — no live RPD/quota network call (that would burn the scarce quota); the live re-verification is the HUMAN step at the deploy checkpoint (06.3-10).
+- **C4 degrades gracefully, honestly:** on cap exhaustion the chat input is REPLACED by a muted, dashed-neutral fallback card routing to the always-working read-only (LLM-free) surfaces (snapshot/forecast/peers, `/methodology`, `/failures`) + the committed `/how_it_works` recorded-walkthrough surface — NOT a full-page interstitial; on throttle a brief non-blocking inline notice sits above the still-enabled input. No red/green/countdown-alarm anywhere (honesty invariant); all copy centralized in `ui/copy.py` (import-time scrubber covers it).
+- **Recorded-walkthrough form (CONTEXT discretion):** the `▶ Recorded chat walkthrough` link routes to the committed in-app `/how_it_works` page (an honest, dead-link-proof walkthrough of the DRHP→cited-answer pipeline) — no headless-capture tooling, consistent with the deferred-screenshots decision.
+- **Keep-warm (P19):** `.github/workflows/ping.yml` (every ~8 min cron, copied from `scripts/cron_pinger.yml`) fights HF cold starts; the `<user>` Space-URL placeholder is a deploy-time human step (06.3-10). Index lives on Qdrant Cloud, never `/tmp` (ephemeral).
 
 ### Open Blockers
 
@@ -228,6 +237,7 @@ Phase 5 Wave 3 feature layer (05-04) COMPLETE — the leakage-gated issue-struct
 | Phase 06.3 P06 | ~90min | 3 tasks | 5 files; 748 offline passed / 16 skipped (+20 new tests); D-09 stress 26 passed / 4 honest live skips; multi-tool fusion + extended cite-check (Claim/ToolClaim) live |
 | Phase 06.3 P07 | ~40min | 2 tasks | 6 files; 758 offline passed / 16 skipped / 2 xfailed (+13 new tests); D-09 stress 26 passed / 4 honest live skips; the stress suite now GATES deploy (3rd release_gate lane) + Makefile 3-lane + FAILURE_MODES appended (stable codes 9-13) |
 | Phase 06.3 P08 | ~35min | 2 tasks | 6 files; 777 offline passed / 16 skipped / 2 xfailed (+19 new tests); fused-answer render surfaces C1/C2/C3 (render-only, AST-isolated) + chat routes through invoke_supervisor; additive .drhp-fused/-prov/-partial CSS (no verdict palette) |
+| Phase 06.3 P09 | ~30min (resumed after weekly-limit pause) | 2 tasks | 7 files (3 created, 4 modified); 797 offline passed / 16 skipped / 2 xfailed (+20 new tests); public-deploy guards (global daily cap @st.cache_resource + per-session throttle; per-IP documented-unreliable) sized from re-verified ~20 RPD (NOT 1500, [ASSUMED — re-verify at deploy]); C4 quota-fallback card replaces input + inline throttle notice (additive .drhp-quota/-ratelimit CSS, no verdict palette); keep-warm ping.yml; D-13 recorded |
 
 ## Decisions
 
