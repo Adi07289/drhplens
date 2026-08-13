@@ -258,3 +258,55 @@ runs so the cache doubles as free-tier-quota / P19 demo-safety. SEMANTICS locked
 by D-06; 21600s (6h) is a starting calibration point within the RESEARCH Open Q1
 6–24h range — re-tune against demo cadence and free-tier limits.
 """
+
+# ---------------------------------------------------------------------------
+# Phase 6.3 — Public-deploy guard: global daily cap + per-session throttle (D-12)
+#
+# The public chat is genuinely live + interactive, but the Gemini free tier is the
+# hard ceiling, so two in-process guards bound it (ui/deploy_guard.py):
+#   * a GLOBAL daily cap (@st.cache_resource — one shared counter per Space process,
+#     reliable, resets on cold start) — the anti-DoS boundary that actually protects
+#     the free-tier RPD (T-6.3-DoS); and
+#   * a per-session throttle (st.session_state last-question timestamp — reliable).
+# Per-IP is NOT a control here: st.context.ip_address is None behind the HF proxy
+# (RESEARCH A4 / T-6.3-IP). On cap exhaustion the C4 fallback degrades gracefully to
+# the always-working read-only surfaces (D-12); it is the EXPECTED steady state on a
+# ~20-RPD tier, not an incident (RESEARCH Pitfall 7).
+# ---------------------------------------------------------------------------
+
+DEPLOY_DAILY_CAP: int = 4  # [ASSUMED — re-verify before deploy]. Sized from the re-verified ~20 RPD (NOT the stale 1500/day).
+"""
+App-wide daily cap on live chat queries that reach the Gemini synthesis model
+(D-12 / T-6.3-DoS). The value is sized from the CURRENT Gemini free-tier RPD, NOT
+the stale CLAUDE.md "1500 req/day" figure (RESEARCH Pitfall 7): the free-tier
+`gemini-3.5-flash` synthesis model was measured at ~5 RPM / **~20 RPD** (project
+spike 002; the tier tightened sharply from the old 1500). The high-frequency
+classify hop runs on the cheaper `gemini-3.1-flash-lite` (separate, higher limit),
+so the binding constraint is the ~20 RPD synthesis-model budget.
+
+Sizing formula (documented so the deploy checkpoint can re-derive it):
+    cap = floor(synthesis-model daily RPD / worst-case synthesis-model calls per query)
+Worst case per query ≈ 1 classify on `-lite` (does NOT consume the flash budget) +
+≤ MAX_TOOL_CALLS drhp_rag generate (flash) + 1 synthesis (flash) ⇒ ~ MAX_TOOL_CALLS
+(4) + 1 = 5 flash calls. cap = floor(20 / 5) = **4**. Deliberately conservative:
+a typical query uses ~2 flash calls (1 drhp_rag generate + 1 synthesis) and the
+D-06 semantic cache elides repeats, so effective interactive capacity is higher —
+but the cap must protect the ceiling, not the average.
+
+`[ASSUMED — re-verify before deploy]`: this plan is deliberately OFFLINE — it does
+NOT make a live network/quota call to confirm the RPD (that would burn the scarce
+free-tier quota). Re-verifying the CURRENT `gemini-3.5-flash` free-tier RPD against
+the live Google AI rate-limit docs, and raising/lowering this cap accordingly, is a
+HUMAN step at the deploy checkpoint (Plan 06.3-10). The C4 quota fallback is the
+expected steady state at this cap, not an error path.
+"""
+
+MIN_SECONDS_BETWEEN: float = 4.0  # Calibration value (D-12); per-session burst throttle window.
+"""
+Minimum seconds between two questions from the SAME session before the per-session
+throttle fires `"rate_limited"` (D-12; RESEARCH Pattern 4 ≈ 4s). Reliable because it
+reads `st.session_state` (unlike per-IP, which is None behind the HF proxy). A
+throttled question shows the non-blocking C4 inline notice and does NOT consume a
+daily-cap slot. Tune against demo cadence; the semantics (burst-rate-limit the LLM
+call) do not change when the value is re-tuned.
+"""
