@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-08-13T17:31:47.283Z"
-last_activity: 2026-08-13
+last_updated: "2026-08-14T00:00:00.000Z"
+last_activity: 2026-08-14
 progress:
   total_phases: 8
   completed_phases: 5
   total_plans: 56
-  completed_plans: 52
-  percent: 63
+  completed_plans: 53
+  percent: 64
 ---
 
 # STATE: DRHPLens
@@ -30,10 +30,10 @@ progress:
 
 ## Current Position
 
-Phase: 06.3 (Agent Polish + Launch Gate) — EXECUTING
+Phase: 06.3 (Agent Polish + Launch Gate) — LAUNCH GATE: code complete, HITL pending
 Plan: 10 of 10
-**Status:** 06.3-09 COMPLETE — public-deploy guards (global daily cap + per-session throttle) + the C4 quota/rate-limit fallback UI + keep-warm pinger landed; the cap is a re-verified ~20-RPD-sourced policies constant (NOT 1500, `[ASSUMED — re-verify at deploy]`); D-13 (stay Streamlit for v1) recorded. Next: 06.3-10 (SEBI self-audit + WR-03 + CI lane + HITL).
-**Progress:** [█████████░] 93%
+**Status:** 06.3-10 AUTO HALF COMPLETE — the launch gate's executor-completable work is done + committed: (1) `compliance/SEBI-REVIEW.md` honest SELF-AUDIT drafted (posture→code→test table + D-11 re-audit of the new fused/conversational/public surfaces + 3 §1b flags verbatim + prominent AWAITING-HUMAN-SIGN-OFF status); (2) **WR-03 CLOSED** — requirements.txt ↔ pyproject core in sync (13 missing runtime deps added; ragas moved to a `[eval]` optional-extra per D-14; `scripts/_check_dep_sync.py` + regression test); (3) `.github/workflows/eval-gate.yml` drafted (release_gate + stress suite on PRs; secrets as `${{ secrets.* }}` placeholders). **5 HITL launch-gate items recorded PENDING (not faked, not hard-halted)** in `06.3-HUMAN-UAT.md` + `deferred-items.md`: H-1 SEBI human sign-off, H-2 CI repo secrets, H-3 public HF Spaces deploy (OPS-02), H-4 judge-vs-human calibration ≥50/≥0.7, H-5 gold-set span-tightening (human reads Swiggy DRHP). **Honest `-1` faithfulness surface preserved** (no real number committed). Full offline suite: **799 passed / 16 skipped / 2 xfailed / 0 failed**. Next: resolve H-1..H-5 to close the public launch gate.
+**Progress:** [██████████] 100% code · HITL pending
 
 **05-11 LIVE CRAWL (2026-07-25) + residuals close (2026-07-27):** Real panel built live — 1,378 IPOs (5 withdrawn, P3), 1,245 scorable, median 10.2% (WITHIN the ~7% [-5%,20%] sanity band, not survivor-inflated). Walk-forward **P9 gate FAILS HONESTLY** (R²=-0.009, no leakage; global_median + trailing_12 beat the model, DM p<1e-5) — the EXPECTED humble pre-apply result (D5-01/P9), never p-hacked. The model card + /snapshot forecast block now LEAD with the honest "does-not-beat-baseline" verdict; real SHAP shows the live panel is effectively one-feature (trailing_listing_gain), disclosed via a "Populated live?" column + a one-feature limitation. Per-IPO record metrics reconciled to the live run (coverage 0.800 / n=1,132). Full unit suite: 530 passed, 0 failed. Evidence: `data/forecasts/_gate/release_gate.json`, `model_card/`, `05-VERIFICATION.md`.
 
@@ -238,6 +238,7 @@ Phase 5 Wave 3 feature layer (05-04) COMPLETE — the leakage-gated issue-struct
 | Phase 06.3 P07 | ~40min | 2 tasks | 6 files; 758 offline passed / 16 skipped / 2 xfailed (+13 new tests); D-09 stress 26 passed / 4 honest live skips; the stress suite now GATES deploy (3rd release_gate lane) + Makefile 3-lane + FAILURE_MODES appended (stable codes 9-13) |
 | Phase 06.3 P08 | ~35min | 2 tasks | 6 files; 777 offline passed / 16 skipped / 2 xfailed (+19 new tests); fused-answer render surfaces C1/C2/C3 (render-only, AST-isolated) + chat routes through invoke_supervisor; additive .drhp-fused/-prov/-partial CSS (no verdict palette) |
 | Phase 06.3 P09 | ~30min (resumed after weekly-limit pause) | 2 tasks | 7 files (3 created, 4 modified); 797 offline passed / 16 skipped / 2 xfailed (+20 new tests); public-deploy guards (global daily cap @st.cache_resource + per-session throttle; per-IP documented-unreliable) sized from re-verified ~20 RPD (NOT 1500, [ASSUMED — re-verify at deploy]); C4 quota-fallback card replaces input + inline throttle notice (additive .drhp-quota/-ratelimit CSS, no verdict palette); keep-warm ping.yml; D-13 recorded |
+| Phase 06.3 P10 | ~55min | 3 auto tasks + 5 HITL recorded pending | 8 files (7 created, 4 modified); 799 offline passed / 16 skipped / 2 xfailed (+2 new dep-sync tests); launch gate CODE half: SEBI-REVIEW.md self-audit DRAFT + WR-03 sync (ragas→[eval] extra + _check_dep_sync.py) + eval-gate.yml; H-1..H-5 HITL pending in 06.3-HUMAN-UAT.md; honest -1 faithfulness surface preserved (no number committed) |
 
 ## Decisions
 
@@ -260,6 +261,10 @@ Phase 5 Wave 3 feature layer (05-04) COMPLETE — the leakage-gated issue-struct
 - [Phase 06.3 / 06.3-06]: extended cite-check DISPATCHES on claim type without forking the algo — a Claim runs the EXISTING DRHP-span path unchanged; a ToolClaim reconciles its number against the in-memory tool_results source record (source_record_id = `<provenance>#<field_path>`, walked with dot + `[n]` indexing, incl. the D-04 gmp_gap block) via the existing NUMERIC_GROUNDING_REL_TOLERANCE + lakh/crore/million normalization. An unresolvable number FAILS and is DROPPED (FM-3), its orphaned {{marker}} stripped — never fabricated.
 - [Phase 06.3 / 06.3-06]: the fusion hop reconciles against the ALREADY-LOADED tool_results (not a file re-read) — keeps the cite-check side-effect-free and avoids re-introducing path-safety surface; the tool node's allow-list gate already fronted the read.
 - [Phase 06.3 / 06.3-06]: _llm_fuse reserves gemini-3.5-flash PRIMARY (faithfulness-critical, opposite of classify's -lite-first), temperature=0 + explicit max_tokens; raw question is user-role ONLY (T-1-01) with the trusted tool context on the system turn; fed through the D-06 semantic cache best-effort (embedder import guarded — the cache is a quota optimizer, never a hard dep).
+- [Phase 06.3 / 06.3-10]: `compliance/SEBI-REVIEW.md` is an honest SELF-AUDIT (not a legal review) — it maps each posture claim to enforcing code + a real verifying test, re-audits the new 6.3 surfaces (fused/conversational/public) naming advice-by-implication as the residual risk the scrubber cannot catch, carries the 3 §1b flags verbatim, and adds NO new automated gate (references existing enforcement + the D-09 stress gate). Carries a prominent AWAITING-HUMAN-SIGN-OFF status; the SEBI human-verify checkpoint is folded into end-of-phase pending item H-1 (human_verify_mode: end-of-phase) rather than hard-halting.
+- [Phase 06.3 / 06.3-10]: WR-03 CLOSED — `requirements.txt` now matches pyproject core exactly (added google-genai/fastembed/pyyaml/yfinance/requests-cache/jugaad-data/xgboost/mapie/scikit-learn/mlflow/matplotlib/shap/nse). D-14 ragas decision: `ragas` moved to a pyproject `[eval]` optional-extra (heavy on HF Spaces, offline cross-check only, never imported in CI/release gate) — deliberately ABSENT from requirements.txt so the Space image stays lean; deepeval kept in the runtime set. Enforced by `scripts/_check_dep_sync.py` (exit-non-zero-on-drift) + `tests/unit/test_dep_sync.py`.
+- [Phase 06.3 / 06.3-10]: `.github/workflows/eval-gate.yml` triggers on: pull_request, runs the offline D-09 stress suite (no secret) + `scripts/release_gate.py` (eval + stress offline + live numeric); secrets referenced only via `${{ secrets.* }}` — the code half; the repo secrets are the H-2 HITL step.
+- [Phase 06.3 / 06.3-10]: HONESTY PRESERVED — the faithfulness surface stays the `-1` "not measured" sentinel; the ≥50-example ≥0.7 judge-vs-human calibration (H-4) and gold-set span-tightening (H-5, human reads the Swiggy DRHP — no auto-substring re-run) are recorded PENDING in `06.3-HUMAN-UAT.md`; no faithfulness number was committed (T-6.3-THEATER / P10 guard).
 - [Phase 06.3 / 06.3-06]: supervisor tool-node wiring (query_peers/forecast/redflags add_node + conditional edges + _ROUTE_MAP) was already landed in Plan 05; Plan 06 makes the fusion path LIVE (real _llm_fuse) and adds the fused end-to-end coverage. The 4 live-drhp_rag stress cases stay honestly skipped (need Qdrant+reranker+Gemini).
 - [Phase 05]: Phase 05 / 05-02: FCAST-03 left Pending — it spans 5 Phase-5 plans and requires walk-forward CV; 05-02 delivers only the survivorship-universe half (NSE past-issues + SEBI/chittorgarh-withdrawn two-source merge, deduped by issuer+issue_date, listed-core wins collisions). chittorgarh HTML scraper demoted from primary (D5-04); nse lib optional/lazy, gated to 05-11.
 - [Phase ?]: [Phase 05 / 05-03]: FORECASTS_DIR uses Path(__file__).resolve().parents[2] (repo-root data/forecasts), not the plan's literal .parent.parent which would resolve to pipelines/data/forecasts — the loader __init__ sits one level deeper than pipelines/gmp.py (Rule 1 fix, matches RESEARCH sketch).

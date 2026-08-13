@@ -259,7 +259,7 @@ Plans:
 - [x] 06.3-09-PLAN.md — Public deploy guards (global cap + throttle) + C4 quota fallback + keep-warm; re-verify Gemini RPD (D-12/D-13)
 
 **Wave 7** *(blocked on Wave 6)* — **non-autonomous (HITL launch gate)**
-- [ ] 06.3-10-PLAN.md — SEBI self-audit + WR-03 dep-sync + CI gate lane + judge-calibration/gold-set/deploy HITL (D-10/D-11/D-13/D-14)
+- [x] 06.3-10-PLAN.md — **AUTO half complete** (SEBI self-audit DRAFT + WR-03 dep-sync closed + eval-gate.yml drafted); **5 HITL items H-1..H-5 PENDING** (SEBI sign-off, CI secrets, HF deploy, judge-calibration ≥0.7, gold-set span-tightening) → see `06.3-HUMAN-UAT.md`. Honest `-1` faithfulness surface preserved. (D-10/D-11/D-13/D-14)
 
 **UI hint**: yes (4 new surfaces C1–C4)
 **Alias**: 6c — holds public launch
@@ -279,7 +279,7 @@ Plans:
 | 5. Calibrated Listing-Day Forecaster | 11/11 | Complete (honest model card; forecaster does not beat baselines) | 2026-07-25 |  |
 | 6.1 Eval Harness + Inline Metrics + Langfuse Ops | 6/6 | Executed (verification pending) | 4 waves |
 | 6.2 Portfolio Surfaces | 4/4 | Complete    | 2026-08-02 |
-| 6.3 Agent Polish + Launch Gate | 8/10 | In Progress|  |
+| 6.3 Agent Polish + Launch Gate | 10/10 code · HITL pending | Code complete; 5 HITL launch-gate items (H-1..H-5) pending — see 06.3-HUMAN-UAT.md |  |
 
 ## Cross-Cutting Invariants
 
