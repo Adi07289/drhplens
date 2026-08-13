@@ -1,0 +1,73 @@
+name: eval-gate
+
+# CI RELEASE-GATE LANE (D-14 / D-09) — the deploy gate, on every PR.
+#
+# Mirrors nightly-nse.yml's shape (checkout@v4 -> setup-python@v5 (3.11) -> pip
+# install -> run) but triggers `on: pull_request`, so a citation / numeric / stress
+# regression PHYSICALLY BLOCKS MERGE (enforcement over discipline, RESEARCH Pitfall 4).
+#
+# ┌─ HUMAN-IN-THE-LOOP: this lane needs repo SECRETS the executor cannot supply. ─┐
+# │ Add them in GitHub -> Settings -> Secrets and variables -> Actions (Task 5):  │
+# │   GEMINI_API_KEY, QDRANT_URL, QDRANT_API_KEY,                                 │
+# │   LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY, LANGFUSE_HOST                     │
+# │ Same keys the live app uses. NO secret is ever committed — they are           │
+# │ referenced only as ${{ secrets.* }} below.                                    │
+# └──────────────────────────────────────────────────────────────────────────────┘
+#
+# Two lanes, split so the OFFLINE guard runs for free even before secrets exist:
+#   1. Offline D-09 stress suite (tests/eval/test_stress_suite.py) — the two LLM hops
+#      are stubbed, so it needs NO secret and gates the SEBI no-advice / loop-safety /
+#      honesty envelope on every PR.
+#   2. scripts/release_gate.py — runs the deterministic eval gate + the stress gate
+#      (offline) AND the live numeric-faithfulness gate. The live lane needs the
+#      secrets above AND the gold-set DRHP ingested into the referenced Qdrant Cloud
+#      collection (per the Makefile note / Task 5). Until the secrets are set the
+#      live lane fails fast — that is the intended "add secrets to unblock" signal.
+
+on:
+  pull_request: {}
+  workflow_dispatch: {}
+
+jobs:
+  eval-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # Referenced, never committed. Absent secrets -> the live numeric lane fails
+      # fast (the offline stress lane above still runs and blocks on a regression).
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      QDRANT_URL: ${{ secrets.QDRANT_URL }}
+      QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
+      LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+      LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+      LANGFUSE_HOST: ${{ secrets.LANGFUSE_HOST }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install deps
+        # Core runtime deps + pytest (the [dev] extra). Heavy (torch/docling/xgboost/
+        # mlflow) but faithful to the deploy set; requirements.txt <-> pyproject core are
+        # kept in sync by scripts/_check_dep_sync.py (WR-03). ragas ([eval] extra) is
+        # deliberately NOT installed — the gate never imports it.
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Dependency-manifest sync check (WR-03)
+        run: python scripts/_check_dep_sync.py
+
+      - name: Offline D-09 stress envelope suite (no secret needed)
+        run: python -m pytest tests/eval/test_stress_suite.py -q
+
+      - name: Release gate — eval + stress (offline) + numeric-faithfulness (live)
+        # Runs scripts/release_gate.py: the deterministic eval gate (citation_accuracy
+        # >= 0.95, recall@10 >= 0.85) + the D-09 stress gate (offline) + the live
+        # numeric-faithfulness gate (>= 0.95). A regression in ANY lane exits non-zero
+        # and blocks merge. The live lane needs the secrets above + a seeded Qdrant.
+        run: python scripts/release_gate.py
