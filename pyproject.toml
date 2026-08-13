@@ -42,13 +42,17 @@ dependencies = [
     "streamlit>=1.36",
     # Observability
     "langfuse<3",
-    # Evals — RAG metric frameworks (Phase 6.1). deepeval = faithfulness LLM-judge
-    # (native GeminiModel judge, no OpenAI). langfuse is pinned <3 above (v4 is a full
-    # OTEL rewrite that still needs the `langchain` package, deliberately NOT added).
-    # ragas = OPTIONAL offline cross-check only; NEVER imported in CI / the release
-    # gate (AI-SPEC Pitfall 5).
+    # Evals — deepeval = the faithfulness LLM-judge (native GeminiModel judge, no
+    # OpenAI). It stays in the CORE runtime set (the disclosed WR-03 intent — it is
+    # the REPORTED faithfulness lane the release gate references). langfuse is pinned
+    # <3 above (v4 is a full OTEL rewrite that still needs the `langchain` package,
+    # deliberately NOT added).
+    # NOTE (WR-03 / D-14 ragas decision): `ragas` is NOT here — it is heavy on HF
+    # Spaces and is an OPTIONAL offline cross-check only, NEVER imported in CI or the
+    # release gate (AI-SPEC Pitfall 5). It therefore lives in the [eval] optional-
+    # dependencies group below (used only in local/CI eval, not the Space runtime) and
+    # is deliberately absent from requirements.txt. See scripts/_check_dep_sync.py.
     "deepeval>=4.1,<5",
-    "ragas>=0.4,<0.5",
     # Utilities
     "tenacity",
     "python-dotenv",
@@ -96,6 +100,17 @@ dev = [
     "pytest-timeout",
     "ruff",
     "mypy",
+]
+# eval: OPTIONAL local/CI-only eval extras — NOT installed on the HF Space runtime
+# (WR-03 / D-14 decision). `ragas` is a heavy dependency (pulls its own LLM/embeddings
+# stack) and is used only as an offline cross-check of the headline RAG metrics; it is
+# NEVER imported by CI, scripts/release_gate.py, or the deployed app (AI-SPEC Pitfall 5).
+# Install with `pip install -e ".[eval]"` when running the ragas cross-check locally.
+# Keeping it OUT of core [project.dependencies] + requirements.txt is what keeps the
+# Space image lean. The deterministic release gate + deepeval faithfulness lane do NOT
+# depend on ragas, so the deploy set never regresses by its absence.
+eval = [
+    "ragas>=0.4,<0.5",
 ]
 
 [tool.pytest.ini_options]
