@@ -276,7 +276,7 @@ Plans:
 | 2. Multi-IPO Catalogue + DRHP Snapshot | 5/5 | Complete   | 2026-06-24 |
 | 3. Structured Signal Extraction | 7/7 | Complete (EVAL-03 gate PASSES 0.957) | 2026-07-25 |
 | 4. Historical IPO Dataset + Peer Comparator + GMP | 7/7 | Complete   | 2026-08-15 |
-| 5. Calibrated Listing-Day Forecaster | 11/11 | 11/11 | Complete   | 2026-08-15 |
+| 5. Calibrated Listing-Day Forecaster | 11/11 | Complete (honest model card; forecaster does not beat baselines — D5-01) | 2026-08-15 |
 | 6.1 Eval Harness + Inline Metrics + Langfuse Ops | 6/6 | Executed (verification pending) | 4 waves |
 | 6.2 Portfolio Surfaces | 4/4 | Complete    | 2026-08-02 |
 | 6.3 Agent Polish + Launch Gate | 10/10 code · HITL pending | Code complete; 5 HITL launch-gate items (H-1..H-5) pending — see 06.3-HUMAN-UAT.md |  |
