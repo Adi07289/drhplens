@@ -98,7 +98,7 @@
   4. All financial numbers render in Indian conventions (lakh/crore, INR symbols), and acronyms (RPT, QIB, NII, RII) carry hoverable glossary tooltips (UI-04).
   5. The historical IPO dataset (~800-1000 mainboard IPOs from 2014-present) is committed to the repo with an explicit `status` column (withdrawn / listed_alive / delisted / merged / name_changed), and the dataset's median listing-day return is sanity-checked against the published ~7% academic baseline — flagged in the methodology page if it materially diverges (foundation for Phase 5; not yet user-visible).
 
-**Plans:** 7/7 plans executed
+**Plans:** 7/7 plans complete
 Plans:
 
 - [x] 04-01-PLAN.md — Wave 0 spike: yfinance 1.5.1 pin + jugaad-data NSE endpoint validation + nightly integration test (PEER-02)
@@ -275,7 +275,7 @@ Plans:
 | 1. Foundation + MVP-A | 6/6 | Code complete (OPS-02 public deploy pending) |  |
 | 2. Multi-IPO Catalogue + DRHP Snapshot | 5/5 | Complete   | 2026-06-24 |
 | 3. Structured Signal Extraction | 7/7 | Complete (EVAL-03 gate PASSES 0.957) | 2026-07-25 |
-| 4. Historical IPO Dataset + Peer Comparator + GMP | 7/7 | Complete (survivorship panel built live; median sanity on /methodology) | 2026-07-27 |
+| 4. Historical IPO Dataset + Peer Comparator + GMP | 7/7 | Complete   | 2026-08-15 |
 | 5. Calibrated Listing-Day Forecaster | 11/11 | Complete (honest model card; forecaster does not beat baselines) | 2026-07-25 |  |
 | 6.1 Eval Harness + Inline Metrics + Langfuse Ops | 6/6 | Executed (verification pending) | 4 waves |
 | 6.2 Portfolio Surfaces | 4/4 | Complete    | 2026-08-02 |
