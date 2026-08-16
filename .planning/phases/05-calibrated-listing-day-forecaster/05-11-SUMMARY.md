@@ -54,9 +54,11 @@ Verified against pypi.org/project/nse on 2026-08-15: package `nse` ("Unofficial 
 
 The rendered `/methodology` forecaster model-card sign-off (calibration plot, PIT, SHAP, four-baseline DM table with the P9 verdict, leakage audit, limitations, honest coverage) is a `checkpoint:human-verify`. **Recorded PENDING** — the app is runnable at `localhost:8501` for the visual check. Note the plan's automated Task-3 assertion expects `release_gate.passed is True`, which is honestly False; the card commit here is the transparent-failure exception documented above, not a gate-pass.
 
-## Known gaps (recorded, not fabricated)
+## MLflow tracking gap — CLOSED via reproducible script (2026-08-16)
 
-- **`mlruns/` MLflow run NOT committed** — the plan's acceptance wanted the live walk-forward MLflow-tracked to a committed `mlruns/` run (coverage/MAE/per-year-RMSE + DM verdicts + params). No `mlruns/` dir is present; the walk-forward was an ad-hoc supervised run and the frozen `oos_real.parquet` + `release_gate.json` are the persisted evidence instead. Backfilling a committed MLflow run is an open follow-up.
+- The plan's acceptance wanted the live walk-forward MLflow-tracked to `mlruns/`. The 25-Jul run was ad-hoc and logged no run. Closed by **`scripts/backfill_mlflow_run.py`** (committed, deterministic): it logs ONLY the real frozen metrics from the committed `card_data.json` + `release_gate.json` to a local-file-backend MLflow run (`drhplens-listing-forecaster` / `05-11-live-walkforward-backfill`) — coverage **0.8004**, R² **−0.0095**, MAE **0.43 pts**, per-year RMSE, and the per-baseline Diebold–Mariano verdicts (`baseline_beats_model_global_median=1`). Tagged `backfill=true` + `gate_passed=false` so it can never read as a fresh passing run; nothing is fabricated (it re-runs the frozen numbers).
+- **`mlruns/` itself stays gitignored** (repo `.gitignore` line 27) because MLflow file-store `meta.yaml` embeds machine-absolute paths (non-portable). The git-tracked, portable artifact is the reproducible script — anyone can regenerate the run with `PYTHONPATH=. .venv/bin/python -m scripts.backfill_mlflow_run`.
+- Note this is a retrospective backfill, not a fresh walk-forward (the frozen `oos_real.parquet` gate frame is not cleanly re-runnable — see 04-07 reproducibility note).
 - The frozen `oos_real.parquet` is not cleanly re-runnable (no committed regeneration script), so the canonical 1378-row panel is pinned to it (see 04-07 reproducibility note).
 
 ## Honest bottom line
