@@ -75,15 +75,9 @@ def _get_llm_client():
             "Run: pip install instructor google-genai"
         ) from exc
 
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if not api_key:
-        raise RuntimeError(
-            "GEMINI_API_KEY not set in environment. "
-            "Export it before running the agent."
-        )
+    from agent.llm import structured_client
 
-    genai_client = genai.Client(api_key=api_key)
-    return instructor.from_genai(genai_client, mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS)
+    return structured_client()
 
 
 # ---------------------------------------------------------------------------
@@ -123,7 +117,7 @@ def _is_likely_single_clause(question: str) -> bool:
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=4))
 def _call_llm(question: str) -> SubQuestions:
     """Tenacity-retried LLM call. Separate function for testability."""
-    from agent.policies import GEMINI_MODELS
+    from agent.llm import models_for
 
     client = _get_llm_client()
     system_prompt = _load_system_prompt()
@@ -133,7 +127,7 @@ def _call_llm(question: str) -> SubQuestions:
     ]
     # Try each model in order; a 503 on the primary falls through to the fallback.
     last_exc: Exception | None = None
-    for model in GEMINI_MODELS:
+    for model in models_for("decompose"):
         try:
             return client.chat.completions.create(
                 model=model, response_model=SubQuestions, messages=messages
