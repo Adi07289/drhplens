@@ -151,3 +151,26 @@ no code change. The switch is one env var in both directions.
 
 Ollama support (a trivial future branch in the factory), streaming, prompt edits, any
 change to embeddings/reranker/Qdrant, and the deploy itself (separate track).
+
+## 11. Implementation deviations (recorded 2026-08-17)
+
+Live verification during execution corrected two plan assumptions — surfaced only
+because the smoke test made a real Groq call rather than trusting the spec:
+
+- **Model IDs:** Groq has **decommissioned the Llama-3.x line**. The Llama IDs in §4
+  return 404 (or 400). The actual available general-chat models were enumerated from
+  the live `/models` endpoint: `openai/gpt-oss-120b` (main/synthesis), `openai/gpt-oss-20b`
+  (lite/classify), `qwen/qwen3.6-27b` (spare). Final tiers: main `("openai/gpt-oss-120b",
+  "openai/gpt-oss-20b")`, lite `("openai/gpt-oss-20b","openai/gpt-oss-120b")`. All verified
+  callable + structured-output-capable live.
+- **Structured-output mode:** `Mode.TOOLS` failed — Groq's smaller model emitted a
+  malformed tool-call wrapper that failed schema validation. Switched to **`Mode.JSON`**,
+  which is reliable across both gpt-oss tiers (verified: classify→RoutingDecision,
+  decompose→SubQuestions live).
+- **cite_check recalibration (§6) — DEFERRED, honestly:** the token-ratio mechanism is
+  intact (26 offline tests pass) and `CITE_CHECK_TOKEN_RATIO` is left at `52`. The *live*
+  recalibration against gpt-oss paraphrasing needs real grounded answers through the full
+  RAG, which needs the vector store — currently down (Qdrant cluster reclaimed). **Follow-up:
+  once the vector store is restored, run `scripts/calibrate_cite_check.py` on gpt-oss output
+  and adjust only if the grounded/hallucinated classes no longer separate at 52.** Until
+  then no number is changed — no faked calibration.
