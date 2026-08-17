@@ -107,16 +107,9 @@ def _get_llm_client():
             "Run: pip install instructor google-genai"
         ) from exc
 
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if not api_key:
-        raise RuntimeError(
-            "GEMINI_API_KEY not set in environment. Export it before running the agent."
-        )
+    from agent.llm import structured_client
 
-    genai_client = genai.Client(api_key=api_key)
-    return instructor.from_genai(
-        genai_client, mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS
-    )
+    return structured_client()
 
 
 # ---------------------------------------------------------------------------
@@ -131,7 +124,7 @@ def _llm_classify(question: str) -> RoutingDecision:
     T-1-01 / D-07b: the raw ``question`` is the ``user`` message ONLY — it is never
     interpolated into the system prompt (which is the loaded ``classify.md``).
     """
-    from agent.policies import GEMINI_MODELS
+    from agent.llm import models_for
 
     client = _get_llm_client()
     messages = [
@@ -143,7 +136,7 @@ def _llm_classify(question: str) -> RoutingDecision:
     # Classify is the high-frequency hop → try the cheaper -lite model FIRST (quota, §4b);
     # a 503 on -lite falls through to the more-faithful primary.
     last_exc: Exception | None = None
-    for model in reversed(GEMINI_MODELS):
+    for model in models_for("classify"):
         try:
             return client.chat.completions.create(
                 model=model,
