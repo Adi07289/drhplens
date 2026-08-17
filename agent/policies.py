@@ -75,6 +75,19 @@ this via the SubQuestions.questions Field(max_length=4) constraint."""
 # instead of a refusal.
 GEMINI_MODELS: tuple[str, ...] = ("gemini-3.5-flash", "gemini-3.1-flash-lite")
 
+# --- Provider model tiers (LLM_PROVIDER switch, 2026-08-17) ------------------
+# Groq (default): Llama-3.3-70B for faithful synthesis, 8B-instant for the cheap
+# high-frequency classify/decompose hops. Both IDs verified live on the account.
+GROQ_MAIN_MODELS: tuple[str, ...] = ("llama-3.3-70b-versatile", "llama-3.1-8b-instant")
+GROQ_LITE_MODELS: tuple[str, ...] = ("llama-3.1-8b-instant",)
+
+# role tier -> ordered model list, per provider. The Gemini "lite" tier keeps the
+# historical "try -lite first" order (reversed GEMINI_MODELS).
+PROVIDER_MODELS: dict[str, dict[str, tuple[str, ...]]] = {
+    "groq": {"main": GROQ_MAIN_MODELS, "lite": GROQ_LITE_MODELS},
+    "gemini": {"main": GEMINI_MODELS, "lite": tuple(reversed(GEMINI_MODELS))},
+}
+
 CITE_CHECK_TOKEN_RATIO: int = 52  # Calibrated via scripts/calibrate_cite_check.py: on a labeled grounded/hallucinated set the classes separate cleanly (grounded 60-78, hallucinated 35-46); 52 is the gap midpoint — max grounded recall while staying above every hallucination. Was 80, which rejected even gemini-3.5-flash's legitimately-grounded paraphrases.
 """
 token_set_ratio threshold for the deterministic cite-check. A claim's text must
