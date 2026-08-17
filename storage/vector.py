@@ -76,8 +76,14 @@ def client() -> QdrantClient:
     if _client is None:
         url = os.environ.get("QDRANT_URL", "http://localhost:6333")
         api_key = os.environ.get("QDRANT_API_KEY", "")
+        # Generous per-request timeout: remote free-tier Qdrant Cloud writes over a
+        # slow link (e.g. India -> us-east-1) exceed the client default and raise
+        # ResponseHandlingException on upsert. Configurable via QDRANT_TIMEOUT (seconds).
+        timeout = int(os.environ.get("QDRANT_TIMEOUT", "60"))
         try:
-            _client = QdrantClient(url=url, api_key=api_key if api_key else None)
+            _client = QdrantClient(
+                url=url, api_key=api_key if api_key else None, timeout=timeout
+            )
         except Exception as exc:
             # Mask the API key in the error message (STRIDE T-1-04)
             masked = f"{url} (api_key=***)"
