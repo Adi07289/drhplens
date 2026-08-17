@@ -50,7 +50,6 @@ from compliance.scrubber import scrub
 
 from agent.cache.semantic_cache import cached_answer
 from agent.nodes.cite_check import partition_fused_claims
-from agent.policies import GEMINI_MODELS
 from agent.schemas import FusedAnswer, RefusalResponse
 from agent.supervisor_state import SupervisorState
 
@@ -148,16 +147,9 @@ def _get_fusion_client():
             "Run: pip install instructor google-genai"
         ) from exc
 
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if not api_key:
-        raise RuntimeError(
-            "GEMINI_API_KEY not set in environment. Export it before running the agent."
-        )
+    from agent.llm import structured_client
 
-    genai_client = genai.Client(api_key=api_key)
-    return instructor.from_genai(
-        genai_client, mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS
-    )
+    return structured_client()
 
 
 def _build_fusion_context(state: SupervisorState) -> str:
@@ -207,8 +199,10 @@ def _call_fusion_llm(question: str, context: str) -> FusedAnswer:
         {"role": "system", "content": system},
         {"role": "user", "content": question},
     ]
+    from agent.llm import models_for
+
     last_exc: Exception | None = None
-    for model in GEMINI_MODELS:  # primary (faithful) first; 503 → -lite fallback
+    for model in models_for("synthesize"):  # main tier: 70B first, 8B fallback
         try:
             return client.chat.completions.create(
                 model=model,
