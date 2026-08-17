@@ -47,9 +47,12 @@ def _check_env() -> list[str]:
     """Return a list of missing environment variables required for live operation."""
     import os
 
+    from agent.llm import required_key_var
+
     missing = []
-    if not os.environ.get("GEMINI_API_KEY"):
-        missing.append("GEMINI_API_KEY")
+    key_var = required_key_var()
+    if not os.environ.get(key_var):
+        missing.append(key_var)
     # QDRANT_URL defaults to localhost if not set; flag it as a warning but not fatal
     return missing
 
@@ -70,10 +73,12 @@ def ask(
 
     missing_keys = _check_env()
     if missing_keys:
+        from agent.llm import required_key_var
+
         rprint(
             f"[yellow]WARNING: Missing environment variables: {', '.join(missing_keys)}[/yellow]\n"
             f"[dim]The agent needs these to run end-to-end:\n"
-            f"  export GEMINI_API_KEY=<your-gemini-api-key>\n"
+            f"  export {required_key_var()}=<your-key>\n"
             f"  export QDRANT_URL=<your-qdrant-url>  (defaults to http://localhost:6333)\n\n"
             f"With keys set, re-run:\n"
             f"  python -m agent.demo \"{question}\"[/dim]"
