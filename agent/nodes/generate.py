@@ -81,15 +81,9 @@ def get_llm_client():
             "Run: pip install instructor google-genai"
         ) from exc
 
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if not api_key:
-        raise RuntimeError(
-            "GEMINI_API_KEY not set in environment. "
-            "Export it before running the agent: export GEMINI_API_KEY=<your-key>"
-        )
+    from agent.llm import structured_client
 
-    genai_client = genai.Client(api_key=api_key)
-    return instructor.from_genai(genai_client, mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS)
+    return structured_client()
 
 
 # ---------------------------------------------------------------------------
@@ -166,7 +160,7 @@ def _call_llm_with_retry(state: GraphState) -> GroundedAnswer:
     system_prompt = _load_system_prompt()
     user_message = _build_user_message(state)
 
-    from agent.policies import GEMINI_MODELS
+    from agent.llm import models_for
 
     # Fold the system prompt into the user message: instructor's GenAI provider
     # rejects Jinja markers ({{claim_id}}) in SYSTEM messages but allows them
@@ -176,7 +170,7 @@ def _call_llm_with_retry(state: GraphState) -> GroundedAnswer:
     # Try each model in order; a 503/quota/validation failure on the primary falls
     # through to the reliable fallback rather than surfacing as a refusal.
     last_exc: Exception | None = None
-    for model in GEMINI_MODELS:
+    for model in models_for("generate"):
         try:
             return client.chat.completions.create(
                 model=model,
