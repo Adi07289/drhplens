@@ -74,7 +74,10 @@ def structured_client():
         )
     from openai import OpenAI
 
+    # Mode.JSON (raw-JSON structured output), NOT Mode.TOOLS: Groq's smaller models
+    # emit a malformed tool-call wrapper under TOOLS and fail schema validation;
+    # JSON mode is reliable across the gpt-oss-20b/120b tiers (verified live 2026-08-17).
     return instructor.from_openai(
         OpenAI(base_url="https://api.groq.com/openai/v1", api_key=key),
-        mode=instructor.Mode.TOOLS,
+        mode=instructor.Mode.JSON,
     )

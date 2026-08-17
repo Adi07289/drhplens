@@ -76,10 +76,13 @@ this via the SubQuestions.questions Field(max_length=4) constraint."""
 GEMINI_MODELS: tuple[str, ...] = ("gemini-3.5-flash", "gemini-3.1-flash-lite")
 
 # --- Provider model tiers (LLM_PROVIDER switch, 2026-08-17) ------------------
-# Groq (default): Llama-3.3-70B for faithful synthesis, 8B-instant for the cheap
-# high-frequency classify/decompose hops. Both IDs verified live on the account.
-GROQ_MAIN_MODELS: tuple[str, ...] = ("llama-3.3-70b-versatile", "llama-3.1-8b-instant")
-GROQ_LITE_MODELS: tuple[str, ...] = ("llama-3.1-8b-instant",)
+# Groq (default): the Llama-3.x line was decommissioned from Groq; the current
+# general-chat models are gpt-oss + qwen. gpt-oss-120b (most capable) leads the
+# faithful synthesis/generate tier; gpt-oss-20b (fast) leads the high-frequency
+# classify/decompose tier, each falling through to the other. All IDs verified
+# callable + structured-output-capable (Instructor Mode.JSON) live on the account.
+GROQ_MAIN_MODELS: tuple[str, ...] = ("openai/gpt-oss-120b", "openai/gpt-oss-20b")
+GROQ_LITE_MODELS: tuple[str, ...] = ("openai/gpt-oss-20b", "openai/gpt-oss-120b")
 
 # role tier -> ordered model list, per provider. The Gemini "lite" tier keeps the
 # historical "try -lite first" order (reversed GEMINI_MODELS).

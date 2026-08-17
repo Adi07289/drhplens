@@ -23,8 +23,8 @@ def test_provider_models_registry_shape():
 
 
 def test_groq_models_are_the_verified_ids():
-    assert GROQ_MAIN_MODELS == ("llama-3.3-70b-versatile", "llama-3.1-8b-instant")
-    assert GROQ_LITE_MODELS == ("llama-3.1-8b-instant",)
+    assert GROQ_MAIN_MODELS == ("openai/gpt-oss-120b", "openai/gpt-oss-20b")
+    assert GROQ_LITE_MODELS == ("openai/gpt-oss-20b", "openai/gpt-oss-120b")
 
 
 def test_gemini_tier_reuses_existing_constant():
@@ -48,10 +48,10 @@ def test_active_provider_reads_env(monkeypatch):
 
 def test_models_for_maps_role_to_tier(monkeypatch):
     monkeypatch.setenv("LLM_PROVIDER", "groq")
-    assert llm.models_for("classify") == ("llama-3.1-8b-instant",)  # lite
+    assert llm.models_for("classify") == ("openai/gpt-oss-20b", "openai/gpt-oss-120b")  # lite
     assert llm.models_for("synthesize") == (
-        "llama-3.3-70b-versatile",
-        "llama-3.1-8b-instant",
+        "openai/gpt-oss-120b",
+        "openai/gpt-oss-20b",
     )  # main
 
 
