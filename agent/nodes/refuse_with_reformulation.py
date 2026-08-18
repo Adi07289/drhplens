@@ -33,8 +33,25 @@ from tools.embedder import embed_query
 from ui.copy import REFUSAL_BANNED_TOKEN_COPY, REFUSAL_NO_GROUNDING_TEMPLATE
 
 
+# Generic / boilerplate DRHP sections that make useless reformulation chips — they
+# hold no substantive, answerable content. Matched case-insensitively as substrings so
+# "Preamble", "Cover Page", "Year / Period ended", "Definitions" are all skipped, so we
+# never suggest a question the document can't actually answer.
+_GENERIC_SECTIONS: tuple[str, ...] = (
+    "preamble", "cover", "definitions", "abbreviation", "table of contents",
+    "period ended", "forward-looking", "general information", "certain conventions",
+    "presentation of financial", "currency of presentation", "notice to",
+)
+
+
+def _is_generic_section(section: str) -> bool:
+    """True if the section name is boilerplate (not worth suggesting)."""
+    s = section.strip().lower()
+    return not s or any(g in s for g in _GENERIC_SECTIONS)
+
+
 def _top_unique_sections(hits: list[dict], k: int = RELAXED_SEARCH_TOP_SECTIONS) -> list[str]:
-    """Return the top-k unique section names from the search hits in order.
+    """Return the top-k unique, NON-GENERIC section names from the search hits in order.
 
     Iterates hits (assumed already sorted by relevance score descending from
     search_relaxed) and collects unique section values until we have k of them.
@@ -50,7 +67,7 @@ def _top_unique_sections(hits: list[dict], k: int = RELAXED_SEARCH_TOP_SECTIONS)
     result: list[str] = []
     for hit in hits:
         section = hit.get("payload", {}).get("section", "")
-        if section and section not in seen:
+        if section and section not in seen and not _is_generic_section(section):
             seen.add(section)
             result.append(section)
             if len(result) >= k:
@@ -124,8 +141,8 @@ def run(state: GraphState) -> GraphState:
             )
         else:
             message = (
-                f"This DRHP does not contain sufficient information to answer "
-                f"your question about '{state['question']}'."
+                f"I went through the DRHP but couldn't find enough in it to answer "
+                f"'{state['question']}' reliably — so I won't guess."
             )
 
     # Step 5: Set refusal
