@@ -17,6 +17,8 @@ import os as _os
 
 import streamlit as st
 
+import app.util.secrets_env  # noqa: F401 — mirror Streamlit-Cloud st.secrets -> os.environ (must precede the env check below)
+from agent.llm import required_key_var
 from agent.policies import DEPLOY_DAILY_CAP, MIN_SECONDS_BETWEEN
 from agent.schemas import FusedAnswer, GroundedAnswer, RefusalResponse
 from agent.supervisor import invoke_supervisor
@@ -44,7 +46,10 @@ from ui.state import append_to_chat_history, get_chat_history
 
 logger = logging.getLogger(__name__)
 
-_MISSING_KEYS = [k for k in ["GEMINI_API_KEY"] if not _os.environ.get(k)]
+# Provider-aware: require the ACTIVE LLM_PROVIDER's key (GROQ_API_KEY for groq,
+# GEMINI_API_KEY for the gemini fallback) — not a hardcoded Gemini key.
+_REQUIRED_KEY = required_key_var()
+_MISSING_KEYS = [_REQUIRED_KEY] if not _os.environ.get(_REQUIRED_KEY) else []
 _ENV_CONFIGURED = len(_MISSING_KEYS) == 0
 
 
