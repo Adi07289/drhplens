@@ -19,6 +19,7 @@ FIRST (free-tier quota, RESEARCH §4b).
 """
 from __future__ import annotations
 
+import logging
 import os
 from functools import lru_cache
 from pathlib import Path
@@ -28,6 +29,8 @@ from pydantic import BaseModel, Field
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from agent.supervisor_state import SupervisorState
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # The deterministic authority boundary (D-05)
@@ -44,6 +47,14 @@ ALLOWED_TOOLS: frozenset[str] = frozenset(
 union already bounds a *schema-valid* proposal; this set is the belt-and-suspenders clamp
 so that even a hallucinated / out-of-union name (e.g. one that slipped through) can never
 reach the dispatcher. The LLM proposes; this list is the authority."""
+
+DEFAULT_TOOL: str = "drhp_rag"
+"""The safe default route when routing is UNCERTAIN — an LLM-classify infra failure or
+an in-scope decision that named no valid tool. A valid question must never be silently
+dropped to a refusal just because the classify hop failed or under-specified; document
+Q&A is the most common intent, and the drhp_rag subgraph's own gate1/scrub/cite_check
+guards keep the fallback honest + compliance-safe. NOT used on the DELIBERATE advice /
+out-of-scope path (that correctly stays an empty plan → refusal)."""
 
 
 # ---------------------------------------------------------------------------
@@ -165,10 +176,15 @@ def run(state: SupervisorState) -> SupervisorState:
        compliance-bait / gibberish / jailbreak / cross-IPO short-circuits to a graceful
        educational refusal downstream — no tool thrash (D-07a/c).
     3. Otherwise CLAMP the proposal to ``ALLOWED_TOOLS`` so the LLM cannot invent a
-       tool (D-05); the clamp — not the schema — is the authority boundary.
-    4. On total LLM failure (all retries + both models), degrade to an empty,
-       effectively out-of-scope plan — a deterministic graceful refusal, never a
-       crash (D-07c).
+       tool (D-05); the clamp — not the schema — is the authority boundary. If an
+       in-scope, non-advice decision clamps to NO tool (an incoherent proposal), default
+       to ``DEFAULT_TOOL`` rather than silently dropping a valid question.
+    4. On total LLM failure (all retries + both models) — an INFRASTRUCTURE failure, NOT
+       an out-of-scope signal — log for deploy diagnosis and degrade to a
+       ``[DEFAULT_TOOL]`` document-Q&A attempt (never a crash). Degrading to an EMPTY
+       plan here silently dropped every valid question to a refusal whenever the deploy's
+       classify call errored/timed out (the live 'empty plans' bug). The deliberate
+       advice / out-of-scope refusal path (step 2) is UNCHANGED — it still empties.
 
     The classify hop ALWAYS increments ``hops`` by exactly one (it counts against the P8
     budget), even on the failure path.
@@ -181,8 +197,20 @@ def run(state: SupervisorState) -> SupervisorState:
             plan: list[str] = []  # D-07a/c short-circuit — refuse, no tool thrash
         else:
             plan = [t for t in decision.tools if t in ALLOWED_TOOLS]  # D-05 clamp
+            if not plan:
+                # In-scope, non-advice, but no valid tool named — an incoherent
+                # decision. Default to document Q&A, never a silent refusal.
+                plan = [DEFAULT_TOOL]
     except Exception:
-        # Every retry + both models failed → deterministic graceful refusal (D-07c).
-        plan = []
+        # Total LLM failure is an INFRA failure, not an out-of-scope signal. Log so the
+        # deploy-side transient (Groq timeout / rate-limit) is diagnosable, then degrade
+        # to a drhp_rag attempt so a valid question is never silently dropped. The
+        # subgraph's gate1/scrub/cite_check keep this fallback compliance-safe.
+        logger.warning(
+            "classify LLM hop failed for all models; falling back to %s",
+            DEFAULT_TOOL,
+            exc_info=True,
+        )
+        plan = [DEFAULT_TOOL]
 
     return {**state, "tool_plan": plan, "hops": hops}

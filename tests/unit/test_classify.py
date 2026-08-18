@@ -192,8 +192,11 @@ def test_run_increments_hops_by_exactly_one():
 # ---------------------------------------------------------------------------
 
 
-def test_run_all_models_fail_returns_empty_plan():
-    """If every retry + model fails, run() degrades to an empty plan — never raises (D-07c)."""
+def test_run_all_models_fail_falls_back_to_drhp_rag():
+    """Total LLM failure is an INFRA failure, NOT an out-of-scope signal — so run()
+    degrades to a drhp_rag document-Q&A attempt (never raises, never silently drops a
+    valid question). Regression guard for the live 'empty plans' bug: an errored /
+    timed-out classify call on the deploy was being routed straight to a refusal."""
     from agent.nodes import classify
 
     with patch(
@@ -202,8 +205,22 @@ def test_run_all_models_fail_returns_empty_plan():
         state = _base_state("What is the issue size?", hops=0)
         result = classify.run(state)  # must NOT raise
 
-    assert result["tool_plan"] == []
+    assert result["tool_plan"] == ["drhp_rag"]
     assert result["hops"] == 1
+
+
+def test_run_in_scope_but_no_tools_falls_back_to_drhp_rag():
+    """An in-scope, non-advice decision that names NO (valid) tool is incoherent — the
+    safest read of a valid question is 'answer from the document', so run() defaults to
+    drhp_rag rather than dropping it to a refusal."""
+    from agent.nodes import classify
+    from agent.nodes.classify import RoutingDecision
+
+    fake = RoutingDecision(tools=[], is_advice_seeking=False, is_out_of_scope=False)
+    with patch("agent.nodes.classify._llm_classify", return_value=fake):
+        result = classify.run(_base_state("What is the issue size?"))
+
+    assert result["tool_plan"] == ["drhp_rag"]
 
 
 def test_run_preserves_inherited_state_keys():
