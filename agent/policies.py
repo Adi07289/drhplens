@@ -290,7 +290,15 @@ by D-06; 21600s (6h) is a starting calibration point within the RESEARCH Open Q1
 # ~20-RPD tier, not an incident (RESEARCH Pitfall 7).
 # ---------------------------------------------------------------------------
 
-DEPLOY_DAILY_CAP: int = 4  # [ASSUMED — re-verify before deploy]. Sized from the re-verified ~20 RPD (NOT the stale 1500/day).
+import os as _os_cap  # noqa: E402 — local, for the provider-aware cap below
+
+# Provider-aware GLOBAL daily cap. Groq's free tier is far larger than Gemini's ~20 RPD,
+# so the shared cap can be much higher on Groq — the old Gemini-sized cap of 4 killed the
+# public chat after a handful of questions across ALL users. Gemini fallback keeps 4.
+_DAILY_CAP_BY_PROVIDER = {"gemini": 4, "groq": 200}
+DEPLOY_DAILY_CAP: int = _DAILY_CAP_BY_PROVIDER.get(
+    _os_cap.environ.get("LLM_PROVIDER", "groq").strip().lower(), 200
+)
 """
 App-wide daily cap on live chat queries that reach the Gemini synthesis model
 (D-12 / T-6.3-DoS). The value is sized from the CURRENT Gemini free-tier RPD, NOT
