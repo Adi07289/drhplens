@@ -2,21 +2,21 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-last_updated: "2026-08-14T00:00:00.000Z"
-last_activity: 2026-08-14
+status: completed
+last_updated: "2026-08-18T17:03:23.293Z"
+last_activity: 2026-08-13
 progress:
   total_phases: 8
-  completed_phases: 5
+  completed_phases: 8
   total_plans: 56
-  completed_plans: 53
-  percent: 64
+  completed_plans: 56
+  percent: 100
 ---
 
 # STATE: DRHPLens
 
-**Last Updated:** 2026-07-31
-**Last activity:** 2026-08-13
+**Last Updated:** 2026-08-18
+**Last activity:** 2026-08-18 - Completed quick task 260818-w12: fix live classifier returning empty plans
 
 ## Project Reference
 
@@ -313,4 +313,5 @@ Phase 5 Wave 3 feature layer (05-04) COMPLETE — the leakage-gated issue-struct
 | Quick ID | Slug | Requirement | Outcome |
 |----------|------|-------------|---------|
 | 260723-00e | cite-check-numeric-grounding | EVAL-03 (Job 2) | `agent/nodes/cite_check.py` decouple — numeric grounding is no longer gated behind the prose `token_set_ratio` (concise millions-denominated answers scored 16–49 vs the 52 gate → genuinely-grounded numbers marked ungrounded → `numeric_faithfulness` 0.08). Now: `numbers_grounded AND (claim_has_numbers OR prose_grounded)`; prose gate stays the antibody for no-number claims; P2 number-swap intact. TDD, +4 tests, **506 pass / 0 regressions**. **EVAL-03 STILL RED** (live throttled 50-Q run = 0.10): residual failure is now the broken section/page-anchoring (one 273,590-token "Preamble" section → wrong/empty cited windows: `{91,95907,56603}`, `set()`), NOT cite_check. Follow-up DONE same session: torch-free page-anchored re-parse (`pipelines.ingest.parse_drhp_pages`, PyMuPDF+pdfplumber, Docling can't run in-env) + Qdrant re-ingest = **1,885 single-page-anchored chunks** (was giant `(0,284)` spans); grounding materially improved (num-001/003/004/006/008 now ground). **EVAL-03 STILL not green** — full 50-Q re-measurement blocked by Gemini free-tier rate limits (~12/50 complete/run); residuals = retrieval/citation precision (number in index but not in cited chunk) + derived-number gold questions that can't ground by design. Then (2026-07-24): gold-set curated (24 disclosed / 26 derived, `NUMERIC_EVAL_SPLIT.md`, gate repointed) + **citation repair** added (`repair_citations` in cite_check re-anchors a mis-cited numeric claim to the retrieved chunk that actually holds its numbers; never repairs a hallucination; +3 TDD tests, 510 pass). Then gate1 recalibrated (0.0 refused answerable DRHP Qs — bge-reranker emits negative logits for relevant passages; topical-OOS scores higher so gate1 can't gate OOS → LLM+cite_check do; set to -3.0, empty→-inf). **Disclosed gate 0.08→0.21→0.79→0.917** (22/24, 0 refusals/crashes). STILL < 0.95: num-030 (NOT retrieval — the 75% chunk IS in top-5; the LLM over-answers with anchor/MF numbers not in context, an answer-quality issue) + num-033 (DEFECTIVE gold question — asks a computed implied value, gold is the price 390; flagged for human review, NOT gamed). ⚠️ Pre-existing honesty gap found in refusal verification: OOS swiggy-012 (Zomato listing cmp) answered not refused (scores +1.23, passes gate1 at both 0.0 and -3.0 — orthogonal to the calib); needs an OOS-relevance check before launch (P1/TRUST-04). Then num-033 reclassified disclosed→derived (human-approved; defective computed-value Q, redundant w/ num-005). **✅ EVAL-03 GATE PASSES: numeric_faithfulness = 0.957 ≥ 0.95** (disclosed 22/23, 0 crashes; official `eval/reports/2026-07-25-numeric-gate.md`). Also added a deterministic OOS refusal guard (swiggy-012 now refuses, live-verified). Remaining honest follow-ups (not gate blockers): num-030 (LLM over-answers), general-case OOS relevance judge. Detail: `.planning/quick/260723-00e-cite-check-numeric-grounding/`. |
+| 260818-w12 | classify-empty-plan-fallback | Live bug (classifier empty plans) | **Root cause:** `agent/nodes/classify.py::run()` `except Exception: plan = []` treated an LLM **infra** failure (Groq gpt-oss timeout/transient on the deploy) identically to a deliberate out-of-scope refusal — an empty `tool_plan` makes `supervisor.route()` skip every tool → `synthesize` Branch 4 → `_educational_refusal()`, so every valid question was silently dropped whenever the classify call errored/timed out. The exception was swallowed with zero signal (invisible). **Proof it's the failure branch:** local classify empty-plan rate = **0/30** on valid questions (10 DRHP Qs × 3, both `gpt-oss-20b/120b`); early `max_tokens=256` truncation theory **disproven** (`finish_reason='stop'`, valid JSON). **Fix (defense-in-depth):** new `DEFAULT_TOOL="drhp_rag"`; `except` branch now `logger.warning(exc_info=True)` + falls back to `[drhp_rag]` (instrument + never drop a valid question); in-scope decision that clamps to no tool also defaults to `[drhp_rag]`; deliberate advice/OOS path **unchanged** (`[]`). Subgraph gate1/scrub/cite_check keep the fallback compliance-safe. **Verify:** TDD red→green, **36 pass**; E2E (real Groq+Qdrant) forced classify failure now runs the full drhp_rag pipeline (`tool_calls=1`, 50 chunks, grounded answer) vs. old `tool_calls=0` + instant refusal. Not yet pushed/deployed. Detail: `.planning/quick/260818-w12-classify-empty-plan-fallback/`. |
 | 260731-gn7 | gate-hanging-live-integration-tests | Pre-`/gsd-ship` (6.1) | Isolated & fixed the >2 min pytest wedge. Live tests were gated on **env-var presence**, but the deepeval plugin + langfuse SDK **auto-load `.env`**, so a `.env` on disk (dev / `/gsd-ship` / CI) made them always-live. Confirmed: stripping shell env vars did NOT stop them — `test_agent_e2e.py` still ran live **72 s** (Qdrant+Gemini; `test_gold_set_smoke_subset` = 3 sequential invokes → full gold set >2 min); `test_langfuse_trace.py` added **~15 s `atexit` flush** to cloud.langfuse.com at teardown (uncovered by the per-test signal timeout). Fix: gated `test_agent_e2e.py` behind `--run-eval` (autouse fixture) and the 2 live langfuse-client tests behind `--run-langfuse` (mirroring the existing live-attach guard) — the CLI-flag pattern `.env` auto-load can't defeat (same as `NSE_LIVE_SMOKE`). Verified quota-free (live agent NOT run): full suite under `.env`, no flags = **605 passed, 17 skipped, 2 xfailed in 74 s, no wedge**; the two files skip in 0.46 s, teardown flush gone; `--collect-only` = 624 tests, 0 errors. Resolves the `/gsd-ship` "ISOLATE THE HANGING LIVE TEST" blocker. Detail: `.planning/quick/260731-gn7-gate-hanging-live-integration-tests/`. |
