@@ -117,7 +117,7 @@ def _educational_refusal() -> RefusalResponse:
 
     return RefusalResponse(
         reason="unsupported_claim",
-        explanation=ui_copy.REFUSAL_BANNED_TOKEN_COPY,
+        explanation=ui_copy.REFUSAL_NO_ANSWER_COPY,
         reformulation_suggestions=[],
     )
 

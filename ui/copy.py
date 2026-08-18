@@ -128,6 +128,16 @@ REFUSAL_BANNED_TOKEN_COPY: str = (
     "Try a more specific question about what the DRHP says."
 )
 
+REFUSAL_NO_ANSWER_COPY: str = (
+    "I went through this DRHP but couldn't find an answer to that. "
+    "DRHPLens answers factual questions about what the prospectus states — "
+    "try asking about a specific section, figure, or disclosure in it."
+)
+"""Shown when the question maps to no tool plan (out-of-scope / unroutable). An honest
+'couldn't find it' — a mis-routed FACTUAL question is not advice-seeking, so it must
+never be told it implied investment advice. Auto-scrubbed at import like every copy
+string here; non-advisory, so it also fits genuine advice-bait."""
+
 # ---------------------------------------------------------------------------
 # Fused multi-tool answer (Phase 6.3 · C1/C2/C3 · D-03/D-04/D-08)
 #
