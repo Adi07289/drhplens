@@ -32,6 +32,7 @@ purely as a last-resort crash backstop.
 """
 from __future__ import annotations
 
+import logging
 import time
 import uuid
 
@@ -56,6 +57,8 @@ from agent.schemas import FusedAnswer, RefusalResponse
 from agent.state import GraphState
 from agent.supervisor_state import SupervisorState
 from agent.tools import query_forecast, query_peers, query_redflags
+
+logger = logging.getLogger(__name__)
 
 # The GraphState channels the embedded subgraph recognizes — used to hand the
 # subgraph ONLY its own keys (the supervisor-only keys are re-merged after).
@@ -85,6 +88,14 @@ def _drhp_rag_node(state: SupervisorState) -> SupervisorState:
     try:
         sub_out = DRHP_RAG_SUBGRAPH.invoke(sub_input)
     except Exception:  # noqa: BLE001 — never crash the supervisor on subgraph infra failure
+        # Log the REAL exception (full traceback) so a deploy-side failure inside the
+        # subgraph — Qdrant unreachable / missing QDRANT_URL, a fastembed model-download
+        # error, an OOM — is diagnosable instead of being fully masked by the generic
+        # user-facing refusal below. Mirrors the classify-hop instrumentation.
+        logger.warning(
+            "drhp_rag subgraph failed; degrading to infrastructure_error refusal",
+            exc_info=True,
+        )
         sub_out = {
             "refusal": RefusalResponse(
                 reason="infrastructure_error",
