@@ -22,6 +22,19 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
+# ── Secrets → env ────────────────────────────────────────────────────────────
+# Streamlit Community Cloud exposes secrets via st.secrets, but the agent/storage
+# layers read os.environ (fed locally by .env via python-dotenv). Mirror st.secrets
+# into os.environ (setdefault: never override a real env var) so the app runs
+# unchanged on Streamlit Cloud, HF Spaces, or locally.
+import os  # noqa: E402
+
+try:
+    for _k, _v in st.secrets.items():
+        os.environ.setdefault(_k, str(_v))
+except Exception:
+    pass  # no secrets.toml present (local dev uses .env)
+
 from app.util.css_loader import load_global_css  # noqa: E402
 from compliance.disclaimer_text import MODAL_HEADING  # noqa: E402
 from data.catalogue_loader import load_catalogue  # noqa: E402

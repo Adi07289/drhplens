@@ -1,37 +1,27 @@
-# DRHPLens — runtime dependencies for HF Spaces deployment
-# Keep in sync with pyproject.toml [project.dependencies]
-# HF Spaces reads this file directly; do not add dev-only packages here.
+# DRHPLens — RUNTIME (serve) dependencies. Deployed straight from this file
+# (Streamlit Community Cloud / HF Spaces). Keep in sync with pyproject.toml
+# [project.dependencies] — enforced by scripts/_check_dep_sync.py.
+#
+# This is the SERVE set only: what app.py + the agent + render surfaces import at
+# runtime. Ingest/forecast/market-crawl/eval-parse heavies (docling+torch, the
+# Phase-5 ML stack, market-data crawlers, the legacy sentence-transformers/llama-
+# index paths) live in pyproject [ingest] and are NOT installed on the deploy —
+# they removed ~2 GB of torch from the image. Install them locally with:
+#   pip install -e ".[ingest]"
 
 # Agent orchestration
 langgraph>=1.2,<2
 
-# RAG ingestion + query engines
-llama-index>=0.14,<0.15
-llama-index-vector-stores-qdrant
-llama-index-embeddings-huggingface
-llama-index-llms-google-genai
-llama-index-llms-groq
-
-# PDF parsing
-docling>=2.95,<3
-pdfplumber>=0.11
-pymupdf>=1.27
-
 # Vector store
 qdrant-client>=1.18,<2
 
-# Embeddings + reranker
-# sentence-transformers/FlagEmbedding = the torch-based bge-m3 + bge-reranker
-# (Linux/production path); fastembed (ONNX, no torch) is the Intel-macOS fallback
-# tools/embedder.py + tools/reranker.py use where torch 2.2.2 clashes with NumPy 2.x.
-sentence-transformers>=3
-FlagEmbedding
+# Embeddings + reranker (ONNX, no torch — tools/embedder.py + tools/reranker.py)
 fastembed>=0.8
 
-# Gemini SDK — the agent nodes import `from google import genai` directly
+# LLM clients: Groq (default) via the OpenAI-compatible endpoint; Gemini (fallback).
+# agent/llm.py imports `from openai import OpenAI` and `from google import genai`.
+openai>=1.40
 google-genai>=1.0
-
-# Structured LLM outputs
 instructor>=1.15,<2
 
 # Schemas + validation
@@ -43,14 +33,9 @@ streamlit>=1.36
 # Observability
 langfuse<3
 
-# Evals — deepeval = the faithfulness LLM-judge (native GeminiModel judge, no OpenAI
-# dep); it stays in the runtime set (the REPORTED faithfulness lane the release gate
-# references). langfuse is pinned <3 above because v4 is a full OTEL rewrite that still
-# needs the `langchain` package (deliberately NOT added).
-# NOTE (WR-03 / D-14): `ragas` is deliberately NOT here — it is heavy on HF Spaces and
-# is an OPTIONAL offline cross-check only, NEVER imported in CI / the release gate. It
-# lives in the pyproject `[eval]` optional-extras group (install via `pip install -e
-# ".[eval]"`), keeping the Space image lean. See scripts/_check_dep_sync.py.
+# Evals — deepeval = the faithfulness LLM-judge (native GeminiModel judge, no torch,
+# no OpenAI). Stays in the runtime set (the REPORTED faithfulness lane; disclosed WR-03
+# intent). ragas stays in the pyproject [eval] extra (heavy, offline-only).
 deepeval>=4.1,<5
 
 # Utilities
@@ -61,33 +46,9 @@ typer
 rich
 tiktoken
 
-# YAML — committed data files (the FAILGAL-01 /failures gallery reads
-# eval/failures/failures.yaml). Declared explicitly so the render surface never breaks
-# if a transitive parent is pruned (06.2-RESEARCH Pitfall 5).
+# YAML — the /failures gallery reads eval/failures/failures.yaml; declared explicitly
+# so the render surface never breaks if a transitive parent is pruned.
 pyyaml>=6,<7
 
-# Cite-check fuzzy matching (rapidfuzz — Pattern 3 per 01-RESEARCH.md)
+# Cite-check fuzzy matching
 rapidfuzz
-
-# Indian market data (Phase 4 — peer multiples + historical panel). yfinance pinned
-# to 1.5.1 (major bump, smoke-tested in 04-01); jugaad-data is the nsepy successor for
-# NSE; requests-cache throttles screener/NSE fetches.
-yfinance==1.5.1
-requests-cache==1.3.3
-jugaad-data==0.33.1
-
-# ML / forecasting (Phase 5). xgboost native quantile loss (reg:quantileerror, 2.0+);
-# mapie 1.x conformal (ConformalizedQuantileRegressor); sklearn 1.5+ estimators/metrics;
-# mlflow 2.x local experiment tracking; matplotlib for calibration plots; shap for the
-# model-card feature attributions.
-xgboost>=2.0
-mapie>=1.4,<2
-scikit-learn>=1.5
-mlflow>=2.14
-matplotlib>=3.8
-shap>=0.46
-
-# NSE live crawl (Source-A historical universe) — `nse` (NseIndiaApi), approved at the
-# 05-11 blocking-human legitimacy checkpoint (Sigstore-attested, PyPI Trusted
-# Publishing, GPL-3.0, github.com/BennyThadikaran/NseIndiaApi).
-nse>=3.1
