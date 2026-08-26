@@ -1,15 +1,41 @@
 from __future__ import annotations
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 
+from agent.supervisor import invoke_supervisor
 from pipelines.forecast import load_forecast
 
 app = FastAPI(title="DRHPLens API", version="0.1.0")
 
 
+class AskRequest(BaseModel):
+    question: str
+    drhp_id: str
+
+
+# Answer priority mirrors ui/snapshot_chat.py: fused > grounded > refusal.
+_ANSWER_KEYS = (
+    ("fused_answer", "fused"),
+    ("grounded_answer", "grounded"),
+    ("refusal", "refusal"),
+)
+
+
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok"}
+
+
+@app.post("/ask")
+def ask(req: AskRequest) -> dict:
+    state = invoke_supervisor(req.question, req.drhp_id)
+    for state_key, kind in _ANSWER_KEYS:
+        val = state.get(state_key)
+        if val is not None:
+            answer = val.model_dump() if hasattr(val, "model_dump") else val
+            return {"kind": kind, "answer": answer}
+    raise HTTPException(status_code=502, detail="agent returned no answer")
 
 
 @app.get("/forecast/{drhp_id}")
