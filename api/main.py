@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from agent.supervisor import invoke_supervisor
 from pipelines.forecast import load_forecast
+from pipelines.redflag import load_redflag
 
 app = FastAPI(title="DRHPLens API", version="0.1.0")
 
@@ -50,3 +51,15 @@ def forecast(drhp_id: str) -> dict:
         return {"state": "not_found", "record": None}
     state = "abstain" if getattr(record, "abstain", False) else "covered"
     return {"state": state, "record": record.model_dump()}
+
+
+@app.get("/redflags/{drhp_id}")
+def redflags(drhp_id: str) -> dict:
+    # load_redflag raises ValueError for ids outside the catalogue allow-list.
+    try:
+        record = load_redflag(drhp_id)
+    except (ValueError, FileNotFoundError):
+        return {"state": "not_found", "record": None}
+    if record is None:
+        return {"state": "not_found", "record": None}
+    return {"state": "ok", "record": record.model_dump()}
