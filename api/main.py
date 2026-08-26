@@ -40,7 +40,12 @@ def ask(req: AskRequest) -> dict:
 
 @app.get("/forecast/{drhp_id}")
 def forecast(drhp_id: str) -> dict:
-    record = load_forecast(drhp_id)
+    # load_forecast raises ValueError for ids outside the catalogue allow-list
+    # (path-traversal guard). Treat unknown / uncached ids as "not_found".
+    try:
+        record = load_forecast(drhp_id)
+    except (ValueError, FileNotFoundError):
+        return {"state": "not_found", "record": None}
     if record is None:
         return {"state": "not_found", "record": None}
     state = "abstain" if getattr(record, "abstain", False) else "covered"

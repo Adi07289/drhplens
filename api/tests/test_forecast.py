@@ -31,4 +31,17 @@ def test_forecast_covered(monkeypatch):
 
 def test_forecast_abstain(monkeypatch):
     monkeypatch.setattr(apimod, "load_forecast", lambda drhp_id: _fake_record(True))
-    assert client.get("/forecast/swiggy").json()["state"] == "abstain"
+    assert client.get("/forecast/swiggy_2024_11").json()["state"] == "abstain"
+
+
+def test_forecast_unknown_id_is_not_found(monkeypatch):
+    """load_forecast raises ValueError for ids outside the catalogue allow-list
+    (path-traversal guard) — the endpoint must translate that to not_found, not 500."""
+
+    def _raise(drhp_id):
+        raise ValueError("Unknown drhp_id; refusing to form a cache path.")
+
+    monkeypatch.setattr(apimod, "load_forecast", _raise)
+    r = client.get("/forecast/nope")
+    assert r.status_code == 200
+    assert r.json() == {"state": "not_found", "record": None}
