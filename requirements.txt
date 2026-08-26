@@ -52,3 +52,5 @@ pyyaml>=6,<7
 
 # Cite-check fuzzy matching
 rapidfuzz
+fastapi>=0.115
+uvicorn[standard]>=0.30
