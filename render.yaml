@@ -1,15 +1,41 @@
+# Render Blueprint — DRHPLens FastAPI (the thin serve API over the brain).
+# Builds from requirements.txt (SERVE deps only: fastembed/ONNX, no torch), so it
+# fits Render's free tier. Secrets are marked `sync: false` — set them in the
+# Render dashboard (Environment tab); they are NEVER committed here.
+#
+# Deploy: Render dashboard → New → Blueprint → connect github.com/Adi07289/drhplens
+# → pick branch `api-slice1` → it reads this file → then paste the secrets below.
 services:
   - type: web
     name: drhplens-api
     runtime: python
+    plan: free
+    branch: api-slice1
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
     envVars:
-      - key: GROQ_API_KEY
+      # Pin Python 3.11 (the stack avoids 3.13 until LlamaIndex/Docling validate).
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      # Remote Qdrant can be slow on a cold cluster — give the client headroom.
+      - key: QDRANT_TIMEOUT
+        value: "60"
+      # ---- secrets: set in the Render dashboard, not in this file ----
+      - key: LLM_PROVIDER          # e.g. "groq"
         sync: false
-      - key: QDRANT_URL
+      - key: GROQ_API_KEY          # generation (default)
+        sync: false
+      - key: GEMINI_API_KEY        # LLM fallback
+        sync: false
+      - key: QDRANT_URL            # Qdrant Cloud cluster URL
         sync: false
       - key: QDRANT_API_KEY
         sync: false
-      - key: QDRANT_TIMEOUT
-        value: "30"
+      # ---- optional observability (app degrades gracefully if unset) ----
+      - key: LANGFUSE_HOST
+        sync: false
+      - key: LANGFUSE_PUBLIC_KEY
+        sync: false
+      - key: LANGFUSE_SECRET_KEY
+        sync: false
