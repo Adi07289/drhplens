@@ -1,0 +1,25 @@
+# Keep the Cloud Run build context lean — exclude local envs, caches, VCS,
+# experiment logs, planning docs, and the Streamlit/eval heavies not needed by
+# the FastAPI serve. Runtime code (agent/ pipelines/ tools/ api/ compliance/)
+# and committed data (data/) ARE included.
+.git
+.gitignore
+.venv
+venv
+env
+**/__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.superpowers
+mlruns
+docs
+*.egg-info
+.DS_Store
+.env
+.env.*
+!.env.example
+node_modules
