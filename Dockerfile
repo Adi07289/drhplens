@@ -13,6 +13,13 @@ WORKDIR /app
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Pre-download the fastembed embedder + reranker at BUILD time — Cloud Run's
+# runtime network can't fetch them from HuggingFace (models fail with "Could not
+# load ... from any source"). Baked into the image; the app finds them at runtime
+# via FASTEMBED_CACHE_DIR (read by tools/embedder.py + tools/reranker.py).
+ENV FASTEMBED_CACHE_DIR=/opt/fastembed
+RUN python -c "from fastembed import TextEmbedding; from fastembed.rerank.cross_encoder import TextCrossEncoder; TextEmbedding('BAAI/bge-small-en-v1.5', cache_dir='/opt/fastembed'); TextCrossEncoder('Xenova/ms-marco-MiniLM-L-6-v2', cache_dir='/opt/fastembed')"
+
 # App code + committed data caches (see .dockerignore for exclusions).
 COPY . .
 
