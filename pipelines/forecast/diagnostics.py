@@ -179,20 +179,16 @@ def empirical_coverage(oos_df: pd.DataFrame) -> float:
     return global_metrics(oos_df)["coverage_empirical"]
 
 
-def calibration_plot(oos_df: pd.DataFrame, out_path: str | Path) -> Path:
-    """Write a reliability diagram (nominal vs empirical coverage) to ``out_path``.
+def _calibration_curve(oos_df: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
+    """The reliability curve ``(nominal, empirical)`` computed ONCE — the single seam
+    BOTH ``calibration_plot`` (which plots it) and ``calibration_points`` (which
+    serializes it to data) call, so the committed PNG and ``card_plots.json`` can
+    never silently desync (mirrors how ``_lean_importances`` backs the SHAP pair).
 
-    Across the ``QUANTILE_GRID`` (0.05..0.95, fit purely for the diagnostic) the
-    empirical central-interval coverage is plotted against the nominal level with
-    the perfect-calibration diagonal, and the plot is ANNOTATED with the REAL 80%
-    empirical coverage of the committed band (``empirical_coverage`` — never
-    0.80-rounded, P17). Returns the written ``Path``.
-    """
-    import matplotlib
-
-    matplotlib.use("Agg")  # headless — no display, CI-safe
-    import matplotlib.pyplot as plt
-    from scipy.stats import norm
+    Grid-derived (A8): over ``QUANTILE_GRID`` the empirical central-interval coverage
+    is measured against the band-implied per-row sigma (``_band_sigma``); rows are the
+    ``_scored_band`` set (abstain / no-band rows already dropped)."""
+    from scipy.stats import norm  # lazy
 
     scored = _scored_band(oos_df)
     actual = scored["actual"].to_numpy(dtype=float)
@@ -207,7 +203,24 @@ def calibration_plot(oos_df: pd.DataFrame, out_path: str | Path) -> Path:
         z = float(norm.ppf((1.0 + c) / 2.0))
         inside = (actual >= median - z * sigma) & (actual <= median + z * sigma)
         empirical[i] = float(np.nanmean(inside.astype(float)))
+    return nominal, empirical
 
+
+def calibration_plot(oos_df: pd.DataFrame, out_path: str | Path) -> Path:
+    """Write a reliability diagram (nominal vs empirical coverage) to ``out_path``.
+
+    Across the ``QUANTILE_GRID`` (0.05..0.95, fit purely for the diagnostic) the
+    empirical central-interval coverage is plotted against the nominal level with
+    the perfect-calibration diagonal, and the plot is ANNOTATED with the REAL 80%
+    empirical coverage of the committed band (``empirical_coverage`` — never
+    0.80-rounded, P17). Returns the written ``Path``.
+    """
+    import matplotlib
+
+    matplotlib.use("Agg")  # headless — no display, CI-safe
+    import matplotlib.pyplot as plt
+
+    nominal, empirical = _calibration_curve(oos_df)  # shared seam (parity with the export)
     cov80 = empirical_coverage(oos_df)  # the REAL committed-band 80% coverage (P17)
 
     fig, ax = plt.subplots(figsize=(5.0, 5.0), dpi=120)
@@ -243,26 +256,36 @@ def calibration_plot(oos_df: pd.DataFrame, out_path: str | Path) -> Path:
 def calibration_points(oos_df: pd.DataFrame) -> list[dict[str, float]]:
     """The reliability-diagram points (nominal vs empirical) as DATA, not a plot.
 
-    Identical math to ``calibration_plot`` (grid-derived, A8) so a native web chart
-    matches the committed PNG. Returns one row per ``QUANTILE_GRID`` level."""
+    A thin serializer over the SHARED ``_calibration_curve`` seam (the same seam the
+    PNG builder plots), so a native web chart matches the committed PNG by
+    construction. Returns one row per ``QUANTILE_GRID`` level (rounded to 4 dp)."""
+    nominal, empirical = _calibration_curve(oos_df)
+    return [
+        {"nominal": round(float(n), 4), "empirical": round(float(e), 4)}
+        for n, e in zip(nominal, empirical)
+    ]
+
+
+def _pit_array(oos_df: pd.DataFrame) -> np.ndarray:
+    """The finite PIT values computed ONCE — the single seam BOTH ``pit_histogram``
+    (which ``ax.hist``s it) and ``pit_bins`` (which ``np.histogram``s it + derives the
+    uniform level) call, so the committed PNG and ``card_plots.json`` can never
+    silently desync.
+
+    ``PIT_i = Phi((actual_i - median_i) / sigma_i)`` over the ``_scored_band`` rows,
+    using the band-implied per-row sigma (``_band_sigma``, the grid working assumption
+    A8); rows whose sigma is NaN (zero/negative width) drop out."""
     from scipy.stats import norm  # lazy
 
     scored = _scored_band(oos_df)
     actual = scored["actual"].to_numpy(dtype=float)
+    median = scored["median"].to_numpy(dtype=float)
     low = scored["low"].to_numpy(dtype=float)
     high = scored["high"].to_numpy(dtype=float)
-    median = scored["median"].to_numpy(dtype=float)
     sigma = _band_sigma(low, high)
 
-    out: list[dict[str, float]] = []
-    for c in np.asarray(QUANTILE_GRID, dtype=float):
-        z = float(norm.ppf((1.0 + c) / 2.0))
-        inside = (actual >= median - z * sigma) & (actual <= median + z * sigma)
-        out.append(
-            {"nominal": round(float(c), 4),
-             "empirical": round(float(np.nanmean(inside.astype(float))), 4)}
-        )
-    return out
+    pit = norm.cdf((actual - median) / sigma)
+    return pit[~np.isnan(pit)]
 
 
 def pit_histogram(oos_df: pd.DataFrame, out_path: str | Path) -> Path:
@@ -277,17 +300,8 @@ def pit_histogram(oos_df: pd.DataFrame, out_path: str | Path) -> Path:
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
-    from scipy.stats import norm
 
-    scored = _scored_band(oos_df)
-    actual = scored["actual"].to_numpy(dtype=float)
-    median = scored["median"].to_numpy(dtype=float)
-    low = scored["low"].to_numpy(dtype=float)
-    high = scored["high"].to_numpy(dtype=float)
-    sigma = _band_sigma(low, high)
-
-    pit = norm.cdf((actual - median) / sigma)
-    pit = pit[~np.isnan(pit)]
+    pit = _pit_array(oos_df)  # shared seam (parity with the export)
 
     bins = 10
     fig, ax = plt.subplots(figsize=(5.0, 4.2), dpi=120)
@@ -317,19 +331,11 @@ def pit_histogram(oos_df: pd.DataFrame, out_path: str | Path) -> Path:
 def pit_bins(oos_df: pd.DataFrame, bins: int = 10) -> dict:
     """The PIT histogram as DATA: per-bin counts + the uniform reference level.
 
-    ``uniform_level`` is ``scored_n / bins`` — the flat line a calibrated model sits
-    on (matches the ``pit_histogram`` axhline)."""
-    from scipy.stats import norm  # lazy
-
-    scored = _scored_band(oos_df)
-    actual = scored["actual"].to_numpy(dtype=float)
-    median = scored["median"].to_numpy(dtype=float)
-    low = scored["low"].to_numpy(dtype=float)
-    high = scored["high"].to_numpy(dtype=float)
-    sigma = _band_sigma(low, high)
-
-    pit = norm.cdf((actual - median) / sigma)
-    pit = pit[~np.isnan(pit)]
+    A thin serializer over the SHARED ``_pit_array`` seam (the same finite PIT values
+    the PNG builder histograms), so the data matches the committed PNG by
+    construction. ``uniform_level`` is ``scored_n / bins`` — the flat line a calibrated
+    model sits on (matches the ``pit_histogram`` axhline)."""
+    pit = _pit_array(oos_df)
     counts, _ = np.histogram(pit, bins=bins, range=(0.0, 1.0))
     uniform = float(pit.size / bins) if pit.size else 0.0
     return {"counts": [int(c) for c in counts],
