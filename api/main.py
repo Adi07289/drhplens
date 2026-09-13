@@ -4,6 +4,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from agent.supervisor import invoke_supervisor
+from api.methodology import load_methodology
 from pipelines.forecast import load_forecast
 from pipelines.peers import load_peers
 from pipelines.redflag import load_redflag
@@ -76,3 +77,10 @@ def peers(drhp_id: str) -> dict:
     if record is None:
         return {"state": "not_found", "record": None}
     return {"state": "ok", "record": record.model_dump()}
+
+
+@app.get("/methodology")
+def methodology() -> dict:
+    # Global (no drhp_id): the model card is one model over the whole panel; the
+    # RAG eval is per-IPO inside the eval block. Render-only artifact read.
+    return load_methodology()
