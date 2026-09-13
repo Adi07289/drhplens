@@ -1,0 +1,138 @@
+{
+  "calibration": [
+    {
+      "nominal": 0.05,
+      "empirical": 0.1873
+    },
+    {
+      "nominal": 0.1,
+      "empirical": 0.2703
+    },
+    {
+      "nominal": 0.15,
+      "empirical": 0.3357
+    },
+    {
+      "nominal": 0.2,
+      "empirical": 0.4064
+    },
+    {
+      "nominal": 0.25,
+      "empirical": 0.4585
+    },
+    {
+      "nominal": 0.3,
+      "empirical": 0.5133
+    },
+    {
+      "nominal": 0.35,
+      "empirical": 0.5583
+    },
+    {
+      "nominal": 0.4,
+      "empirical": 0.6087
+    },
+    {
+      "nominal": 0.45,
+      "empirical": 0.6546
+    },
+    {
+      "nominal": 0.5,
+      "empirical": 0.6961
+    },
+    {
+      "nominal": 0.55,
+      "empirical": 0.735
+    },
+    {
+      "nominal": 0.6,
+      "empirical": 0.7633
+    },
+    {
+      "nominal": 0.65,
+      "empirical": 0.7986
+    },
+    {
+      "nominal": 0.7,
+      "empirical": 0.8198
+    },
+    {
+      "nominal": 0.75,
+      "empirical": 0.8322
+    },
+    {
+      "nominal": 0.8,
+      "empirical": 0.8525
+    },
+    {
+      "nominal": 0.85,
+      "empirical": 0.8719
+    },
+    {
+      "nominal": 0.9,
+      "empirical": 0.8869
+    },
+    {
+      "nominal": 0.95,
+      "empirical": 0.9117
+    }
+  ],
+  "pit": {
+    "counts": [
+      24,
+      41,
+      109,
+      143,
+      294,
+      166,
+      86,
+      66,
+      60,
+      143
+    ],
+    "uniform_level": 113.2,
+    "bins": 10
+  },
+  "shap": [
+    {
+      "feature": "trailing_listing_gain",
+      "mean_abs": 0.08153
+    },
+    {
+      "feature": "issue_size_cr",
+      "mean_abs": 0.0
+    },
+    {
+      "feature": "price_band_width_pct",
+      "mean_abs": 0.0
+    },
+    {
+      "feature": "ofs_fraction",
+      "mean_abs": 0.0
+    },
+    {
+      "feature": "promoter_dilution_pct",
+      "mean_abs": 0.0
+    },
+    {
+      "feature": "nifty_mom_3m",
+      "mean_abs": 0.0
+    },
+    {
+      "feature": "india_vix",
+      "mean_abs": 0.0
+    },
+    {
+      "feature": "red_flag_count",
+      "mean_abs": 0.0
+    },
+    {
+      "feature": "rpt_intensity",
+      "mean_abs": 0.0
+    },
+    {
+      "feature": "anchor_book_cr",
+      "mean_abs": 0.0
+    }
+  ]
+}

@@ -38,12 +38,19 @@ from pipelines.forecast.card import (
     CardInputs,
     build_model_card,
 )
-from pipelines.forecast.diagnostics import shap_summary
+from pipelines.forecast.diagnostics import (
+    calibration_points,
+    pit_bins,
+    shap_importances,
+    shap_summary,
+)
 from pipelines.forecast.interpret import feature_population, fit_median_model
 
 _REPO = Path(__file__).resolve().parents[1]
 _PANEL = _REPO / "data" / "historical" / "ipo_panel.parquet"
+_OOS = _REPO / "data" / "forecasts" / "_gate" / "oos_real.parquet"
 _CARD_JSON = MODEL_CARD_DIR / "card_data.json"
+_CARD_PLOTS_JSON = MODEL_CARD_DIR / "card_plots.json"
 
 # The seed caveat this script retires (SHAP is now regenerated for real).
 _RETIRED_LIMITATION_TITLE = "SHAP plot pending real regeneration"
@@ -65,6 +72,17 @@ _ONE_FEATURE_LIMITATION = {
 }
 
 
+def build_card_plots(panel: "pd.DataFrame", oos_df: "pd.DataFrame") -> dict:
+    """The native-chart data mirror of the three committed PNGs (calibration / PIT /
+    SHAP). Calibration + PIT come from the OOS frame; SHAP from the fitted median model."""
+    median_model, x_fit = fit_median_model(panel)
+    return {
+        "calibration": calibration_points(oos_df),
+        "pit": pit_bins(oos_df),
+        "shap": shap_importances(median_model, x_fit, feature_names=list(x_fit.columns)),
+    }
+
+
 def main() -> None:
     if not _PANEL.is_file():
         raise SystemExit(f"live panel missing: {_PANEL} — run the 05-11 crawl first.")
@@ -80,6 +98,13 @@ def main() -> None:
     )
     if not (shap_path.exists() and shap_path.stat().st_size > 0):
         raise SystemExit("shap.png was not written")
+
+    # 1b) The native-chart data mirror of calibration.png / pit.png / shap.png.
+    if not _OOS.is_file():
+        raise SystemExit(f"OOS frame missing: {_OOS} — run the live backtest first.")
+    oos_df = pd.read_parquet(_OOS)
+    plots_doc = build_card_plots(panel, oos_df)
+    _CARD_PLOTS_JSON.write_text(json.dumps(plots_doc, indent=2), encoding="utf-8")
 
     # 2) Reload the committed live card and apply the two honest disclosures.
     data = json.loads(_CARD_JSON.read_text(encoding="utf-8"))
@@ -101,6 +126,7 @@ def main() -> None:
 
     n_pop = sum(1 for v in populated.values() if v)
     print(f"regenerated model card: shap.png ({shap_path.stat().st_size} bytes), "
+          f"card_plots.json ({_CARD_PLOTS_JSON.stat().st_size} bytes), "
           f"{n_pop}/{len(populated)} lean features populated live, "
           f"{len(limitations)} limitations, gate_passed={data['gate_passed']}")
 
