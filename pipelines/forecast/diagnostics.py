@@ -240,6 +240,31 @@ def calibration_plot(oos_df: pd.DataFrame, out_path: str | Path) -> Path:
     return out
 
 
+def calibration_points(oos_df: pd.DataFrame) -> list[dict[str, float]]:
+    """The reliability-diagram points (nominal vs empirical) as DATA, not a plot.
+
+    Identical math to ``calibration_plot`` (grid-derived, A8) so a native web chart
+    matches the committed PNG. Returns one row per ``QUANTILE_GRID`` level."""
+    from scipy.stats import norm  # lazy
+
+    scored = _scored_band(oos_df)
+    actual = scored["actual"].to_numpy(dtype=float)
+    low = scored["low"].to_numpy(dtype=float)
+    high = scored["high"].to_numpy(dtype=float)
+    median = scored["median"].to_numpy(dtype=float)
+    sigma = _band_sigma(low, high)
+
+    out: list[dict[str, float]] = []
+    for c in np.asarray(QUANTILE_GRID, dtype=float):
+        z = float(norm.ppf((1.0 + c) / 2.0))
+        inside = (actual >= median - z * sigma) & (actual <= median + z * sigma)
+        out.append(
+            {"nominal": round(float(c), 4),
+             "empirical": round(float(np.nanmean(inside.astype(float))), 4)}
+        )
+    return out
+
+
 def pit_histogram(oos_df: pd.DataFrame, out_path: str | Path) -> Path:
     """Write the PIT / reliability histogram (grid-derived) to ``out_path``.
 
@@ -289,6 +314,77 @@ def pit_histogram(oos_df: pd.DataFrame, out_path: str | Path) -> Path:
     return out
 
 
+def pit_bins(oos_df: pd.DataFrame, bins: int = 10) -> dict:
+    """The PIT histogram as DATA: per-bin counts + the uniform reference level.
+
+    ``uniform_level`` is ``scored_n / bins`` — the flat line a calibrated model sits
+    on (matches the ``pit_histogram`` axhline)."""
+    from scipy.stats import norm  # lazy
+
+    scored = _scored_band(oos_df)
+    actual = scored["actual"].to_numpy(dtype=float)
+    median = scored["median"].to_numpy(dtype=float)
+    low = scored["low"].to_numpy(dtype=float)
+    high = scored["high"].to_numpy(dtype=float)
+    sigma = _band_sigma(low, high)
+
+    pit = norm.cdf((actual - median) / sigma)
+    pit = pit[~np.isnan(pit)]
+    counts, _ = np.histogram(pit, bins=bins, range=(0.0, 1.0))
+    uniform = float(pit.size / bins) if pit.size else 0.0
+    return {"counts": [int(c) for c in counts],
+            "uniform_level": round(uniform, 4),
+            "bins": int(bins)}
+
+
+def _lean_importances(
+    model, X, feature_names: list[str] | None = None
+) -> tuple[list[str], np.ndarray, str]:
+    """Shared mean-|SHAP| computation (falls back to XGBoost gain). Returns
+    (names, importances, method) — used by BOTH the PNG builder and the data export."""
+    if hasattr(X, "columns"):
+        feat = X.drop(columns=["available_at"], errors="ignore")
+        names = feature_names or list(feat.columns)
+        Xa = np.asarray(feat, dtype=float)
+    else:
+        Xa = np.asarray(X, dtype=float)
+        if Xa.ndim == 1:
+            Xa = Xa.reshape(1, -1)
+        names = feature_names or [f"f{i}" for i in range(Xa.shape[1])]
+
+    method = "mean |SHAP value|"
+    importances: np.ndarray | None = None
+    try:
+        import shap  # lazy
+
+        explainer = shap.TreeExplainer(model)
+        values = explainer.shap_values(Xa)
+        importances = np.abs(np.asarray(values, dtype=float)).mean(axis=0)
+    except Exception:  # noqa: BLE001 - SHAP unavailable / non-tree -> gain fallback
+        fi = getattr(model, "feature_importances_", None)
+        if fi is None and hasattr(model, "get_booster"):  # pragma: no cover
+            booster = model.get_booster()
+            raw = booster.get_score(importance_type="gain")
+            fi = [raw.get(f"f{i}", 0.0) for i in range(len(names))]
+        if fi is None:
+            fi = [0.0] * len(names)
+        importances = np.asarray(fi, dtype=float)
+        method = "XGBoost gain importance (SHAP unavailable)"
+
+    importances = np.asarray(importances, dtype=float).reshape(-1)
+    k = min(len(names), importances.size)
+    return list(names[:k]), importances[:k], method
+
+
+def shap_importances(model, X, feature_names: list[str] | None = None) -> list[dict]:
+    """Mean-|SHAP| importance per feature as DATA, sorted descending (for the web bar chart)."""
+    names, importances, _ = _lean_importances(model, X, feature_names)
+    rows = [{"feature": str(n), "mean_abs": round(float(v), 6)}
+            for n, v in zip(names, importances)]
+    rows.sort(key=lambda r: r["mean_abs"], reverse=True)
+    return rows
+
+
 def shap_summary(
     model,
     X,
@@ -309,40 +405,9 @@ def shap_summary(
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    if hasattr(X, "columns"):
-        feat = X.drop(columns=["available_at"], errors="ignore")
-        names = feature_names or list(feat.columns)
-        Xa = np.asarray(feat, dtype=float)
-    else:
-        Xa = np.asarray(X, dtype=float)
-        if Xa.ndim == 1:
-            Xa = Xa.reshape(1, -1)
-        names = feature_names or [f"f{i}" for i in range(Xa.shape[1])]
-
-    method = "mean |SHAP value|"
-    importances: np.ndarray | None = None
-    try:
-        import shap  # lazy
-
-        explainer = shap.TreeExplainer(model)
-        values = explainer.shap_values(Xa)
-        importances = np.abs(np.asarray(values, dtype=float)).mean(axis=0)
-    except Exception:  # noqa: BLE001 - SHAP unavailable / non-tree estimator -> fallback
-        fi = getattr(model, "feature_importances_", None)
-        if fi is None and hasattr(model, "get_booster"):  # pragma: no cover - rare path
-            booster = model.get_booster()
-            raw = booster.get_score(importance_type="gain")
-            fi = [raw.get(f"f{i}", 0.0) for i in range(len(names))]
-        if fi is None:
-            fi = [0.0] * len(names)
-        importances = np.asarray(fi, dtype=float)
-        method = "XGBoost gain importance (SHAP unavailable)"
-
-    importances = np.asarray(importances, dtype=float).reshape(-1)
-    k = min(len(names), importances.size)
-    names = list(names[:k])
-    importances = importances[:k]
+    names, importances, method = _lean_importances(model, X, feature_names)
     order = np.argsort(importances)
+    k = len(names)
 
     fig, ax = plt.subplots(figsize=(5.6, max(3.0, 0.42 * k)), dpi=120)
     fig.patch.set_facecolor(_SURFACE)
@@ -369,4 +434,7 @@ __all__ = [
     "calibration_plot",
     "pit_histogram",
     "shap_summary",
+    "calibration_points",
+    "pit_bins",
+    "shap_importances",
 ]
