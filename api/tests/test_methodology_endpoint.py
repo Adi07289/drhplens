@@ -25,3 +25,16 @@ def test_methodology_missing_artifact_is_null_not_500(monkeypatch):
     r = client.get("/methodology")
     assert r.status_code == 200
     assert r.json()["eval"] is None  # honest null, never a fabricated number
+
+
+def test_methodology_corrupt_artifact_is_null_not_500(monkeypatch, tmp_path):
+    """A committed artifact that is present but unreadable JSON degrades to None
+    (exercises _load's except-ValueError branch) — never a 500, never a fake number."""
+    import api.methodology as m
+
+    bad = tmp_path / "corrupt.json"
+    bad.write_text("{ not: valid json ", encoding="utf-8")
+    monkeypatch.setattr(m, "_CARD", bad)
+    r = client.get("/methodology")
+    assert r.status_code == 200
+    assert r.json()["card"] is None

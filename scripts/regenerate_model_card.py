@@ -72,10 +72,13 @@ _ONE_FEATURE_LIMITATION = {
 }
 
 
-def build_card_plots(panel: "pd.DataFrame", oos_df: "pd.DataFrame") -> dict:
+def build_card_plots(panel: "pd.DataFrame", oos_df: "pd.DataFrame", *,
+                     median_model=None, x_fit=None) -> dict:
     """The native-chart data mirror of the three committed PNGs (calibration / PIT /
-    SHAP). Calibration + PIT come from the OOS frame; SHAP from the fitted median model."""
-    median_model, x_fit = fit_median_model(panel)
+    SHAP). Calibration + PIT come from the OOS frame; SHAP from the fitted median model
+    — reused from the caller when provided so the panel is fit only once per run."""
+    if median_model is None or x_fit is None:
+        median_model, x_fit = fit_median_model(panel)
     return {
         "calibration": calibration_points(oos_df),
         "pit": pit_bins(oos_df),
@@ -103,8 +106,8 @@ def main() -> None:
     if not _OOS.is_file():
         raise SystemExit(f"OOS frame missing: {_OOS} — run the live backtest first.")
     oos_df = pd.read_parquet(_OOS)
-    plots_doc = build_card_plots(panel, oos_df)
-    _CARD_PLOTS_JSON.write_text(json.dumps(plots_doc, indent=2), encoding="utf-8")
+    plots_doc = build_card_plots(panel, oos_df, median_model=median_model, x_fit=x_fit)
+    _CARD_PLOTS_JSON.write_text(json.dumps(plots_doc, indent=2) + "\n", encoding="utf-8")
 
     # 2) Reload the committed live card and apply the two honest disclosures.
     data = json.loads(_CARD_JSON.read_text(encoding="utf-8"))

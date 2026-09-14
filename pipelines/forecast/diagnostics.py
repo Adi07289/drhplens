@@ -335,6 +335,8 @@ def pit_bins(oos_df: pd.DataFrame, bins: int = 10) -> dict:
     the PNG builder histograms), so the data matches the committed PNG by
     construction. ``uniform_level`` is ``scored_n / bins`` — the flat line a calibrated
     model sits on (matches the ``pit_histogram`` axhline)."""
+    if bins < 1:
+        raise ValueError(f"bins must be >= 1, got {bins}")
     pit = _pit_array(oos_df)
     counts, _ = np.histogram(pit, bins=bins, range=(0.0, 1.0))
     uniform = float(pit.size / bins) if pit.size else 0.0
